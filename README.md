@@ -20,7 +20,6 @@ First, install the dependencies:
 pnpm install
 ```
 
-
 Then, run the development server:
 
 ```bash
@@ -28,12 +27,6 @@ pnpm dev
 ```
 
 Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
-
-
-
-
-
-
 
 ## Project Structure
 
