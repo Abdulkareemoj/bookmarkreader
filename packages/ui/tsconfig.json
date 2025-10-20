@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "strictNullChecks": true,  
+       "paths": {
+      "@workspace/ui/*": ["./src/*"]
+    }
+
+  }
+}
