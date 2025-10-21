@@ -8,6 +8,9 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import "../index.css";
+import { useState } from "react";
+import Sidebar from "@/components/sidebar";
+import Toolbar from "@/components/toolbar";
 
 export type RouterAppContext = {};
 
@@ -33,6 +36,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootComponent() {
+	const [sidebarOpen, setSidebarOpen] = useState(true);
 	// const isFetching = useRouterState({
 	// 	select: (s) => s.isLoading,
 	// });
@@ -46,13 +50,19 @@ function RootComponent() {
 				disableTransitionOnChange
 				storageKey="vite-ui-theme"
 			>
-				<div className="grid h-svh grid-rows-[auto_1fr]">
-					<Outlet />
-					{/* {isFetching ? <Loader /> : <Outlet />} */}
+				<div className="flex h-screen bg-background">
+					<Sidebar
+						isOpen={sidebarOpen}
+						onToggle={() => setSidebarOpen(!sidebarOpen)}
+					/>
+					<div className="flex flex-1 flex-col overflow-hidden">
+						<Toolbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+						<Outlet />
+					</div>
 				</div>
 				<Toaster richColors />
 			</ThemeProvider>
-			<TanStackRouterDevtools position="bottom-left" />
+			<TanStackRouterDevtools position="bottom-right" />
 		</>
 	);
 }
