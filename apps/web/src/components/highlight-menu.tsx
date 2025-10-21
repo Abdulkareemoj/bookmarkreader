@@ -1,5 +1,3 @@
-;
-
 import { Button } from "@workspace/ui/components/button";
 import { MessageSquare, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
