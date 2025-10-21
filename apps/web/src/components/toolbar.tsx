@@ -1,4 +1,3 @@
-
 import { Button } from "@workspace/ui/components/button";
 import { Menu, Moon, Search, Settings, Sun } from "lucide-react";
 import { useState } from "react";
@@ -21,7 +20,7 @@ export default function Toolbar({ onToggleSidebar }: ToolbarProps) {
 						onClick={onToggleSidebar}
 						className="md:hidden"
 					>
-						<Menu className="h-5 w-5" />
+						<Menu className="size-5" />
 					</Button>
 					<h2 className="hidden font-semibold text-foreground text-lg sm:block">
 						Today's Articles

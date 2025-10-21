@@ -1,26 +1,20 @@
-
+import { useMatchRoute } from "@tanstack/react-router";
 import { Button } from "@workspace/ui/components/button";
-import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
-import { Bookmark, Menu, Plus, Rss, X } from "lucide-react";
+import { Menu, Plus, Rss, X } from "lucide-react";
 import { useState } from "react";
+import AnimatedTabs from "@/components/animated-tabs";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
 	isOpen: boolean;
 	onToggle: () => void;
-	activeTab: string;
-	onTabChange: (tab: string) => void;
 }
 
-export default function Sidebar({
-	isOpen,
-	onToggle,
-	activeTab,
-	onTabChange,
-}: SidebarProps) {
+export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 	const [expandedCollections, setExpandedCollections] = useState<string[]>([
 		"bookmarks",
 	]);
+	const matchRoute = useMatchRoute();
 
 	// Collections for Bookmarks tab
 	const bookmarkCollections = [
@@ -45,11 +39,11 @@ export default function Sidebar({
 	};
 
 	const renderCollectionList = () => {
-		if (activeTab === "bookmarks") {
+		if (matchRoute({ to: "/" })) {
 			return (
 				<div className="space-y-1">
 					{bookmarkCollections.map((collection) => (
-						<button
+						<Button
 							key={collection.id}
 							className="group flex w-full items-center justify-between rounded-md px-4 py-2 text-sidebar-foreground text-sm transition-colors hover:bg-sidebar-accent"
 						>
@@ -60,17 +54,17 @@ export default function Sidebar({
 							<span className="text-sidebar-foreground/50 text-xs group-hover:text-sidebar-foreground/70">
 								{collection.count}
 							</span>
-						</button>
+						</Button>
 					))}
 				</div>
 			);
 		}
 
-		if (activeTab === "rss") {
+		if (matchRoute({ to: "/rss" })) {
 			return (
 				<div className="space-y-1">
 					{rssSources.map((source) => (
-						<button
+						<Button
 							key={source.id}
 							className="group flex w-full items-center justify-between rounded-md px-4 py-2 text-sidebar-foreground text-sm transition-colors hover:bg-sidebar-accent"
 						>
@@ -81,7 +75,7 @@ export default function Sidebar({
 							<span className="text-sidebar-foreground/50 text-xs group-hover:text-sidebar-foreground/70">
 								{source.count}
 							</span>
-						</button>
+						</Button>
 					))}
 				</div>
 			);
@@ -116,7 +110,7 @@ export default function Sidebar({
 				)}
 			>
 				{/* Header */}
-				<div className="border-sidebar-border border-b p-6">
+				<div className="my-1 border-sidebar-border border-b p-4">
 					<h1 className="font-bold text-sidebar-foreground text-xl">Crate</h1>
 				</div>
 
@@ -125,9 +119,9 @@ export default function Sidebar({
 					<div className="mb-4">
 						<div className="mb-3 flex items-center justify-between">
 							<h2 className="font-semibold text-sidebar-foreground/70 text-xs uppercase tracking-wider">
-								{activeTab === "bookmarks" && "Collections"}
-								{activeTab === "rss" && "Sources"}
-								{activeTab === "explore" && "Explore"}
+								{matchRoute({ to: "/" }) && "Collections"}
+								{matchRoute({ to: "/rss" }) && "Sources"}
+								{matchRoute({ to: "/explore" }) && "Explore"}
 							</h2>
 							<Button
 								variant="ghost"
@@ -142,35 +136,7 @@ export default function Sidebar({
 				</div>
 
 				<div className="border-sidebar-border border-t p-4">
-					<Tabs
-						value={activeTab}
-						onValueChange={onTabChange}
-						className="w-full"
-					>
-						<TabsList className="grid w-full grid-cols-3 bg-sidebar-accent">
-							<TabsTrigger
-								value="bookmarks"
-								className="text-xs data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground"
-							>
-								<Bookmark className="mr-1 h-4 w-4" />
-								<span className="hidden sm:inline">Bookmarks</span>
-							</TabsTrigger>
-							<TabsTrigger
-								value="rss"
-								className="text-xs data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground"
-							>
-								<Rss className="mr-1 h-4 w-4" />
-								<span className="hidden sm:inline">RSS</span>
-							</TabsTrigger>
-							<TabsTrigger
-								value="explore"
-								className="text-xs data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground"
-							>
-								<Plus className="mr-1 h-4 w-4" />
-								<span className="hidden sm:inline">Explore</span>
-							</TabsTrigger>
-						</TabsList>
-					</Tabs>
+					<AnimatedTabs />
 				</div>
 			</aside>
 
