@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import ArticleCard from "@/components/article-card";
 import SearchBar from "@/components/search-bar";
@@ -21,7 +22,6 @@ interface Article {
 
 interface ArticleListViewProps {
 	articles: Article[];
-	onArticleSelect?: (article: Article) => void;
 	onLike?: (id: string) => void;
 	onSave?: (id: string) => void;
 	onShare?: (id: string) => void;
@@ -29,7 +29,6 @@ interface ArticleListViewProps {
 
 export default function ArticleListView({
 	articles,
-	onArticleSelect,
 	onLike,
 	onSave,
 	onShare,
@@ -62,10 +61,11 @@ export default function ArticleListView({
 				{filteredArticles.length > 0 ? (
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{filteredArticles.map((article) => (
-							<div
+							<Link
 								key={article.id}
-								onClick={() => onArticleSelect?.(article)}
-								className="cursor-pointer"
+								to="/rss/article/$id"
+								params={{ id: article.id }}
+								className="block"
 							>
 								<ArticleCard
 									id={article.id}
@@ -81,7 +81,7 @@ export default function ArticleListView({
 									onSave={() => onSave?.(article.id)}
 									onShare={() => onShare?.(article.id)}
 								/>
-							</div>
+							</Link>
 						))}
 					</div>
 				) : (
