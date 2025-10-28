@@ -1,15 +1,15 @@
 "use client";
+
+import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { Bookmark, Compass, Rss } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
-import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
-
 const tabs = [
 	{
 		name: "Bookmarks",
-		value: "/",
+		value: "/bookmarks",
 		icon: Bookmark,
 	},
 	{
@@ -33,7 +33,7 @@ export default function AnimatedTabs() {
 			<Tabs value={router.location.pathname} className="gap-4">
 				<TabsList className="h-auto w-full gap-2 rounded-lg bg-sidebar-accent p-1">
 					{tabs.map(({ icon: Icon, name, value }) => {
-						const isActive = matchRoute({ to: value });
+						const isActive = matchRoute({ to: value, fuzzy: true });
 
 						return (
 							<Link to={value} key={value} className="flex-1">
