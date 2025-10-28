@@ -42,19 +42,15 @@ export default function Toolbar({ onToggleSidebar }: ToolbarProps) {
 				{/* Right Section */}
 				<div className="flex items-center gap-2">
 					<Button
-						variant="ghost"
-						size="icon"
+						variant="outline"
+						size="sm"
 						onClick={() => setIsDark(!isDark)}
 						title="Toggle dark mode"
 					>
-						{isDark ? (
-							<Sun className="h-5 w-5" />
-						) : (
-							<Moon className="h-5 w-5" />
-						)}
+						{isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}
 					</Button>
-					<Button variant="ghost" size="icon" title="Settings">
-						<Settings className="h-5 w-5" />
+					<Button variant="outline" size="sm" title="Settings">
+						<Settings className="size-5" />
 					</Button>
 				</div>
 			</div>
