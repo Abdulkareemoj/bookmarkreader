@@ -1,68 +1,86 @@
 import {
-	createRootRouteWithContext,
-	HeadContent,
-	Outlet,
-	useRouterState,
+  HeadContent,
+  Scripts,
+  createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { Toaster } from "@workspace/ui/components/sonner";
-import { ThemeProvider } from "@/components/theme-provider";
-import "../index.css";
-import { useState } from "react";
-import Sidebar from "@/components/sidebar";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { TanStackDevtools } from "@tanstack/react-devtools";
+
+import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+
+import appCss from "../styles.css?url";
+
+import type { QueryClient } from "@tanstack/react-query";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import Toolbar from "@/components/toolbar";
+import { AppSidebar } from "@/components/app-sidebar";
+import BottomNav from "@/components/bottom-nav";
+import { ThemeProvider } from "@/integrations/theme-provider";
 
-export type RouterAppContext = {};
+interface MyRouterContext {
+  queryClient: QueryClient;
+}
 
-export const Route = createRootRouteWithContext<RouterAppContext>()({
-	component: RootComponent,
-	head: () => ({
-		meta: [
-			{
-				title: "bookmark-tool",
-			},
-			{
-				name: "description",
-				content: "bookmark-tool is a web application",
-			},
-		],
-		links: [
-			{
-				rel: "icon",
-				href: "/favicon.ico",
-			},
-		],
-	}),
+export const Route = createRootRouteWithContext<MyRouterContext>()({
+  head: () => ({
+    meta: [
+      {
+        charSet: "utf-8",
+      },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1",
+      },
+      {
+        title: "TanStack Start Starter",
+      },
+    ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: appCss,
+      },
+    ],
+  }),
+
+  shellComponent: RootDocument,
 });
 
-function RootComponent() {
-	const [sidebarOpen, setSidebarOpen] = useState(true);
-	// const isFetching = useRouterState({
-	// 	select: (s) => s.isLoading,
-	// });
-
-	return (
-		<>
-			<HeadContent />
-			<ThemeProvider
-				attribute="class"
-				defaultTheme="dark"
-				disableTransitionOnChange
-				storageKey="vite-ui-theme"
-			>
-				<div className="flex h-screen bg-background">
-					<Sidebar
-						isOpen={sidebarOpen}
-						onToggle={() => setSidebarOpen(!sidebarOpen)}
-					/>
-					<div className="flex flex-1 flex-col overflow-hidden">
-						<Toolbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-						<Outlet />
-					</div>
-				</div>
-				<Toaster richColors />
-			</ThemeProvider>
-			<TanStackRouterDevtools position="bottom-right" />
-		</>
-	);
+function RootDocument({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <Toolbar />
+              {children} <BottomNav />
+            </SidebarInset>
+          </SidebarProvider>
+        </ThemeProvider>
+        <TanStackDevtools
+          config={{
+            position: "bottom-right",
+          }}
+          plugins={[
+            {
+              name: "Tanstack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+            TanStackQueryDevtools,
+          ]}
+        />
+        <Scripts />
+      </body>
+    </html>
+  );
 }

@@ -1,7 +1,6 @@
-import { Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { useMemo } from "react";
 import ArticleCard from "@/components/article-card";
-import SearchBar from "@/components/search-bar";
 
 interface Article {
 	id: string;
@@ -33,29 +32,23 @@ export default function ArticleListView({
 	onSave,
 	onShare,
 }: ArticleListViewProps) {
-	const [searchQuery, setSearchQuery] = useState("");
+    const search = useRouterState({ select: (s) => (s.location.search as any)?.q ?? "" });
 
 	const filteredArticles = useMemo(() => {
-		if (!searchQuery.trim()) return articles;
-
-		const query = searchQuery.toLowerCase();
+        const q = typeof search === "string" ? search.trim().toLowerCase() : "";
+        if (!q) return articles;
 		return articles.filter(
 			(article) =>
-				article.title.toLowerCase().includes(query) ||
-				article.subtitle?.toLowerCase().includes(query) ||
-				article.excerpt?.toLowerCase().includes(query) ||
-				article.author.toLowerCase().includes(query) ||
-				article.tags?.some((tag) => tag.toLowerCase().includes(query)),
+                article.title.toLowerCase().includes(q) ||
+                article.subtitle?.toLowerCase().includes(q) ||
+                article.excerpt?.toLowerCase().includes(q) ||
+                article.author.toLowerCase().includes(q) ||
+                article.tags?.some((tag) => tag.toLowerCase().includes(q)),
 		);
-	}, [articles, searchQuery]);
+    }, [articles, search]);
 
 	return (
 		<div className="flex h-full w-full flex-col">
-			{/* Search Bar */}
-			<div className="sticky top-0 border-border border-b bg-background/95 p-4 backdrop-blur">
-				<SearchBar onSearch={setSearchQuery} />
-			</div>
-
 			{/* Articles Grid */}
 			<div className="flex-1 overflow-y-auto p-6">
 				{filteredArticles.length > 0 ? (
@@ -89,7 +82,7 @@ export default function ArticleListView({
 						<div className="text-center">
 							<p className="mb-2 text-muted-foreground">No articles found</p>
 							<p className="text-muted-foreground text-sm">
-								{searchQuery
+                                {search
 									? "Try adjusting your search query"
 									: "No articles available"}
 							</p>

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import ArticleDisplay from "@/components/article-display";
 import ArticleListView from "@/components/article-list-view";
@@ -9,6 +9,7 @@ export const Route = createFileRoute("/rss/")({
 
 function RssComponent() {
 	const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
+    const collection = useRouterState({ select: (s) => (s.location.search as any)?.collection ?? "all" });
 
 	const article = {
 		id: "1",
@@ -38,12 +39,12 @@ The future of web development is exciting and full of possibilities. By staying 
 		tags: ["Web Development", "AI", "Performance", "Best Practices"],
 	}
 
-	const rssItems = [
+    const rssItems = [
 		{
 			id: "r1",
 			title: "New AI Model Breaks Records",
 			subtitle: "Latest breakthrough in machine learning",
-			category: "AI",
+            category: "AI",
 			readTime: 5,
 			author: "Tech News Daily",
 			date: "Oct 20, 2025",
@@ -69,7 +70,18 @@ The future of web development is exciting and full of possibilities. By staying 
 			date: "Oct 18, 2025",
 			tags: ["Startups", "Funding"],
 		},
-	]
+    ]
+
+    const filtered = Array.isArray(rssItems)
+        ? rssItems.filter((a) => {
+              if (!collection || collection === "all") return true;
+              const q = String(collection).toLowerCase();
+              return (
+                  a.category.toLowerCase() === q ||
+                  a.tags?.some((t) => t.toLowerCase() === q)
+              );
+          })
+        : rssItems;
 
 	if (selectedArticle) {
 		return (
@@ -82,7 +94,7 @@ The future of web development is exciting and full of possibilities. By staying 
 	return (
 		<main className="flex-1 overflow-hidden">
 			<ArticleListView
-				articles={rssItems}
+                articles={filtered}
 				onArticleSelect={(article) => setSelectedArticle(article.id)}
 			/>
 		</main>

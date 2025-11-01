@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import SearchBar from "@/components/search-bar";
+import { useMemo } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
 import BookmarkCard from "./bookmark-card";
 
 interface Bookmark {
@@ -16,26 +15,21 @@ interface BookmarkListViewProps {
 }
 
 export default function BookmarkListView({ bookmarks }: BookmarkListViewProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const search = useRouterState({ select: (s) => (s.location.search as any)?.q ?? "" });
 
   const filteredBookmarks = useMemo(() => {
-    if (!searchQuery.trim()) return bookmarks;
-
-    const query = searchQuery.toLowerCase();
+    const q = typeof search === "string" ? search.trim().toLowerCase() : "";
+    if (!q) return bookmarks;
     return bookmarks.filter(
       (bookmark) =>
-        bookmark.title.toLowerCase().includes(query) ||
-        bookmark.url.toLowerCase().includes(query) ||
-        bookmark.tags?.some((tag) => tag.toLowerCase().includes(query)),
+        bookmark.title.toLowerCase().includes(q) ||
+        bookmark.url.toLowerCase().includes(q) ||
+        bookmark.tags?.some((tag) => tag.toLowerCase().includes(q)),
     );
-  }, [bookmarks, searchQuery]);
+  }, [bookmarks, search]);
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="sticky top-0 border-border border-b bg-background/95 p-4 backdrop-blur">
-        <SearchBar onSearch={setSearchQuery} />
-      </div>
-
       <div className="flex-1 overflow-y-auto p-6">
         {filteredBookmarks.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -55,7 +49,7 @@ export default function BookmarkListView({ bookmarks }: BookmarkListViewProps) {
             <div className="text-center">
               <p className="mb-2 text-muted-foreground">No bookmarks found</p>
               <p className="text-muted-foreground text-sm">
-                {searchQuery
+                {search
                   ? "Try adjusting your search query"
                   : "No bookmarks available"}
               </p>

@@ -9,72 +9,107 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RssRouteImport } from './routes/rss'
-import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RssIndexRouteImport } from './routes/rss/index'
+import { Route as ExploreIndexRouteImport } from './routes/explore/index'
+import { Route as BookmarksIndexRouteImport } from './routes/bookmarks/index'
+import { Route as BookmarksIdRouteImport } from './routes/bookmarks/$id'
+import { Route as RssArticleIdRouteImport } from './routes/rss/article.$id'
 
-const RssRoute = RssRouteImport.update({
-  id: '/rss',
-  path: '/rss',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExploreRoute = ExploreRouteImport.update({
-  id: '/explore',
-  path: '/explore',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RssIndexRoute = RssIndexRouteImport.update({
+  id: '/rss/',
+  path: '/rss/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreIndexRoute = ExploreIndexRouteImport.update({
+  id: '/explore/',
+  path: '/explore/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookmarksIndexRoute = BookmarksIndexRouteImport.update({
+  id: '/bookmarks/',
+  path: '/bookmarks/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookmarksIdRoute = BookmarksIdRouteImport.update({
+  id: '/bookmarks/$id',
+  path: '/bookmarks/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RssArticleIdRoute = RssArticleIdRouteImport.update({
+  id: '/rss/article/$id',
+  path: '/rss/article/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRoute
-  '/rss': typeof RssRoute
+  '/bookmarks/$id': typeof BookmarksIdRoute
+  '/bookmarks': typeof BookmarksIndexRoute
+  '/explore': typeof ExploreIndexRoute
+  '/rss': typeof RssIndexRoute
+  '/rss/article/$id': typeof RssArticleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRoute
-  '/rss': typeof RssRoute
+  '/bookmarks/$id': typeof BookmarksIdRoute
+  '/bookmarks': typeof BookmarksIndexRoute
+  '/explore': typeof ExploreIndexRoute
+  '/rss': typeof RssIndexRoute
+  '/rss/article/$id': typeof RssArticleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/explore': typeof ExploreRoute
-  '/rss': typeof RssRoute
+  '/bookmarks/$id': typeof BookmarksIdRoute
+  '/bookmarks/': typeof BookmarksIndexRoute
+  '/explore/': typeof ExploreIndexRoute
+  '/rss/': typeof RssIndexRoute
+  '/rss/article/$id': typeof RssArticleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/explore' | '/rss'
+  fullPaths:
+    | '/'
+    | '/bookmarks/$id'
+    | '/bookmarks'
+    | '/explore'
+    | '/rss'
+    | '/rss/article/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/explore' | '/rss'
-  id: '__root__' | '/' | '/explore' | '/rss'
+  to:
+    | '/'
+    | '/bookmarks/$id'
+    | '/bookmarks'
+    | '/explore'
+    | '/rss'
+    | '/rss/article/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/bookmarks/$id'
+    | '/bookmarks/'
+    | '/explore/'
+    | '/rss/'
+    | '/rss/article/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ExploreRoute: typeof ExploreRoute
-  RssRoute: typeof RssRoute
+  BookmarksIdRoute: typeof BookmarksIdRoute
+  BookmarksIndexRoute: typeof BookmarksIndexRoute
+  ExploreIndexRoute: typeof ExploreIndexRoute
+  RssIndexRoute: typeof RssIndexRoute
+  RssArticleIdRoute: typeof RssArticleIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/rss': {
-      id: '/rss'
-      path: '/rss'
-      fullPath: '/rss'
-      preLoaderRoute: typeof RssRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/explore': {
-      id: '/explore'
-      path: '/explore'
-      fullPath: '/explore'
-      preLoaderRoute: typeof ExploreRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -82,14 +117,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rss/': {
+      id: '/rss/'
+      path: '/rss'
+      fullPath: '/rss'
+      preLoaderRoute: typeof RssIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore/': {
+      id: '/explore/'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookmarks/': {
+      id: '/bookmarks/'
+      path: '/bookmarks'
+      fullPath: '/bookmarks'
+      preLoaderRoute: typeof BookmarksIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookmarks/$id': {
+      id: '/bookmarks/$id'
+      path: '/bookmarks/$id'
+      fullPath: '/bookmarks/$id'
+      preLoaderRoute: typeof BookmarksIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rss/article/$id': {
+      id: '/rss/article/$id'
+      path: '/rss/article/$id'
+      fullPath: '/rss/article/$id'
+      preLoaderRoute: typeof RssArticleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ExploreRoute: ExploreRoute,
-  RssRoute: RssRoute,
+  BookmarksIdRoute: BookmarksIdRoute,
+  BookmarksIndexRoute: BookmarksIndexRoute,
+  ExploreIndexRoute: ExploreIndexRoute,
+  RssIndexRoute: RssIndexRoute,
+  RssArticleIdRoute: RssArticleIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
