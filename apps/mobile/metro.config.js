@@ -8,15 +8,13 @@ const config = withTurborepoManagedCache(
 	withNativeWind(getDefaultConfig(__dirname), {
 		input: "./global.css",
 		configPath: "./tailwind.config.js",
+		inlineRem: 16,
 	}),
 );
 
 config.resolver.unstable_enablePackageExports = true;
 
-module.exports = withNativeWind(config, {
-	input: "./global.css",
-	inlineRem: 16,
-});
+module.exports = config;
 
 /**
  * Move the Metro cache to the `.cache/metro` folder.
