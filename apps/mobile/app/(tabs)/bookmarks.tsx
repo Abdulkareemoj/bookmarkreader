@@ -1,74 +1,59 @@
-"use client"
+import BookmarkCard from "@/components/bookmark-card";
+import { FlatList, View, Text } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
-import { View, Text, FlatList } from "react-native"
-import { useBookmarks } from "@/hooks/use-bookmarks"
-import { useState } from "react"
-import { SearchBarMobile } from "@/components/search-bar-mobile"
-import { CollectionTabs } from "@/components/collection-tabs"
-import { ArticleCardMobile } from "@/components/article-card-mobile"
-import { useRouter } from "expo-router"
+const bookmarks = [
+  {
+    id: "b1",
+    title: "React Documentation",
+    url: "https://react.dev/",
+    notes: "The official documentation for React.",
+    tags: ["React", "JavaScript"],
+  },
+  {
+    id: "b2",
+    title: "Next.js Best Practices",
+    url: "https://nextjs.org/docs/app/building-your-application/optimizing/best-practices",
+    notes: "Learn how to build performant Next.js applications",
+    tags: ["Next.js", "Web Development"],
+  },
+  {
+    id: "b3",
+    title: "TypeScript Advanced Types",
+    url: "https://www.typescriptlang.org/docs/handbook/advanced-types.html",
+    notes: "Master advanced TypeScript patterns",
+    tags: ["TypeScript", "Programming"],
+  },
+];
 
-export default function BookmarksScreen() {
-  const router = useRouter()
-  const { bookmarks, toggleLike, removeBookmark } = useBookmarks()
-  const [selectedCollection, setSelectedCollection] = useState("all")
-  const [searchQuery, setSearchQuery] = useState("")
+export default function Bookmarks() {
+  const { searchQuery } = useLocalSearchParams();
 
-  const collections = [
-    { id: "all", label: "All" },
-    { id: "work", label: "Work" },
-    { id: "personal", label: "Personal" },
-    { id: "research", label: "Research" },
-  ]
-
-  let filteredBookmarks =
-    selectedCollection === "all" ? bookmarks : bookmarks.filter((b) => b.collectionId === selectedCollection)
-
-  if (searchQuery) {
-    filteredBookmarks = filteredBookmarks.filter(
-      (b) =>
-        b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.author.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredBookmarks = bookmarks.filter((bookmark) =>
+    bookmark.title.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
+    bookmark.notes.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
+    bookmark.tags.some((tag) =>
+      tag.toLowerCase().includes(searchQuery?.toLowerCase() || "")
     )
-  }
+  );
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Header */}
-      <View className="px-4 pt-4 pb-2">
-        <Text className="text-2xl font-bold text-gray-900">Bookmarks</Text>
-      </View>
-
-      {/* Search */}
-      <SearchBarMobile onSearch={setSearchQuery} />
-
-      {/* Collections */}
-      <CollectionTabs
-        collections={collections}
-        activeCollection={selectedCollection}
-        onCollectionChange={setSelectedCollection}
-      />
-
-      {/* Bookmarks List */}
-      <FlatList
-        data={filteredBookmarks}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ArticleCardMobile
-            article={item}
-            onLike={toggleLike}
-            onShare={(id) => console.log("Share:", id)}
-            onDelete={removeBookmark}
-            onPress={(id) => router.push(`/article/${id}`)}
-          />
-        )}
-        ListEmptyComponent={
-          <View className="flex-1 justify-center items-center py-8">
-            <Text className="text-gray-600">No bookmarks found</Text>
-          </View>
-        }
-      />
+    <View className="flex-1 bg-background">
+      {filteredBookmarks.length > 0 ? (
+        <FlatList
+          data={filteredBookmarks}
+          renderItem={({ item }) => <BookmarkCard {...item} />}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 16 }}
+        />
+      ) : (
+        <View className="flex-1 items-center justify-center">
+          <Text className="mb-2 text-muted-foreground">No bookmarks found</Text>
+          <Text className="text-muted-foreground text-sm">
+            No bookmarks available
+          </Text>
+        </View>
+      )}
     </View>
-  )
+  );
 }
