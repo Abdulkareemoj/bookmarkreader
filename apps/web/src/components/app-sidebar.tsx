@@ -1,5 +1,5 @@
-import type * as React from "react";
 import {
+  Link,
   useMatchRoute,
   useNavigate,
   useRouterState,
@@ -24,23 +24,43 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-// import { NavUser } from "./nav-user";
-import { Plus, Rss } from "lucide-react";
+import {
+  GalleryVerticalEnd,
+  HelpCircleIcon,
+  Plus,
+  Rss,
+  Search,
+  Settings,
+} from "lucide-react";
 import { useState } from "react";
+import { NavItems } from "./navitems";
 
-// This is sample data.
-// const data = {
-//   user: {
-//     name: "shadcn",
-//     email: "m@example.com",
-//     avatar: "/avatars/shadcn.jpg",
-//   },
-// };
+const navSecondary = [
+  // {
+  //   title: "Documentation",
+  //   url: "#",
+  //   icon: GalleryVerticalEnd,
+  // },
+  {
+    title: "Settings",
+    url: "#",
+    icon: Settings,
+  },
+  {
+    title: "Get Help",
+    url: "#",
+    icon: HelpCircleIcon,
+  },
+];
 
 export function AppSidebar() {
   const [newName, setNewName] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const matchRoute = useMatchRoute();
   const navigate = useNavigate();
   const location = useRouterState({ select: (s) => s.location });
@@ -121,75 +141,117 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader></SidebarHeader>
+    <Sidebar collapsible="offcanvas">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="#">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <GalleryVerticalEnd className="size-4" />
+                </div>
+                <div className="flex flex-col gap-0.5 leading-none">
+                  <span className="font-medium">shadcn</span>
+                  <span className="">v1.0.0</span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
       <SidebarContent>
-        {" "}
-        <SidebarGroup>
-          <div className="mb-4">
+        <div className="p-4">
+          <AnimatedTabs />
+        </div>
+        <SidebarMenu>
+          <SidebarGroup>
             <div className="mb-3 flex items-center justify-between px-4">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {matchRoute({ to: "/" }) && "Collections"}
-                {matchRoute({ to: "/rss" }) && "Sources"}
-                {matchRoute({ to: "/explore" }) && "Explore"}
-              </h2>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-6 text-muted-foreground hover:text-foreground"
-                  >
-                    <Plus className="size-5" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>New Collection</DialogTitle>
-                    <DialogDescription>
-                      Create a new bookmark collection to organize your saved
-                      links.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-2">
-                    <Input
-                      placeholder="Enter name..."
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                    />
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">
-                        Cancel
-                      </Button>
-                    </DialogClose>
+              {showSearch ? (
+                <div className="relative w-full">
+                  <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    autoFocus
+                    type="search"
+                    placeholder="Search..."
+                    className="w-full rounded-lg bg-background pl-8"
+                    onBlur={() => setShowSearch(false)}
+                  />
+                </div>
+              ) : (
+                <>
+                  <h2 className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    {matchRoute({ to: "/bookmarks" }) && "Collections"}
+                    {matchRoute({ to: "/rss" }) && "Sources"}
+                    {matchRoute({ to: "/explore" }) && "Explore"}
+                  </h2>
+                  <div className="flex items-center">
                     <Button
-                      onClick={() => {
-                        const name = newName.trim();
-                        if (!name) return;
-                        if (matchRoute({ to: "/" })) {
-                          addBookmarkCollection(name);
-                        } else if (matchRoute({ to: "/rss" })) {
-                          addRssCollection(name);
-                        }
-                        setNewName("");
-                        setCollectionParam(slugify(name));
-                      }}
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowSearch(true)}
+                      className="size-6 text-muted-foreground hover:text-foreground"
                     >
-                      Add
+                      <Search className="size-5" />
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-6 text-muted-foreground hover:text-foreground"
+                        >
+                          <Plus className="size-5" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>New Collection</DialogTitle>
+                          <DialogDescription>
+                            Create a new bookmark collection to organize your
+                            saved links.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-2">
+                          <Input
+                            placeholder="Enter name..."
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                          />
+                        </div>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button type="button" variant="outline">
+                              Cancel
+                            </Button>
+                          </DialogClose>
+                          <Button
+                            onClick={() => {
+                              const name = newName.trim();
+                              if (!name) return;
+                              if (matchRoute({ to: "/" })) {
+                                addBookmarkCollection(name);
+                              } else if (matchRoute({ to: "/rss" })) {
+                                addRssCollection(name);
+                              }
+                              setNewName("");
+                              setCollectionParam(slugify(name));
+                            }}
+                          >
+                            Add
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </>
+              )}
             </div>
-            {renderCollectionList()}
-          </div>
-        </SidebarGroup>
+          </SidebarGroup>
+          <SidebarMenuItem>{renderCollectionList()}</SidebarMenuItem>
+        </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <AnimatedTabs />
-        {/* <NavUser user={data.user} /> */}
+        <NavItems items={navSecondary} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
