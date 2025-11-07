@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "identifier": "com.tauri.dev",
   "build": {
-    "frontendDist": "../web/dist",
-    "devUrl": "http://localhost:3001",
-    "beforeDevCommand": "pnpm run dev",
-    "beforeBuildCommand": "pnpm run build"
+    "frontendDist": "../../web/dist",
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "pnpm --filter web dev",
+    "beforeBuildCommand": "pnpm --filter web build"
   },
   "app": {
     "windows": [
