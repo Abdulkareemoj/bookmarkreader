@@ -1,40 +1,33 @@
 import BookmarkCard from "@/components/bookmark-card";
 import { FlatList, View, Text } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-
-const bookmarks = [
-  {
-    id: "b1",
-    title: "React Documentation",
-    url: "https://react.dev/",
-    notes: "The official documentation for React.",
-    tags: ["React", "JavaScript"],
-  },
-  {
-    id: "b2",
-    title: "Next.js Best Practices",
-    url: "https://nextjs.org/docs/app/building-your-application/optimizing/best-practices",
-    notes: "Learn how to build performant Next.js applications",
-    tags: ["Next.js", "Web Development"],
-  },
-  {
-    id: "b3",
-    title: "TypeScript Advanced Types",
-    url: "https://www.typescriptlang.org/docs/handbook/advanced-types.html",
-    notes: "Master advanced TypeScript patterns",
-    tags: ["TypeScript", "Programming"],
-  },
-];
+import { useBookmarks } from "@/hooks/use-bookmarks";
+import { useEffect } from "react";
+import { bookmarks as mockBookmarks } from "@/lib/mock-data";
+import { useReaderStore } from "@/lib/store";
 
 export default function Bookmarks() {
   const { searchQuery } = useLocalSearchParams();
+  const collectionId = "all"; // Mobile currently shows all bookmarks
 
-  const filteredBookmarks = bookmarks.filter((bookmark) =>
-    bookmark.title.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
-    bookmark.notes.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
-    bookmark.tags.some((tag) =>
-      tag.toLowerCase().includes(searchQuery?.toLowerCase() || "")
-    )
+  const { bookmarks, toggleLike, toggleSave, removeBookmark, addBookmark } =
+    useBookmarks(collectionId);
+
+  // Initialize mock data into the store if it's empty (for demo purposes)
+  const storeBookmarks = useReaderStore((state) => state.bookmarks);
+  useEffect(() => {
+    if (storeBookmarks.length === 0) {
+      mockBookmarks.forEach((b) => addBookmark(b));
+    }
+  }, [storeBookmarks.length, addBookmark]);
+
+  const filteredBookmarks = bookmarks.filter(
+    (bookmark) =>
+      bookmark.title.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
+      bookmark.url?.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
+      bookmark.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery?.toLowerCase() || "")
+      )
   );
 
   return (
@@ -42,7 +35,14 @@ export default function Bookmarks() {
       {filteredBookmarks.length > 0 ? (
         <FlatList
           data={filteredBookmarks}
-          renderItem={({ item }) => <BookmarkCard {...item} />}
+          renderItem={({ item }) => (
+            <BookmarkCard
+              {...item}
+              onLike={() => toggleLike(item.id)}
+              onSave={() => toggleSave(item.id)}
+              onDelete={() => removeBookmark(item.id)}
+            />
+          )}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 16 }}
         />
@@ -50,7 +50,9 @@ export default function Bookmarks() {
         <View className="flex-1 items-center justify-center">
           <Text className="mb-2 text-muted-foreground">No bookmarks found</Text>
           <Text className="text-muted-foreground text-sm">
-            No bookmarks available
+            {searchQuery
+              ? "Try adjusting your search query"
+              : "No bookmarks available"}
           </Text>
         </View>
       )}

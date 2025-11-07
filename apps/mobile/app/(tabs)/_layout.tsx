@@ -1,5 +1,12 @@
 import { Tabs, router, useFocusEffect } from "expo-router";
-import { Bookmark, Radio, Compass, Home, Search } from "lucide-react-native";
+import {
+  Bookmark,
+  Radio,
+  Compass,
+  Home,
+  Search,
+  Settings,
+} from "lucide-react-native";
 import { TouchableOpacity, View, Text } from "react-native";
 import { Input } from "@/components/ui/input";
 import { useState, useCallback } from "react";
@@ -41,7 +48,9 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: "#9ca3af",
         header: ({ route, options }) => (
           <View className="flex-row items-center justify-between border-gray-200 border-b bg-white px-4 pt-10 pb-6">
-            {showSearchInput ? (
+            {route.name === "settings" ? (
+              <Text className="font-bold text-lg">{options.title}</Text>
+            ) : showSearchInput ? (
               <Input
                 placeholder={`Search ${route.name}...`}
                 value={searchQuery}
@@ -54,12 +63,14 @@ export default function TabsLayout() {
             ) : (
               <Text className="font-bold text-lg">{options.title}</Text>
             )}
-            <TouchableOpacity
-              onPress={() => setShowSearchInput((prev) => !prev)}
-              style={{ paddingLeft: 10 }}
-            >
-              <Search size={24} color="#3b82f6" />
-            </TouchableOpacity>
+            {route.name !== "settings" && (
+              <TouchableOpacity
+                onPress={() => setShowSearchInput((prev) => !prev)}
+                style={{ paddingLeft: 10 }}
+              >
+                <Search size={24} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
           </View>
         ),
       }}
@@ -90,6 +101,13 @@ export default function TabsLayout() {
         options={{
           title: "Explore",
           tabBarIcon: ({ color }) => <Compass size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
         }}
       />
     </Tabs>
