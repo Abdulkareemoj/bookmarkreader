@@ -10,6 +10,7 @@ interface CollectionsState {
 	bookmarkCollections: CollectionItem[];
 	rssCollections: CollectionItem[];
 	addBookmarkCollection: (name: string) => void;
+	removeBookmarkCollection: (id: string) => void;
 	addRssCollection: (name: string) => void;
 }
 
@@ -39,6 +40,12 @@ export const useCollectionsStore = create<CollectionsState>()(
 						bookmarkCollections: [...state.bookmarkCollections, { id, name }],
 					};
 				}),
+			removeBookmarkCollection: (id) =>
+				set((state) => ({
+					bookmarkCollections: state.bookmarkCollections.filter(
+						(c) => c.id !== id,
+					),
+				})),
 			addRssCollection: (name) =>
 				set((state) => {
 					const id = slugify(name);
