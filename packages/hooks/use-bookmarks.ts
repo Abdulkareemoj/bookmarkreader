@@ -1,19 +1,68 @@
-import { useReaderStore } from "@/lib/store"
+import { useMemo } from "react";
+import type { Bookmark, ReaderState } from "@packages/store";
+import type { UseBoundStore, StoreApi } from "zustand";
 
-export function useBookmarks(collectionId?: string) {
-  const allBookmarks = useReaderStore((state) => state.bookmarks)
-  const bookmarks = collectionId ? allBookmarks.filter((b) => b.collectionId === collectionId) : allBookmarks
+// Define the factory function that accepts the specific store hook (which includes persistence)
+export const createUseBookmarks = (
+  useStore: UseBoundStore<StoreApi<ReaderState>>
+) => {
+  return (collectionId: string = "all") => {
+    const { bookmarks, setBookmarks } = useStore();
 
-  const addBookmark = useReaderStore((state) => state.addBookmark)
-  const removeBookmark = useReaderStore((state) => state.removeBookmark)
-  const toggleLike = useReaderStore((state) => state.toggleBookmarkLike)
-  const toggleSave = useReaderStore((state) => state.toggleBookmarkSave)
+    const filteredBookmarks = useMemo(() => {
+      if (collectionId === "all") {
+        return bookmarks;
+      }
+      if (collectionId === "liked") {
+        return bookmarks.filter((b) => b.liked);
+      }
+      if (collectionId === "saved") {
+        return bookmarks.filter((b) => b.saved);
+      }
+      return bookmarks.filter((b) => b.collectionId === collectionId);
+    }, [bookmarks, collectionId]);
 
-  return {
-    bookmarks,
-    addBookmark,
-    removeBookmark,
-    toggleLike,
-    toggleSave,
-  }
-}
+    const toggleLike = (id: string) => {
+      setBookmarks(
+        bookmarks.map((b) => (b.id === id ? { ...b, liked: !b.liked } : b))
+      );
+    };
+
+    const toggleSave = (id: string) => {
+      setBookmarks(
+        bookmarks.map((b) => (b.id === id ? { ...b, saved: !b.saved } : b))
+      );
+    };
+
+    const removeBookmark = (id: string) => {
+      setBookmarks(bookmarks.filter((b) => b.id !== id));
+    };
+
+    const addBookmark = (data: {
+      url: string;
+      title: string;
+      tags: string[];
+      collectionId: string;
+    }) => {
+      const newBookmark: Bookmark = {
+        id: crypto.randomUUID(), // Use a unique ID generator
+        url: data.url,
+        title: data.title,
+        tags: data.tags,
+        collectionId: data.collectionId,
+        liked: false,
+        saved: false,
+        createdAt: new Date().toISOString(),
+      };
+      setBookmarks([...bookmarks, newBookmark]);
+    };
+
+    return {
+      bookmarks: filteredBookmarks,
+      toggleLike,
+      toggleSave,
+      removeBookmark,
+      addBookmark,
+    };
+  };
+};

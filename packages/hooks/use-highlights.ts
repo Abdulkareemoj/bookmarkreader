@@ -1,18 +1,26 @@
-import { useReaderStore } from "@/lib/store"
+import type { Highlight, ReaderState } from "@packages/store";
+import type { UseBoundStore, StoreApi } from "zustand";
 
-export function useHighlights(articleId?: string) {
-  const allHighlights = useReaderStore((state) => state.highlights)
-  const highlights = articleId ? allHighlights.filter((h) => h.articleId === articleId) : allHighlights
-  const addHighlight = useReaderStore((state) => state.addHighlight)
-  const removeHighlight = useReaderStore((state) => state.removeHighlight)
-  const addAnnotation = useReaderStore((state) => state.addAnnotation)
-  const removeAnnotation = useReaderStore((state) => state.removeAnnotation)
+export const createUseHighlights = (
+  useStore: UseBoundStore<StoreApi<ReaderState>>
+) => {
+  return (articleId?: string) => {
+    const allHighlights = useStore((state) => state.highlights);
+    const highlights = articleId
+      ? allHighlights.filter((h) => h.articleId === articleId)
+      : allHighlights;
 
-  return {
-    highlights,
-    addHighlight,
-    removeHighlight,
-    addAnnotation,
-    removeAnnotation,
-  }
-}
+    const addHighlight = useStore((state) => state.addHighlight);
+    const removeHighlight = useStore((state) => state.removeHighlight);
+    const addAnnotation = useStore((state) => state.addAnnotation);
+    const removeAnnotation = useStore((state) => state.removeAnnotation);
+
+    return {
+      highlights,
+      addHighlight,
+      removeHighlight,
+      addAnnotation,
+      removeAnnotation,
+    };
+  };
+};
