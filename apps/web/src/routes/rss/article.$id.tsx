@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import ArticleDisplay from "@/components/article-display";
+import ArticleDisplay from "@/components/rss/article-display";
 
 export const Route = createFileRoute("/rss/article/$id")({
   component: ArticlePageComponent,

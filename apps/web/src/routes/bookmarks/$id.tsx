@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import BookmarkDisplay from "@/components/bookmark-display";
+import BookmarkDisplay from "@/components/bookmarks/bookmark-display";
 import { bookmarks } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/bookmarks/$id")({

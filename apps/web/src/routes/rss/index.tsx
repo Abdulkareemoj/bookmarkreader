@@ -1,102 +1,180 @@
-import { createFileRoute, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
-import ArticleDisplay from "@/components/article-display";
-import ArticleListView from "@/components/article-list-view";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { useFeeds } from "@/hooks/use-feeds";
+import type { Article } from "@packages/store";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Heart, Bookmark, Check } from "lucide-react";
+import { z } from "zod";
 
-export const Route = createFileRoute("/rss/")({
-	component: RssComponent,
+// Define the search parameter schema
+const rssSearchSchema = z.object({
+  filter: z.string().nullable().catch(null), // 'feedId' or null for all
 });
 
+export const Route = createFileRoute("/rss/")({
+  component: RssComponent,
+  validateSearch: rssSearchSchema,
+});
+
+// --- Component 1: ArticleList ---
+interface ArticleListProps {
+  articles: Article[];
+  feeds: { id: string; title: string }[];
+  toggleArticleRead: (id: string) => void;
+  toggleArticleLike: (id: string) => void;
+  toggleArticleSave: (id: string) => void;
+}
+
+function ArticleList({
+  articles,
+  feeds,
+  toggleArticleRead,
+  toggleArticleLike,
+  toggleArticleSave,
+}: ArticleListProps) {
+  if (articles.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-muted-foreground">
+        No articles found for this feed.
+      </div>
+    );
+  }
+
+  // Sort articles by date (newest first)
+  const sortedArticles = articles.sort(
+    (a, b) =>
+      new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime()
+  );
+
+  return (
+    <ScrollArea className="h-full">
+      <div className="space-y-4 p-4">
+        {sortedArticles.map((article) => (
+          <div
+            key={article.id}
+            className={cn(
+              "cursor-pointer rounded-lg border p-4 transition-colors hover:bg-accent/50",
+              article.read ? "opacity-60" : "bg-card shadow-sm"
+            )}
+            onClick={() => window.open(article.link, "_blank")}
+          >
+            <div className="flex items-start justify-between">
+              <h3 className="font-semibold text-lg line-clamp-2">
+                {article.title}
+              </h3>
+              <div className="flex items-center space-x-1 ml-4 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleArticleLike(article.id);
+                  }}
+                  title={article.liked ? "Unlike" : "Like"}
+                >
+                  <Heart
+                    className={cn(
+                      "h-4 w-4",
+                      article.liked && "fill-current text-red-500"
+                    )}
+                  />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleArticleSave(article.id);
+                  }}
+                  title={article.saved ? "Remove from saved" : "Save"}
+                >
+                  <Bookmark
+                    className={cn("h-4 w-4", article.saved && "fill-current")}
+                  />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleArticleRead(article.id);
+                  }}
+                  title={article.read ? "Mark as Unread" : "Mark as Read"}
+                >
+                  <Check
+                    className={cn(
+                      "h-4 w-4",
+                      article.read ? "text-primary" : "text-muted-foreground"
+                    )}
+                  />
+                </Button>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+              {article.contentSnippet || "No snippet available."}
+            </p>
+            <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+              <span className="font-medium">
+                {feeds.find((f) => f.id === article.feedId)?.title ||
+                  "Unknown Feed"}
+              </span>
+              <span>
+                {article.pubDate
+                  ? new Date(article.pubDate).toLocaleDateString()
+                  : "Unknown Date"}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </ScrollArea>
+  );
+}
+
+// --- Main Route Component ---
 function RssComponent() {
-	const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
-    const collection = useRouterState({ select: (s) => (s.location.search as any)?.collection ?? "all" });
+  // Read the filter from the URL search parameters
+  const { filter } = Route.useSearch();
 
-	const article = {
-		id: "1",
-		title: "The Future of Web Development",
-		subtitle:
-			"Exploring emerging technologies and best practices shaping the next generation of web applications.",
-		category: "Technology",
-		readTime: 5,
-		author: "Sarah Chen",
-		date: "Oct 20, 2025",
-		content: `The web development landscape continues to evolve at a rapid pace. With new frameworks, tools, and methodologies emerging constantly, developers must stay informed about the latest trends and best practices.
+  const {
+    feeds,
+    articles: allArticles,
+    toggleArticleRead,
+    toggleArticleLike,
+    toggleArticleSave,
+  } = useFeeds();
 
-## Key Trends to Watch
+  // Filter articles based on the URL filter (feedId or null for all)
+  const articles = filter
+    ? allArticles.filter((a) => a.feedId === filter)
+    : allArticles;
 
-Several important trends are shaping the future of web development. Server-side rendering, edge computing, and AI-powered development tools are becoming increasingly important in modern applications.
+  // Determine the title for the main content area
+  const mainTitle = filter
+    ? feeds.find((f) => f.id === filter)?.title || "Articles"
+    : "All Articles";
 
-- AI-assisted code generation and debugging
-- Edge computing and serverless architectures
-- Enhanced performance optimization techniques
-- Improved developer experience and tooling
-
-## Best Practices
-
-Following established best practices ensures your applications are maintainable, performant, and secure. Focus on clean code, proper testing, and continuous learning.
-
-The future of web development is exciting and full of possibilities. By staying informed and adapting to new technologies, developers can build better applications that serve users more effectively.`,
-		tags: ["Web Development", "AI", "Performance", "Best Practices"],
-	}
-
-    const rssItems = [
-		{
-			id: "r1",
-			title: "New AI Model Breaks Records",
-			subtitle: "Latest breakthrough in machine learning",
-            category: "AI",
-			readTime: 5,
-			author: "Tech News Daily",
-			date: "Oct 20, 2025",
-			tags: ["AI", "Machine Learning"],
-		},
-		{
-			id: "r2",
-			title: "Web Performance Tips",
-			subtitle: "Optimize your website for speed",
-			category: "Technology",
-			readTime: 7,
-			author: "Web Dev Weekly",
-			date: "Oct 19, 2025",
-			tags: ["Performance", "Web Development"],
-		},
-		{
-			id: "r3",
-			title: "Startup Funding Trends",
-			subtitle: "Analysis of Q4 funding landscape",
-			category: "Business",
-			readTime: 6,
-			author: "Business Insider",
-			date: "Oct 18, 2025",
-			tags: ["Startups", "Funding"],
-		},
-    ]
-
-    const filtered = Array.isArray(rssItems)
-        ? rssItems.filter((a) => {
-              if (!collection || collection === "all") return true;
-              const q = String(collection).toLowerCase();
-              return (
-                  a.category.toLowerCase() === q ||
-                  a.tags?.some((t) => t.toLowerCase() === q)
-              );
-          })
-        : rssItems;
-
-	if (selectedArticle) {
-		return (
-			<main className="flex-1 overflow-y-auto">
-				<ArticleDisplay {...article} />
-			</main>
-		)
-	}
-
-	return (
-		<main className="flex-1 overflow-hidden">
-			<ArticleListView
-                articles={filtered}
-				onArticleSelect={(article) => setSelectedArticle(article.id)}
-			/>
-		</main>
-	)
+  return (
+    // The root layout handles the flex container and sidebar, so this component
+    // only needs to define its content structure.
+    <div className="flex h-full flex-col">
+      <header className="border-b p-4">
+        <h1 className="font-bold text-2xl">{mainTitle}</h1>
+      </header>
+      <div className="flex-1 overflow-hidden">
+        <ArticleList
+          articles={articles}
+          feeds={feeds}
+          toggleArticleRead={toggleArticleRead}
+          toggleArticleLike={toggleArticleLike}
+          toggleArticleSave={toggleArticleSave}
+        />
+      </div>
+    </div>
+  );
 }

@@ -1,74 +1,69 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { createFileRoute } from "@tanstack/react-router";
+import { DashboardCard } from "@/components/dashboard-card";
+import { Bookmark, Rss, Compass, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: DashboardComponent,
 });
 
+// Mock data for dashboard summary
+const dashboardData = [
+  {
+    title: "Total Bookmarks",
+    value: 42,
+    icon: Bookmark,
+    to: "/bookmarks",
+    colorClass: "text-blue-500",
+  },
+  {
+    title: "Unread Articles",
+    value: 15,
+    icon: Rss,
+    to: "/rss",
+    colorClass: "text-orange-500",
+  },
+  {
+    title: "Liked Items",
+    value: 8,
+    icon: Heart,
+    to: "/bookmarks", // Assuming liked items are part of bookmarks for now
+    colorClass: "text-red-500",
+  },
+  {
+    title: "New in Explore",
+    value: 5,
+    icon: Compass,
+    to: "/explore",
+    colorClass: "text-green-500",
+  },
+];
+
 function DashboardComponent() {
   return (
-    <div className="p-4">
-      <h1 className="text-2xl">Dashboard</h1>
-      <p>Welcome to your dashboard. Here is a summary of your content.</p>
-      <div className="mt-4 flex gap-4">
-        <Link to="/bookmarks" className="text-blue-500 hover:underline">
-          Go to Bookmarks
-        </Link>
-        <Link to="/rss" className="text-blue-500 hover:underline">
-          Go to RSS Feeds
-        </Link>
-        <Link to="/explore" className="text-blue-500 hover:underline">
-          Go to Explore
-        </Link>
+    <div className="p-4 md:p-8">
+      <h1 className="mb-6 font-bold text-3xl text-foreground">Dashboard</h1>
+      <p className="mb-8 text-muted-foreground">
+        A quick overview of your saved content and feeds.
+      </p>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {dashboardData.map((item) => (
+          <DashboardCard key={item.title} {...item} />
+        ))}
       </div>
-      <Dialog>
-        <form>
-          <DialogTrigger asChild>
-            <Button variant="outline">Open Dialog</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Edit profile</DialogTitle>
-              <DialogDescription>
-                Make changes to your profile here. Click save when you&apos;re
-                done.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4">
-              <div className="grid gap-3">
-                <Label htmlFor="name-1">Name</Label>
-                <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="username-1">Username</Label>
-                <Input
-                  id="username-1"
-                  name="username"
-                  defaultValue="@peduarte"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button type="submit">Save changes</Button>
-            </DialogFooter>
-          </DialogContent>
-        </form>
-      </Dialog>
+
+      {/* Placeholder for recent activity or quick actions */}
+      <div className="mt-10">
+        <h2 className="mb-4 font-semibold text-2xl text-foreground">
+          Recent Activity
+        </h2>
+        <div className="rounded-lg border border-border bg-card p-6">
+          <p className="text-muted-foreground">
+            No recent activity yet. Start saving bookmarks or subscribing to
+            feeds!
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
