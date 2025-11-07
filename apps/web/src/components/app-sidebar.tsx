@@ -38,17 +38,15 @@ import {
   Settings,
 } from "lucide-react";
 import { useState } from "react";
-import { NavItems } from "./navitems";
+import { NavItems } from "@/components/navitems";
+import { BookmarkSidebar } from "@/components/bookmarks/bookmark-sidebar";
+import { FeedSidebar } from "@/components/rss/feed-sidebar";
+import { useFeeds } from "@/hooks/use-feeds";
 
 const navSecondary = [
-  // {
-  //   title: "Documentation",
-  //   url: "#",
-  //   icon: GalleryVerticalEnd,
-  // },
   {
     title: "Settings",
-    url: "#",
+    url: "/settings", // Updated URL
     icon: Settings,
   },
   {
@@ -65,19 +63,25 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useRouterState({ select: (s) => s.location });
 
-  const {
-    bookmarkCollections,
-    rssCollections,
-    addBookmarkCollection,
-    addRssCollection,
-  } = useCollectionsStore();
+  const { bookmarkCollections, addBookmarkCollection, removeBookmarkCollection } = useCollectionsStore();
+  const { feeds, removeFeed } = useFeeds();
 
-  function setCollectionParam(collectionId: string) {
+  // Get current collection/feed ID from search params
+  const currentCollectionId = (location.search as any)?.collection || null;
+
+  function setCollectionParam(collectionId: string | null) {
+    const currentPath = location.pathname;
+    const targetPath = currentPath.startsWith("/bookmarks")
+      ? "/bookmarks"
+      : currentPath.startsWith("/rss")
+      ? "/rss"
+      : "/";
+
     void navigate({
-      to: (location.pathname as any) || "/",
+      to: targetPath as any,
       search: (prev: any) => ({
         ...prev,
-        collection: collectionId === "all" ? undefined : collectionId,
+        filter: collectionId,
       }),
       replace: true,
     });
@@ -93,49 +97,31 @@ export function AppSidebar() {
   }
 
   const renderCollectionList = () => {
-    if (matchRoute({ to: "/" })) {
+    if (matchRoute({ to: "/bookmarks", fuzzy: true })) {
       return (
-        <div className="space-y-1">
-          {bookmarkCollections.map((collection) => (
-            <Button
-              key={collection.id}
-              variant="ghost"
-              className="group flex w-full items-center justify-between rounded-md px-4 py-2 text-sm"
-              onClick={() => setCollectionParam(collection.id)}
-            >
-              <span className="flex items-center gap-2">
-                <div className="size-2 rounded-full bg-blue-500" />
-                {collection.name}
-              </span>
-            </Button>
-          ))}
-        </div>
+        <BookmarkSidebar
+          collections={bookmarkCollections}
+          selectedCollectionId={currentCollectionId}
+          onSelectCollection={setCollectionParam}
+          onRemoveCollection={removeBookmarkCollection}
+        />
       );
     }
 
-    if (matchRoute({ to: "/rss" })) {
+    if (matchRoute({ to: "/rss", fuzzy: true })) {
       return (
-        <div className="space-y-1">
-          {rssCollections.map((source) => (
-            <Button
-              key={source.id}
-              variant="ghost"
-              className="group flex w-full items-center justify-between rounded-md px-4 py-2 text-sm"
-              onClick={() => setCollectionParam(source.id)}
-            >
-              <span className="flex items-center gap-2">
-                <Rss className="h-3 w-3 text-blue-500" />
-                {source.name}
-              </span>
-            </Button>
-          ))}
-        </div>
+        <FeedSidebar
+          feeds={feeds}
+          selectedFeedId={currentCollectionId}
+          onSelectFeed={setCollectionParam}
+          onRemoveFeed={removeFeed}
+        />
       );
     }
 
     return (
       <div className="flex items-center justify-center py-8 text-muted-foreground">
-        <p className="text-sm">Coming soon...</p>
+        <p className="text-sm">Select a tab to view collections.</p>
       </div>
     );
   };
@@ -146,13 +132,12 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="#">
+              <Link to="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <GalleryVerticalEnd className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">shadcn</span>
-                  <span className="">v1.0.0</span>
+                  <span className="font-medium">WIP</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -168,7 +153,7 @@ export function AppSidebar() {
             <div className="mb-3 flex items-center justify-between px-4">
               {showSearch ? (
                 <div className="relative w-full">
-                  <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute top-2.5 left-2.5 size-5 text-muted-foreground" />
                   <Input
                     autoFocus
                     type="search"
@@ -180,11 +165,13 @@ export function AppSidebar() {
               ) : (
                 <>
                   <h2 className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                    {matchRoute({ to: "/bookmarks" }) && "Collections"}
-                    {matchRoute({ to: "/rss" }) && "Sources"}
-                    {matchRoute({ to: "/explore" }) && "Explore"}
+                    {matchRoute({ to: "/", fuzzy: true }) && "Home"}
+                    {matchRoute({ to: "/bookmarks", fuzzy: true }) &&
+                      "Collections"}
+                    {matchRoute({ to: "/rss", fuzzy: true }) && "Sources"}
+                    {matchRoute({ to: "/explore", fuzzy: true }) && "Explore"}
                   </h2>
-                  <div className="flex items-center">
+                  <div className="flex gap-2 items-center">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -193,61 +180,62 @@ export function AppSidebar() {
                     >
                       <Search className="size-5" />
                     </Button>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-6 text-muted-foreground hover:text-foreground"
-                        >
-                          <Plus className="size-5" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle>New Collection</DialogTitle>
-                          <DialogDescription>
-                            Create a new bookmark collection to organize your
-                            saved links.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="py-2">
-                          <Input
-                            placeholder="Enter name..."
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                          />
-                        </div>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button type="button" variant="outline">
-                              Cancel
-                            </Button>
-                          </DialogClose>
+                    {matchRoute({ to: "/bookmarks", fuzzy: true }) && (
+                      <Dialog>
+                        <DialogTrigger asChild>
                           <Button
-                            onClick={() => {
-                              const name = newName.trim();
-                              if (!name) return;
-                              if (matchRoute({ to: "/" })) {
-                                addBookmarkCollection(name);
-                              } else if (matchRoute({ to: "/rss" })) {
-                                addRssCollection(name);
-                              }
-                              setNewName("");
-                              setCollectionParam(slugify(name));
-                            }}
+                            variant="ghost"
+                            size="icon"
+                            className="size-6 text-muted-foreground hover:text-foreground"
                           >
-                            Add
+                            <Plus className="size-5" />
                           </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>New Collection</DialogTitle>
+                            <DialogDescription>
+                              Create a new bookmark collection to organize your
+                              saved links.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-2">
+                            <Input
+                              placeholder="Enter name..."
+                              value={newName}
+                              onChange={(e) => setNewName(e.target.value)}
+                            />
+                          </div>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="outline">
+                                Cancel
+                              </Button>
+                            </DialogClose>
+                            <Button
+                              onClick={() => {
+                                const name = newName.trim();
+                                if (!name) return;
+                                addBookmarkCollection(name);
+                                setNewName("");
+                                setCollectionParam(slugify(name));
+                              }}
+                            >
+                              Add
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </div>
                 </>
               )}
             </div>
           </SidebarGroup>
-          <SidebarMenuItem>{renderCollectionList()}</SidebarMenuItem>
+          {/* Render the appropriate content based on the active tab */}
+          <SidebarMenuItem className="p-0">
+            {renderCollectionList()}
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
