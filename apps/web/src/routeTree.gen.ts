@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RssIndexRouteImport } from './routes/rss/index'
 import { Route as ExploreIndexRouteImport } from './routes/explore/index'
@@ -16,6 +17,11 @@ import { Route as BookmarksIndexRouteImport } from './routes/bookmarks/index'
 import { Route as BookmarksIdRouteImport } from './routes/bookmarks/$id'
 import { Route as RssArticleIdRouteImport } from './routes/rss/article.$id'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const RssArticleIdRoute = RssArticleIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks': typeof BookmarksIndexRoute
   '/explore': typeof ExploreIndexRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks': typeof BookmarksIndexRoute
   '/explore': typeof ExploreIndexRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks/': typeof BookmarksIndexRoute
   '/explore/': typeof ExploreIndexRoute
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/settings'
     | '/bookmarks/$id'
     | '/bookmarks'
     | '/explore'
@@ -84,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/settings'
     | '/bookmarks/$id'
     | '/bookmarks'
     | '/explore'
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/settings'
     | '/bookmarks/$id'
     | '/bookmarks/'
     | '/explore/'
@@ -101,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SettingsRoute: typeof SettingsRoute
   BookmarksIdRoute: typeof BookmarksIdRoute
   BookmarksIndexRoute: typeof BookmarksIndexRoute
   ExploreIndexRoute: typeof ExploreIndexRoute
@@ -110,6 +123,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -157,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SettingsRoute: SettingsRoute,
   BookmarksIdRoute: BookmarksIdRoute,
   BookmarksIndexRoute: BookmarksIndexRoute,
   ExploreIndexRoute: ExploreIndexRoute,
