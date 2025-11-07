@@ -1,19 +1,4 @@
-import { useReaderStore } from "@/lib/store"
+import { useReaderStore } from "@/lib/store";
+import { createUseBookmarks } from "@packages/hooks";
 
-export function useBookmarks(collectionId?: string) {
-  const allBookmarks = useReaderStore((state) => state.bookmarks)
-  const bookmarks = collectionId ? allBookmarks.filter((b) => b.collectionId === collectionId) : allBookmarks
-
-  const addBookmark = useReaderStore((state) => state.addBookmark)
-  const removeBookmark = useReaderStore((state) => state.removeBookmark)
-  const toggleLike = useReaderStore((state) => state.toggleBookmarkLike)
-  const toggleSave = useReaderStore((state) => state.toggleBookmarkSave)
-
-  return {
-    bookmarks,
-    addBookmark,
-    removeBookmark,
-    toggleLike,
-    toggleSave,
-  }
-}
+export const useBookmarks = createUseBookmarks(useReaderStore);
