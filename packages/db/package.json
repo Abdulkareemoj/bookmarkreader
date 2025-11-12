@@ -1,0 +1,25 @@
+{
+  "name": "@packages/db",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "type": "module",
+  "types": "./src/index.ts",
+  "scripts": {
+    "db:generate": "drizzle-kit generate --config ../../apps/desktop/drizzle.config.ts",
+    "db:migrate:desktop": "drizzle-kit migrate --config ../../apps/desktop/drizzle.config.ts",
+    "db:migrate:mobile": "drizzle-kit generate --config ../../apps/mobile/drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config ../apps/desktop/drizzle.config.ts"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.15",
+    "drizzle-orm": "^0.44.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.4.1",
+    "drizzle-kit": "^0.31.6",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
