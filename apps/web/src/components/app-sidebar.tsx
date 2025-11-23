@@ -42,6 +42,7 @@ import { NavItems } from "@/components/navitems";
 import { BookmarkSidebar } from "@/components/bookmarks/bookmark-sidebar";
 import { FeedSidebar } from "@/components/rss/feed-sidebar";
 import { useFeeds } from "@/hooks/use-feeds";
+import { match } from "assert";
 
 const navSecondary = [
   {
@@ -63,7 +64,11 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useRouterState({ select: (s) => s.location });
 
-  const { bookmarkCollections, addBookmarkCollection, removeBookmarkCollection } = useCollectionsStore();
+  const {
+    bookmarkCollections,
+    addBookmarkCollection,
+    removeBookmarkCollection,
+  } = useCollectionsStore();
   const { feeds, removeFeed } = useFeeds();
 
   // Get current collection/feed ID from search params
@@ -117,6 +122,10 @@ export function AppSidebar() {
           onRemoveFeed={removeFeed}
         />
       );
+    }
+
+    if (matchRoute({ to: "/settings", fuzzy: true })) {
+      return null; // No collections to show in settings
     }
 
     return (
