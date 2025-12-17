@@ -1,26 +1,15 @@
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import { createReaderStore, ReaderState } from "@packages/store";
+// This file re-exports the shared store components for the mobile app.
+// Any mobile-specific store logic or middleware could go here in the future.
 
-// In-memory storage
-const inMemoryStorage = {
-  setItem: (name: string, value: string) => {
-    // In-memory implementation, does nothing for now
-    return;
-  },
-  getItem: (name: string) => {
-    // In-memory implementation, does nothing for now
-    return null;
-  },
-  removeItem: (name: string) => {
-    // In-memory implementation, does nothing for now
-    return;
-  },
-};
-
-export const useReaderStore = create<ReaderState>()(
-  persist(createReaderStore, {
-    name: "reader-store",
-    storage: createJSONStorage(() => inMemoryStorage),
-  })
-);
+export {
+  initializeReaderStore,
+  useReaderStore,
+  useSettingsStore,
+  type ReaderState,
+  type SettingsState,
+  type SyncStatus,
+  type Bookmark,
+  type Article,
+  type Feed,
+  type Highlight,
+} from "@packages/store";

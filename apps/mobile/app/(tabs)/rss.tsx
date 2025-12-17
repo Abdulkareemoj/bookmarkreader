@@ -1,21 +1,25 @@
-import { Text, View, FlatList, Linking } from "react-native";
+import { Text, View, FlatList } from "react-native";
 import { useFeeds } from "@/hooks/use-feeds";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useRouter } from "expo-router";
 import { useReaderStore } from "@/lib/store";
 import { mockFeeds, mockArticles } from "@/lib/mock-rss-data";
 import { RssArticleCardMobile } from "@/components/rss-article-card-mobile";
 import { Rss } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
 
-// Helper to initialize store with mock data
+//  initialize store with mock data
 function initializeRssStore(addFeed: any, addArticles: any, storeFeeds: any) {
   if (storeFeeds.length === 0) {
-    mockFeeds.forEach((f) => addFeed(f));
+    mockFeeds.forEach((f) => {
+      addFeed(f);
+    });
     addArticles(mockArticles);
   }
 }
 
 export default function RssScreen() {
+  const router = useRouter();
   const {
     feeds,
     articles,
@@ -27,12 +31,12 @@ export default function RssScreen() {
   } = useFeeds();
   const storeFeeds = useReaderStore((state) => state.feeds);
 
-  // Initialize mock data into the store if it's empty (for demo purposes)
+  // Initialize mock data into the store if it's empty
   useEffect(() => {
     initializeRssStore(addFeed, addArticles, storeFeeds);
   }, [addFeed, addArticles, storeFeeds.length]);
 
-  // Sort articles by date (newest first)
+  // Sort articles by date
   const sortedArticles = useMemo(() => {
     return articles.sort(
       (a, b) =>
@@ -44,10 +48,8 @@ export default function RssScreen() {
     return feeds.find((f) => f.id === feedId)?.title || "Unknown Feed";
   };
 
-  const handleArticlePress = (link: string) => {
-    // In a real app, we might navigate to an internal reader view,
-    // but for now, we'll open the link externally.
-    Linking.openURL(link);
+  const handleArticlePress = (articleId: string) => {
+    router.push(`/article/${articleId}`);
   };
 
   return (
@@ -62,7 +64,7 @@ export default function RssScreen() {
               onToggleRead={toggleArticleRead}
               onToggleLike={toggleArticleLike}
               onToggleSave={toggleArticleSave}
-              onPress={handleArticlePress}
+              onPress={() => handleArticlePress(item.id)}
             />
           )}
           keyExtractor={(item) => item.id}

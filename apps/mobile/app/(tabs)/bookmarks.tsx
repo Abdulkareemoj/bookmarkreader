@@ -1,34 +1,37 @@
 import BookmarkCard from "@/components/bookmark-card";
-import { FlatList, View, Text } from "react-native";
+import { FlatList, View, Text, Linking } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useBookmarks } from "@/hooks/use-bookmarks";
 import { useEffect } from "react";
 import { bookmarks as mockBookmarks } from "@/lib/mock-data";
 import { useReaderStore } from "@/lib/store";
+import type { Bookmark, ReaderState } from "@packages/store";
 
 export default function Bookmarks() {
   const { searchQuery } = useLocalSearchParams();
-  const collectionId = "all"; // Mobile currently shows all bookmarks
+  const collectionId = "all";
 
   const { bookmarks, toggleLike, toggleSave, removeBookmark, addBookmark } =
     useBookmarks(collectionId);
 
-  // Initialize mock data into the store if it's empty (for demo purposes)
-  const storeBookmarks = useReaderStore((state) => state.bookmarks);
-  useEffect(() => {
-    if (storeBookmarks.length === 0) {
-      mockBookmarks.forEach((b) => addBookmark(b));
-    }
-  }, [storeBookmarks.length, addBookmark]);
+  const search =
+    (Array.isArray(searchQuery)
+      ? searchQuery[0]
+      : searchQuery
+    )?.toLowerCase() || "";
 
-  const filteredBookmarks = bookmarks.filter(
-    (bookmark) =>
-      bookmark.title.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
-      bookmark.url?.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
-      bookmark.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery?.toLowerCase() || "")
-      )
-  );
+  const filteredBookmarks = bookmarks.filter((bookmark: Bookmark) => {
+    const titleMatch = bookmark.title.toLowerCase().includes(search);
+    const urlMatch = bookmark.url?.toLowerCase().includes(search);
+    const tagMatch = bookmark.tags.some((tag: string) =>
+      tag.toLowerCase().includes(search)
+    );
+    return titleMatch || urlMatch || tagMatch;
+  });
+
+  const handleBookmarkPress = (url: string) => {
+    Linking.openURL(url);
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -41,6 +44,7 @@ export default function Bookmarks() {
               onLike={() => toggleLike(item.id)}
               onSave={() => toggleSave(item.id)}
               onDelete={() => removeBookmark(item.id)}
+              onOpenExternal={() => handleBookmarkPress(item.url)}
             />
           )}
           keyExtractor={(item) => item.id}
