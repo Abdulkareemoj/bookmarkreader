@@ -1,5 +1,5 @@
 {
-  "name": "bookmark-tool",
+  "name": "BookmarkReader",
   "private": true,
   "type": "module",
   "workspaces": [
