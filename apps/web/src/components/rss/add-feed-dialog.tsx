@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFeeds } from "@/hooks/use-feeds";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 // Define the shape of the form data
 interface NewFeedData {
@@ -22,6 +22,8 @@ interface NewFeedData {
 
 export function AddFeedDialog() {
   const { addFeed } = useFeeds();
+  const feedUrlId = useId();
+  const titleId = useId();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<NewFeedData>({
     feedUrl: "",
@@ -31,7 +33,7 @@ export function AddFeedDialog() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.id]: e.target.value,
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -42,14 +44,12 @@ export function AddFeedDialog() {
     // In a real application, we would fetch and parse the feed here to get the title and articles.
     // For now, we use mock data and generate a simple ID.
     const newFeed = {
-      id: crypto.randomUUID(),
       title: formData.title || "Untitled Feed",
       feedUrl: formData.feedUrl,
       siteUrl: new URL(formData.feedUrl).origin,
-      lastFetched: new Date().toISOString(),
     };
 
-    addFeed(newFeed);
+    void addFeed(newFeed);
 
     // Reset form and close dialog
     setFormData({ feedUrl: "", title: "" });
@@ -78,7 +78,8 @@ export function AddFeedDialog() {
                 Feed URL
               </Label>
               <Input
-                id="feedUrl"
+                id={feedUrlId}
+                name="feedUrl"
                 placeholder="https://example.com/feed.xml"
                 value={formData.feedUrl}
                 onChange={handleChange}
@@ -92,7 +93,8 @@ export function AddFeedDialog() {
                 Title
               </Label>
               <Input
-                id="title"
+                id={titleId}
+                name="title"
                 placeholder="Optional title (e.g., My Blog)"
                 value={formData.title}
                 onChange={handleChange}
