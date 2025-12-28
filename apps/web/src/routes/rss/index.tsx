@@ -1,9 +1,8 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useFeeds } from "@/hooks/use-feeds";
 import type { Article } from "@packages/store";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Heart, Bookmark, Check } from "lucide-react";
 import { z } from "zod";
@@ -52,13 +51,15 @@ function ArticleList({
     <ScrollArea className="h-full">
       <div className="space-y-4 p-4">
         {sortedArticles.map((article) => (
-          <div
+          <a
             key={article.id}
             className={cn(
               "cursor-pointer rounded-lg border p-4 transition-colors hover:bg-accent/50",
               article.read ? "opacity-60" : "bg-card shadow-sm"
             )}
-            onClick={() => window.open(article.link, "_blank")}
+            href={article.link}
+            target="_blank"
+            rel="noreferrer"
           >
             <div className="flex items-start justify-between">
               <h3 className="font-semibold text-lg line-clamp-2">
@@ -129,7 +130,7 @@ function ArticleList({
                   : "Unknown Date"}
               </span>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </ScrollArea>
@@ -147,6 +148,7 @@ function RssComponent() {
     toggleArticleRead,
     toggleArticleLike,
     toggleArticleSave,
+    refreshFeed,
   } = useFeeds();
 
   // Filter articles based on the URL filter (feedId or null for all)
@@ -159,12 +161,25 @@ function RssComponent() {
     ? feeds.find((f) => f.id === filter)?.title || "Articles"
     : "All Articles";
 
+  const handleRefresh = () => {
+    if (filter) {
+      void refreshFeed(filter);
+      return;
+    }
+    for (const f of feeds) {
+      void refreshFeed(f.id);
+    }
+  };
+
   return (
     // The root layout handles the flex container and sidebar, so this component
     // only needs to define its content structure.
     <div className="flex h-full flex-col">
-      <header className="border-b p-4">
+      <header className="border-b p-4 flex items-center justify-between gap-4">
         <h1 className="font-bold text-2xl">{mainTitle}</h1>
+        <Button variant="secondary" onClick={handleRefresh}>
+          Refresh
+        </Button>
       </header>
       <div className="flex-1 overflow-hidden">
         <ArticleList
