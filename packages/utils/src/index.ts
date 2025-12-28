@@ -1,3 +1,4 @@
+// A lot of AI generated stuff here but decently documented
 // @ts-nocheck
 import { useSettingsStore } from "@packages/store";
 import type { Bookmark, Article, Feed } from "@packages/store";
