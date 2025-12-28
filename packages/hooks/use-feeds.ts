@@ -1,5 +1,5 @@
-import { type ReaderState } from "@packages/store";
-import { type UseBoundStore, type StoreApi } from "zustand";
+import type { ReaderState } from "@packages/store";
+import type { UseBoundStore, StoreApi } from "zustand";
 
 export const createUseFeeds = (
   useStore: UseBoundStore<StoreApi<ReaderState>>
@@ -15,20 +15,26 @@ export const createUseFeeds = (
 
     const addFeed = useStore((state) => state.addFeed);
     const removeFeed = useStore((state) => state.removeFeed);
-    const addArticles = useStore((state) => state.addArticles);
-    const toggleArticleRead = useStore((state) => state.toggleArticleRead);
     const toggleArticleLike = useStore((state) => state.toggleArticleLike);
     const toggleArticleSave = useStore((state) => state.toggleArticleSave);
+    const markArticleRead = useStore((state) => state.markArticleRead);
+    const refreshFeed = useStore((state) => state.refreshFeed);
+
+    const toggleArticleRead = (id: string) => {
+      const current = allArticles.find((a) => a.id === id);
+      if (!current) return;
+      void markArticleRead(id, !current.read);
+    };
 
     return {
       feeds,
       articles,
       addFeed,
       removeFeed,
-      addArticles,
       toggleArticleRead,
       toggleArticleLike,
       toggleArticleSave,
+      refreshFeed,
     };
   };
 };
