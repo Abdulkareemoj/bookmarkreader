@@ -62,6 +62,16 @@ function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function setup() {
       try {
+        const injectedAgents =
+          typeof window !== "undefined"
+            ? ((window as any).__BOOKMARKREADER_AGENTS__ as unknown)
+            : undefined;
+
+        if (injectedAgents) {
+          setIsInitialized(true);
+          return;
+        }
+
         const agents = await initializeWebAgents();
         const store = initializeReaderStore(
           agents

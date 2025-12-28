@@ -9,5 +9,14 @@ import type { IAgents } from "@packages/utils";
  * Must only be called after the agents have been successfully initialized.
  */
 export function getInitializedAgents(): IAgents {
+  const injectedAgents =
+    typeof window !== "undefined"
+      ? ((window as any).__BOOKMARKREADER_AGENTS__ as IAgents | undefined)
+      : undefined;
+
+  if (injectedAgents) {
+    return injectedAgents;
+  }
+
   return getInitializedWebAgents();
 }
