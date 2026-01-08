@@ -1,4 +1,4 @@
-"use client";
+;
 
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";

@@ -47,7 +47,7 @@ import { match } from "assert";
 const navSecondary = [
   {
     title: "Settings",
-    url: "/settings", // Updated URL
+    url: "/settings", 
     icon: Settings,
   },
   {
@@ -126,6 +126,7 @@ export function AppSidebar() {
 
     if (matchRoute({ to: "/settings", fuzzy: true })) {
       return null; // No collections to show in settings
+
     }
 
     return (
