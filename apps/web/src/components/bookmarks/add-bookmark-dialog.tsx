@@ -8,10 +8,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import type { Option } from '@/components/ui/multi-select'
+import MultipleSelector from '@/components/ui/multi-select'
 
 // Define the shape of the form data
 interface NewBookmarkData {
@@ -29,7 +40,74 @@ interface AddBookmarkDialogProps {
     collectionId: string;
   }) => void;
 }
-
+const categories: Option[] = [
+  {
+    value: 'clothing',
+    label: 'Clothing'
+  },
+  {
+    value: 'footwear',
+    label: 'Footwear'
+  },
+  {
+    value: 'accessories',
+    label: 'Accessories'
+  },
+  {
+    value: 'jewelry',
+    label: 'Jewelry',
+    disable: true
+  },
+  {
+    value: 'outerwear',
+    label: 'Outerwear'
+  },
+  {
+    value: 'fragrance',
+    label: 'Fragrance'
+  },
+  {
+    value: 'makeup',
+    label: 'Makeup'
+  },
+  {
+    value: 'skincare',
+    label: 'Skincare'
+  },
+  {
+    value: 'furniture',
+    label: 'Furniture'
+  },
+  {
+    value: 'lighting',
+    label: 'Lighting'
+  },
+  {
+    value: 'kitchenware',
+    label: 'Kitchenware',
+    disable: true
+  },
+  {
+    value: 'computers',
+    label: 'Computers'
+  },
+  {
+    value: 'audio',
+    label: 'Audio'
+  },
+  {
+    value: 'wearables',
+    label: 'Wearables'
+  },
+  {
+    value: 'supplements',
+    label: 'Supplements'
+  },
+  {
+    value: 'sportswear',
+    label: 'Sportswear'
+  }
+]
 export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<NewBookmarkData>({
@@ -37,6 +115,8 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
     title: "",
     tags: "",
   });
+  const [selectedTags, setSelectedTags] = useState<Option[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<string>("inbox");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -49,22 +129,21 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
     e.preventDefault();
     if (!formData.url) return;
 
-    // Simple logic to convert comma-separated string to array
-    const tagsArray = formData.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
+    // Convert selected tags to string array
+    const tagsArray = selectedTags.map(tag => tag.value);
 
     // Use the passed prop function
     onAddBookmark({
       url: formData.url,
       title: formData.title || "Untitled Bookmark",
       tags: tagsArray,
-      collectionId: "all", // Default to 'all' for now
+      collectionId: selectedCollection,
     });
 
-    // Reset form and close dialog
+    // Reset form
     setFormData({ url: "", title: "", tags: "" });
+    setSelectedTags([]);
+    setSelectedCollection("inbox");
     setOpen(false);
   };
 
@@ -114,13 +193,38 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
               <Label htmlFor="tags" className="text-right">
                 Tags
               </Label>
-              <Input
-                id="tags"
-                placeholder="tag1, tag2, tag3"
-                value={formData.tags}
-                onChange={handleChange}
-                className="col-span-3"
+              <MultipleSelector
+                commandProps={{
+                  label: 'Select categories'
+                }}
+                value={selectedTags}
+                defaultOptions={categories}
+                onChange={setSelectedTags}
+                placeholder='Select categories'
+                hideClearAllButton
+                hidePlaceholderWhenSelected
+                emptyIndicator={<p className='text-center text-sm'>No results found</p>}
+                className='col-span-3'
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="collection" className="text-right">
+                Collection
+              </Label>
+              <Select value={selectedCollection} onValueChange={setSelectedCollection}>
+                <SelectTrigger className='col-span-3'>
+                  <SelectValue placeholder='Select a collection' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Collections</SelectLabel>
+                    <SelectItem value='inbox'>Inbox</SelectItem>
+                    <SelectItem value='work'>Work</SelectItem>
+                    <SelectItem value='personal'>Personal</SelectItem>
+                    <SelectItem value='reading'>Reading List</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

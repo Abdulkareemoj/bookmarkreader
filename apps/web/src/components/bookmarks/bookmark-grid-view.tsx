@@ -8,6 +8,8 @@ interface BookmarkGridViewProps {
   onLike: (id: string) => void;
   onSave: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
+  onMove: (id: string, collectionId: string) => void;
 }
 
 export function BookmarkGridView({
@@ -15,6 +17,8 @@ export function BookmarkGridView({
   onLike,
   onSave,
   onDelete,
+  onEdit,
+  onMove,
 }: BookmarkGridViewProps) {
   const search = useRouterState({
     select: (s) => (s.location.search as any)?.q ?? "",
@@ -52,6 +56,8 @@ export function BookmarkGridView({
                   onLike={onLike}
                   onSave={onSave}
                   onDelete={onDelete}
+                  onEdit={onEdit}
+                  onMove={onMove}
                   onClick={() => {
                     // The Link component handles navigation, but we need an empty handler for the card prop
                   }}
