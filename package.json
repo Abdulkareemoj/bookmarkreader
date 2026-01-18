@@ -1,24 +1,26 @@
 {
-  "name": "BookmarkReader",
-  "private": true,
-  "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "check": "biome check --write .",
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:mobile": "turbo -F mobile dev",
-    "dev:web": "turbo -F web dev",
-    "dev:desktop": "turbo dev"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "turbo": "^2.5.4",
-    "@biomejs/biome": "^2.2.0"
-  },
-  "packageManager": "pnpm@10.2.1"
+	"name": "BookmarkReader",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"scripts": {
+		"check": "biome check --write .",
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"check-types": "turbo check-types",
+		"dev:mobile": "turbo -F mobile dev",
+		"dev:web": "turbo -F web dev",
+		"dev:desktop": "turbo dev",
+		"build:marketing": "cd apps/marketing && pnpm build",
+		"deploy:marketing": "cd apps/marketing && pnpm deploy"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"turbo": "^2.5.4",
+		"@biomejs/biome": "^2.2.0"
+	},
+	"packageManager": "pnpm@10.2.1"
 }
