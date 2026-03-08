@@ -224,6 +224,8 @@ export interface IBookmarkAgent {
     url: string
   ): Promise<{ title: string; favicon?: string; description?: string }>;
   toggleFavorite(id: string): Promise<void>;
+  toggleLiked(id: string): Promise<void>;
+  toggleSaved(id: string): Promise<void>;
   addTag(id: string, tag: string): Promise<void>;
 }
 
@@ -323,14 +325,65 @@ export const createBookmarkAgent = (db: DB): IBookmarkAgent => ({
     }
   },
 
-  addTag: async (_id, _tag) => {
-    // This requires reading the current tags, appending the new tag, and updating.
-    // For simplicity, we'll use a raw SQL update to append the tag to the JSON array.
-    // NOTE: This is complex in SQLite JSON functions and might be better handled in application logic.
-    // Placeholder for now:
-    throw new Error(
-      "Tag manipulation logic requires complex JSON handling and is deferred."
-    );
+  toggleLiked: async (id) => {
+    const [current] = await db
+      .select({ liked: bookmarks.liked })
+      .from(bookmarks)
+      .where(eq(bookmarks.id, id))
+      .limit(1);
+    if (current) {
+      await db
+        .update(bookmarks)
+        .set({
+          liked: !current.liked,
+          lastUpdatedAt: new Date().toISOString(),
+        })
+        .where(eq(bookmarks.id, id));
+    }
+  },
+
+  toggleSaved: async (id) => {
+    const [current] = await db
+      .select({ saved: bookmarks.saved })
+      .from(bookmarks)
+      .where(eq(bookmarks.id, id))
+      .limit(1);
+    if (current) {
+      await db
+        .update(bookmarks)
+        .set({
+          saved: !current.saved,
+          lastUpdatedAt: new Date().toISOString(),
+        })
+        .where(eq(bookmarks.id, id));
+    }
+  },
+
+  addTag: async (id, tag) => {
+    const [current] = await db
+      .select({ tags: bookmarks.tags })
+      .from(bookmarks)
+      .where(eq(bookmarks.id, id))
+      .limit(1);
+
+    if (!current) {
+      throw new Error(`Bookmark with ID ${id} not found.`);
+    }
+
+    const existingTags: string[] = Array.isArray(current.tags)
+      ? current.tags
+      : [];
+
+    // Deduplicate: only append if the tag isn't already present
+    if (existingTags.includes(tag)) return;
+
+    await db
+      .update(bookmarks)
+      .set({
+        tags: [...existingTags, tag],
+        lastUpdatedAt: new Date().toISOString(),
+      })
+      .where(eq(bookmarks.id, id));
   },
 });
 
@@ -388,13 +441,16 @@ export const createRssAgent = (db: DB): IRssAgent => ({
       throw new Error("Feed not found.");
     }
 
-    const res = await fetch(feed.feedUrl, {
-      headers: {
-        Accept:
-          "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
-      },
-    });
-
+    const res = await fetch(
+      `https://corsproxy.io/?${encodeURIComponent(feed.feedUrl)}`,
+      {
+        headers: {
+          Accept:
+            "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
+        },
+        mode: "cors",
+      }
+    );
     if (!res.ok) {
       throw new Error(`Failed to fetch feed (${res.status}): ${feed.feedUrl}`);
     }

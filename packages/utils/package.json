@@ -8,9 +8,9 @@
     "@packages/db": "workspace:^",
     "@packages/store": "workspace:^",
     "@packages/api": "workspace:^",
-    "drizzle-orm": "^0.44.7"
+    "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.3"
   }
 }
