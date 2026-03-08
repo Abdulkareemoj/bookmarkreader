@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import BookmarkDisplay from "@/components/bookmarks/bookmark-display";
-import { bookmarks } from "@/lib/mock-data";
+import { useReaderStore } from "@/lib/store";
 
 export const Route = createFileRoute("/bookmarks/$id")({
   component: BookmarkPageComponent,
@@ -8,6 +8,7 @@ export const Route = createFileRoute("/bookmarks/$id")({
 
 function BookmarkPageComponent() {
   const { id } = Route.useParams();
+  const bookmarks = useReaderStore((state) => state.bookmarks);
   const bookmark = bookmarks.find((b) => b.id === id);
 
   if (!bookmark) {

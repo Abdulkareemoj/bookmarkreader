@@ -4,8 +4,10 @@ import type { Article } from "@packages/store";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Heart, Bookmark, Check } from "lucide-react";
+import { Heart, Bookmark, Check, Rss } from "lucide-react";
 import { z } from "zod";
+import { AddFeedDialog } from "@/components/rss/add-feed-dialog";
+import { Empty } from "@/components/ui/empty";
 
 // Define the search parameter schema
 const rssSearchSchema = z.object({
@@ -34,9 +36,29 @@ function ArticleList({
   toggleArticleSave,
 }: ArticleListProps) {
   if (articles.length === 0) {
+    const hasNoFeeds = feeds.length === 0;
     return (
-      <div className="flex h-full items-center justify-center text-muted-foreground">
-        No articles found for this feed.
+      <div className="flex justify-center p-4">
+        <Empty className="rounded-lg border">
+          <div className="text-center space-y-2">
+            <div className="flex justify-center">
+              {hasNoFeeds ? <Rss className="h-6 w-6" /> : <Check className="h-6 w-6" />}
+            </div>
+            <h2 className="text-lg font-semibold">
+              {hasNoFeeds ? "No Feeds Added" : "No Articles Found"}
+            </h2>
+            <p className="text-muted-foreground">
+              {hasNoFeeds
+                ? "You haven't added any RSS feeds yet. Start by adding one!"
+                : "No articles found for this feed."}
+            </p>
+          </div>
+          {hasNoFeeds && (
+            <div className="text-center pt-4">
+              <AddFeedDialog />
+            </div>
+          )}
+        </Empty>
       </div>
     );
   }
@@ -65,7 +87,7 @@ function ArticleList({
               <h3 className="font-semibold text-lg line-clamp-2">
                 {article.title}
               </h3>
-              <div className="flex items-center space-x-1 ml-4 flex-shrink-0">
+              <div className="flex items-center space-x-1 ml-4 shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
