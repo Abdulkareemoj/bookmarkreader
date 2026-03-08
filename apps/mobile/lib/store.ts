@@ -5,6 +5,7 @@ export {
   initializeReaderStore,
   useReaderStore,
   useSettingsStore,
+  useCollectionsStore,
   type ReaderState,
   type SettingsState,
   type SyncStatus,
