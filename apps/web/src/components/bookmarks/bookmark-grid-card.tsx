@@ -15,6 +15,7 @@ interface BookmarkGridCardProps {
   id: string;
   title: string;
   url?: string;
+  favicon?: string;
   liked: boolean;
   saved: boolean;
   onLike: (id: string) => void;
@@ -29,6 +30,7 @@ export function BookmarkGridCard({
   id,
   title,
   url,
+  favicon,
   liked,
   saved,
   onLike,
@@ -56,7 +58,19 @@ export function BookmarkGridCard({
           </CardHeader>
           <CardContent className="p-0 pt-2">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <LinkIcon className="h-4 w-4 shrink-0" />
+              {favicon ? (
+                <img 
+                  src={favicon} 
+                  alt="Favicon" 
+                  className="h-4 w-4 shrink-0"
+                  onError={(e) => {
+                    // Hide favicon if it fails to load
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <LinkIcon className="h-4 w-4 shrink-0" />
+              )}
               <span className="truncate">{url ?? "No URL available"}</span>
             </div>
           </CardContent>
