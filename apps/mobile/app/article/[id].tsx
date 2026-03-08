@@ -1,4 +1,4 @@
-"use client";
+;
 
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Bookmark, Heart, Share2 } from "lucide-react-native";

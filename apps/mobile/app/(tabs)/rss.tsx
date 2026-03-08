@@ -1,22 +1,11 @@
 import { Text, View, FlatList } from "react-native";
 import { useFeeds } from "@/hooks/use-feeds";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useRouter } from "expo-router";
-import { useReaderStore } from "@/lib/store";
-import { mockFeeds, mockArticles } from "@/lib/mock-rss-data";
 import { RssArticleCardMobile } from "@/components/rss-article-card-mobile";
 import { Rss } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
-
-//  initialize store with mock data
-function initializeRssStore(addFeed: any, addArticles: any, storeFeeds: any) {
-  if (storeFeeds.length === 0) {
-    mockFeeds.forEach((f) => {
-      addFeed(f);
-    });
-    addArticles(mockArticles);
-  }
-}
+import { AddFeedModal } from "@/components/add-feed-modal";
 
 export default function RssScreen() {
   const router = useRouter();
@@ -24,21 +13,14 @@ export default function RssScreen() {
     feeds,
     articles,
     addFeed,
-    addArticles,
     toggleArticleRead,
     toggleArticleLike,
     toggleArticleSave,
   } = useFeeds();
-  const storeFeeds = useReaderStore((state) => state.feeds);
-
-  // Initialize mock data into the store if it's empty
-  useEffect(() => {
-    initializeRssStore(addFeed, addArticles, storeFeeds);
-  }, [addFeed, addArticles, storeFeeds.length]);
 
   // Sort articles by date
   const sortedArticles = useMemo(() => {
-    return articles.sort(
+    return [...articles].sort(
       (a, b) =>
         new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime()
     );
@@ -54,6 +36,16 @@ export default function RssScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <View className="p-4">
+        <AddFeedModal
+          onAddFeed={(data) => {
+            addFeed({
+              feedUrl: data.feedUrl,
+              title: data.title || "New Feed",
+            });
+          }}
+        />
+      </View>
       {sortedArticles.length > 0 ? (
         <FlatList
           data={sortedArticles}
@@ -68,7 +60,7 @@ export default function RssScreen() {
             />
           )}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
         />
       ) : (
         <View className="flex-1 items-center justify-center p-8">

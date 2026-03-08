@@ -8,7 +8,7 @@ import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useColorScheme } from "nativewind";
+import { Uniwind, useUniwind } from 'uniwind';
 import { NAV_THEME } from "@/lib/theme";
 import { Text, View } from "react-native";
 
@@ -66,12 +66,12 @@ function StoreProvider({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
-  const { colorScheme } = useColorScheme();
+ const { theme } = useUniwind();
 
   return (
-    <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-      <StoreProvider>
+    <ThemeProvider value={NAV_THEME[(theme as 'light' | 'dark') ?? 'light']}>
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+     <StoreProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
@@ -79,6 +79,7 @@ export default function RootLayout() {
         </Stack>
       </StoreProvider>
       <PortalHost />
+      <PortalHost name="modal-host" />
     </ThemeProvider>
   );
 }
