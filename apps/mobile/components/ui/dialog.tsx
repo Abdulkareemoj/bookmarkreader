@@ -7,17 +7,17 @@ import * as React from 'react';
 import { Platform, Text, View, type ViewProps } from 'react-native';
 import { FadeIn, FadeOut } from 'react-native-reanimated';
 import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
-
+ 
 const Dialog = DialogPrimitive.Root;
-
+ 
 const DialogTrigger = DialogPrimitive.Trigger;
-
+ 
 const DialogPortal = DialogPrimitive.Portal;
-
+ 
 const DialogClose = DialogPrimitive.Close;
-
+ 
 const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
-
+ 
 function DialogOverlay({
   className,
   children,
@@ -61,9 +61,9 @@ function DialogContent({
       <DialogOverlay>
         <DialogPrimitive.Content
           className={cn(
-            'bg-background border-border z-50 mx-auto flex w-full max-w-[calc(100%-2rem)] flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5 sm:max-w-lg',
+            'bg-background border-border z-50 mx-auto flex w-full flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5 sm:max-w-lg',
             Platform.select({
-              web: 'animate-in fade-in-0 zoom-in-95 duration-200',
+              web: 'animate-in fade-in-0 zoom-in-95 web:max-w-[calc(100%-2rem)] duration-200',
             }),
             className
           )}
@@ -88,13 +88,13 @@ function DialogContent({
     </DialogPortal>
   );
 }
-
+ 
 function DialogHeader({ className, ...props }: ViewProps) {
   return (
     <View className={cn('flex flex-col gap-2 text-center sm:text-left', className)} {...props} />
   );
 }
-
+ 
 function DialogFooter({ className, ...props }: ViewProps) {
   return (
     <View
@@ -103,7 +103,7 @@ function DialogFooter({ className, ...props }: ViewProps) {
     />
   );
 }
-
+ 
 function DialogTitle({
   className,
   ...props
@@ -115,7 +115,7 @@ function DialogTitle({
     />
   );
 }
-
+ 
 function DialogDescription({
   className,
   ...props
@@ -127,7 +127,7 @@ function DialogDescription({
     />
   );
 }
-
+ 
 export {
   Dialog,
   DialogClose,
