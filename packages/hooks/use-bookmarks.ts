@@ -7,10 +7,16 @@ export const createUseBookmarks = (
   useStore: UseBoundStore<StoreApi<ReaderState>>
 ) => {
   return (collectionId: string = "all") => {
-    const { bookmarks, setBookmarks } = useStore();
+    const { bookmarks } = useStore();
+    const {
+      addBookmark: addBookmarkAction,
+      removeBookmark: removeBookmarkAction,
+      toggleBookmarkLike,
+      toggleBookmarkSave,
+    } = useStore();
 
     const filteredBookmarks = useMemo(() => {
-      if (collectionId === "all") {
+      if (collectionId === "all" || collectionId === "inbox") {
         return bookmarks;
       }
       if (collectionId === "liked") {
@@ -23,19 +29,15 @@ export const createUseBookmarks = (
     }, [bookmarks, collectionId]);
 
     const toggleLike = (id: string) => {
-      setBookmarks(
-        bookmarks.map((b) => (b.id === id ? { ...b, liked: !b.liked } : b))
-      );
+      void toggleBookmarkLike(id);
     };
 
     const toggleSave = (id: string) => {
-      setBookmarks(
-        bookmarks.map((b) => (b.id === id ? { ...b, saved: !b.saved } : b))
-      );
+      void toggleBookmarkSave(id);
     };
 
     const removeBookmark = (id: string) => {
-      setBookmarks(bookmarks.filter((b) => b.id !== id));
+      void removeBookmarkAction(id);
     };
 
     const addBookmark = (data: {
@@ -44,17 +46,7 @@ export const createUseBookmarks = (
       tags: string[];
       collectionId: string;
     }) => {
-      const newBookmark: Bookmark = {
-        id: crypto.randomUUID(), // Use a unique ID generator
-        url: data.url,
-        title: data.title,
-        tags: data.tags,
-        collectionId: data.collectionId,
-        liked: false,
-        saved: false,
-        createdAt: new Date().toISOString(),
-      };
-      setBookmarks([...bookmarks, newBookmark]);
+      void addBookmarkAction(data);
     };
 
     return {

@@ -6,6 +6,6 @@
   "private": true,
   "dependencies": {
     "@packages/store": "workspace:*",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.11"
   }
 }
