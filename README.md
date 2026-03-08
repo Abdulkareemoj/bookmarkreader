@@ -24,8 +24,6 @@ Syncing and user accounts ill be added later.
 - ❌ CI/CD pipeline
 - ❌ Production deployments
 
-See the [Path Forward](#-path-forward-achieving-cross-platform-deployability) section below for detailed roadmap.
-
 ### 🧩 Core Goals
 
 - Manage and organize bookmarks with metadata (title, description, tags, favicon, etc.)
@@ -54,10 +52,10 @@ store/      → Zustand state management
 | Layer                      | Tools                                                     |
 | -------------------------- | --------------------------------------------------------- |
 | **Frontend (Web/Desktop)** | React + Vite + TailwindCSS + shadcn/ui                    |
-| **Frontend (Mobile)**      | React Native (Expo) + NativeWind/Tamagui                  |
+| **Frontend (Mobile)**      | React Native (Expo) + Uniwind                             |
 | **App Shell**              | Tauri (for desktop app bundling)                          |
 | **ORM / Data Layer**       | Drizzle ORM (SQLite / AsyncStorage)                       |
-| **State Management**       | Zustand / Jotai (lightweight, cross-platform)             |
+| **State Management**       | Zustand                                                   |
 | **RSS Parsing**            | rss-parser or custom fetcher using DOMParser              |
 | **Local Storage**          | SQLite (Drizzle) for desktop/web, AsyncStorage for mobile |
 | **Build & Tooling**        | Turborepo + TypeScript + ESlint + Prettier                |
@@ -135,7 +133,7 @@ type Article = {
 - Empty States and Skeleton Loaders
 
 Web: Built with shadcn/ui + Tailwind
-Mobile: Built with NativeWind or Tamagui, reusing component patterns.
+Mobile: Built with Uniwind reusing component patterns.
 
 4. Storage
 
@@ -164,14 +162,6 @@ Mobile: Built with NativeWind or Tamagui, reusing component patterns.
 - Date formatting
 - Error handling and logging
 - Network helpers and caching
-
-| Step | Action                                                                   |
-| ---- | ------------------------------------------------------------------------ |
-| 1️⃣   | Build UIs in `apps/web` using shadcn/ui                                  |
-| 3️⃣   | Define Drizzle schema in `packages/db`                                   |
-| 4️⃣   | Implement core agents (`BookmarkAgent`, `RssAgent`) in `packages/utils`  |
-| 5️⃣   | Wire up storage with Drizzle for local persistence                       |
-| 6️⃣   | Later add syncing with Supabase / custom backend (Not necessary for now) |
 
 ### 🧩 Future Enhancements
 
