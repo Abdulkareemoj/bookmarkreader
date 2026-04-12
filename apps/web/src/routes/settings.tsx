@@ -1,177 +1,278 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useId } from "react";
-import { Switch } from "@/components/ui/switch";
+import { Cloud, Download, Monitor, Moon, Sun, Upload } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useId, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-
+import { Switch } from "@/components/ui/switch";
+import { exportSyncData, importSyncData } from "@/lib/sync";
 import { useReaderStore, useSettingsStore } from "@/lib/store";
-import { useTheme } from "next-themes";
-import { getInitializedAgents } from "@/lib/agents";
 
 export const Route = createFileRoute("/settings")({
-  component: SettingsComponent,
+	component: SettingsComponent,
 });
 
 function SettingsComponent() {
-  const themeLightId = useId();
-  const themeDarkId = useId();
-  const themeSystemId = useId();
-  const offlineModeId = useId();
-  const supabaseUrlId = useId();
-  const supabaseKeyId = useId();
+	const themeId = useId();
+	const offlineId = useId();
 
-  const { theme: systemTheme, setTheme } = useTheme();
-  const setReaderTheme = useReaderStore((state) => state.setTheme);
+	const { theme: systemTheme, setTheme } = useTheme();
+	const setReaderTheme = useReaderStore((state) => state.setTheme);
 
-  const {
-    supabaseUrl,
-    supabaseAnonKey,
-    syncStatus,
-    setSupabaseConfig,
-    setSyncStatus,
-  } = useSettingsStore();
+	const { syncStatus, setSyncStatus } = useSettingsStore();
 
-  const [urlInput, setUrlInput] = useState(supabaseUrl);
-  const [keyInput, setKeyInput] = useState(supabaseAnonKey);
+	const [offlineMode, setOfflineMode] = useState(false);
+	const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
+	const [lastSync, setLastSync] = useState<string | null>(null);
 
-  // NOTE: This assumes a way to access the SyncAgent, which is currently initialized globally
-  // I will assume we can access the agents via a hypothetical context or a direct global access for now,
-  // but since we don't have a context in the web app yet, I will use a placeholder or assume global access.
-  // For now, I will define a hypothetical function that will be implemented in step 8.
-  const handleConnectOrSync = async () => {
-    if (!urlInput || !keyInput) return;
+	const handleExport = async () => {
+		setSyncStatus("syncing");
+		try {
+			const data = await exportSyncData();
+			const blob = new Blob([JSON.stringify(data, null, 2)], {
+				type: "application/json",
+			});
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `bookmark-reader-sync-${new Date().toISOString().split("T")[0]}.json`;
+			a.click();
+			URL.revokeObjectURL(url);
+			setLastSync(new Date().toISOString());
+			setSyncStatus("connected");
+		} catch (e) {
+			console.error("Export failed:", e);
+			setSyncStatus("error");
+		}
+	};
 
-    setSupabaseConfig(urlInput, keyInput);
+	const handleImport = async () => {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = ".json";
+		input.onchange = async (e) => {
+			const file = (e.target as HTMLInputElement).files?.[0];
+			if (!file) return;
 
-    setSyncStatus("connecting");
-    try {
-      const agents = getInitializedAgents();
-      const syncAgent = agents.syncAgent;
+			setSyncStatus("syncing");
+			try {
+				const text = await file.text();
+				const data = JSON.parse(text);
+				await importSyncData(data, importMode);
+				setLastSync(new Date().toISOString());
+				setSyncStatus("connected");
+				// Reload to pick up new data
+				window.location.reload();
+			} catch (err) {
+				console.error("Import failed:", err);
+				setSyncStatus("error");
+			}
+		};
+		input.click();
+	};
 
-      // NOTE: We rely on the remoteApi module (in @packages/api) to use
-      // the globally set config (which we set via setSupabaseConfig and is persisted/accessible).
+	const handleThemeChange = (value: string) => {
+		setTheme(value);
+		if (value !== "system") {
+			setReaderTheme(value as "light" | "dark");
+		}
+	};
 
-      await syncAgent.testConnection();
+	return (
+		<div className="mx-auto w-full max-w-3xl p-4 md:p-8">
+			{/* Header */}
+			<div className="mb-8">
+				<h1 className="mb-2 font-bold text-3xl text-foreground">Settings</h1>
+				<p className="text-muted-foreground">
+					Manage your application preferences and reading experience.
+				</p>
+			</div>
 
-      setSyncStatus("syncing");
-      await syncAgent.syncAllData();
+			{/* Theme Selection Card */}
+			<Card className="mb-6">
+				<CardHeader>
+					<CardTitle className="text-lg">Appearance</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<Separator />
 
-      setSyncStatus("connected");
-      alert("Synchronization complete!");
-    } catch (e) {
-      const error = e as Error;
-      console.error("Sync error:", error);
-      setSyncStatus("error");
-      alert(`Connection or Sync failed: ${error.message}`);
-    }
-  };
+					<RadioGroup
+						value={systemTheme}
+						onValueChange={handleThemeChange}
+						className="flex flex-col space-y-3"
+					>
+						{/* Light Theme */}
+						<div className="relative flex flex-row items-center justify-between rounded-md border border-input p-4 has-data-[state=checked]:border-primary/50">
+							<div className="flex items-center gap-3">
+								<Sun className="text-yellow-500" />
+								<div>
+									<Label className="cursor-pointer font-medium">Light</Label>
+									<p className="text-muted-foreground text-sm">
+										Bright and clean interface
+									</p>
+								</div>
+							</div>
+							<RadioGroupItem value="light" id={`${themeId}-light`} />
+						</div>
 
-  const handleThemeChange = (value: string) => {
-    setTheme(value);
-    if (value !== "system") {
-      setReaderTheme(value as "light" | "dark");
-    }
-  };
+						{/* Dark Theme */}
+						<div className="relative flex flex-row items-center justify-between rounded-md border border-input p-4 has-data-[state=checked]:border-primary/50">
+							<div className="flex items-center gap-3">
+								<Moon className="text-blue-500" />
+								<div>
+									<Label className="cursor-pointer font-medium">Dark</Label>
+									<p className="text-muted-foreground text-sm">
+										Easy on the eyes
+									</p>
+								</div>
+							</div>
+							<RadioGroupItem value="dark" id={`${themeId}-dark`} />
+						</div>
 
-  return (
-    <div className="mx-auto w-full max-w-3xl p-4 md:p-8">
-      <h1 className="mb-6 font-bold text-3xl text-foreground">Settings</h1>
-      <p className="mb-8 text-muted-foreground">
-        Manage your application preferences and reading experience.
-      </p>
+						{/* System Theme */}
+						<div className="relative flex flex-row items-center justify-between rounded-md border border-input p-4 has-data-[state=checked]:border-primary/50">
+							<div className="flex items-center gap-3">
+								<Monitor className="text-muted-foreground" />
+								<div>
+									<Label className="cursor-pointer font-medium">System</Label>
+									<p className="text-muted-foreground text-sm">
+										Follows device settings
+									</p>
+								</div>
+							</div>
+							<RadioGroupItem value="system" id={`${themeId}-system`} />
+						</div>
+					</RadioGroup>
+				</CardContent>
+			</Card>
 
-      {/* Appearance Section */}
-      <div className="space-y-6 rounded-lg border border-border bg-card p-6">
-        <h2 className="font-semibold text-foreground text-xl">Appearance</h2>
-        <Separator />
+			{/* Offline Mode Card */}
+			<Card className="mb-6">
+				<CardHeader>
+					<CardTitle className="text-lg">Offline Mode</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<Separator />
 
-        {/* Theme Selector */}
-        <div className="space-y-2">
-          <Label className="text-base">Theme</Label>
-          <RadioGroup
-            defaultValue={systemTheme}
-            value={systemTheme}
-            onValueChange={handleThemeChange}
-            className="flex flex-col space-y-1"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="light" id={themeLightId} />
-              <Label htmlFor={themeLightId}>Light</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="dark" id={themeDarkId} />
-              <Label htmlFor={themeDarkId}>Dark</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="system" id={themeSystemId} />
-              <Label htmlFor={themeSystemId}>System</Label>
-            </div>
-          </RadioGroup>
-        </div>
+					<div className="flex items-center justify-between">
+						<div className="flex-1">
+							<Label htmlFor={offlineId} className="cursor-pointer font-medium">
+								Enable Offline Mode
+							</Label>
+							<p className="text-muted-foreground text-sm">
+								Use local storage only and disable network requests
+							</p>
+						</div>
+						<Switch
+							id={offlineId}
+							checked={offlineMode}
+							onCheckedChange={setOfflineMode}
+						/>
+					</div>
+				</CardContent>
+			</Card>
 
-        {/* Mock Toggle */}
-        <div className="flex items-center justify-between">
-          <Label htmlFor={offlineModeId} className="flex flex-col space-y-1">
-            <span>Offline Mode</span>
-            <span className="font-normal text-muted-foreground text-sm">
-              Enable local-only storage and disable network requests.
-            </span>
-          </Label>
-          <Switch id={offlineModeId} defaultChecked />
-        </div>
-      </div>
+			{/* Sync Card */}
+			<Card className="mb-6">
+				<CardHeader>
+					<div className="flex items-center justify-between">
+						<CardTitle className="text-lg">Sync Data</CardTitle>
+						<Badge
+							variant={syncStatus === "connected" ? "default" : "secondary"}
+						>
+							<div className="flex items-center gap-1">
+								<Cloud className="h-3 w-3" />
+								<span className="text-xs">
+									{syncStatus === "connected"
+										? lastSync
+											? `Last: ${new Date(lastSync).toLocaleDateString()}`
+											: "Ready"
+										: syncStatus}
+								</span>
+							</div>
+						</Badge>
+					</div>
+				</CardHeader>
+				<CardContent className="space-y-6">
+					<Separator />
 
-      {/* Sync Management Section */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle className="text-xl">Supabase Sync</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <p className="text-sm text-muted-foreground">
-            Connect your application to a Supabase project for cross-device
-            synchronization.
-          </p>
+					<p className="text-muted-foreground text-sm">
+						Export your data to a file and import it on another device. Save the
+						file to Google Drive, iCloud, OneDrive, or any cloud storage to sync
+						across devices.
+					</p>
 
-          <div className="space-y-2">
-            <Label htmlFor={supabaseUrlId}>Supabase URL</Label>
-            <Input
-              id={supabaseUrlId}
-              type="url"
-              placeholder="https://your-project.supabase.co"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-            />
-          </div>
+					{/* Export Button */}
+					<Button
+						onClick={handleExport}
+						disabled={syncStatus === "syncing"}
+						className="w-full"
+						variant="outline"
+					>
+						<Upload className="mr-2 h-4 w-4" />
+						Export Data
+					</Button>
 
-          <div className="space-y-2">
-            <Label htmlFor={supabaseKeyId}>Supabase Anon Key</Label>
-            <Input
-              id={supabaseKeyId}
-              type="password"
-              placeholder="Paste your anon public key here"
-              value={keyInput}
-              onChange={(e) => setKeyInput(e.target.value)}
-            />
-          </div>
+					{/* Import Button */}
+					<Button
+						onClick={handleImport}
+						disabled={syncStatus === "syncing"}
+						className="w-full"
+						variant="outline"
+					>
+						<Download className="mr-2 h-4 w-4" />
+						Import Data
+					</Button>
 
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">
-              Status:{" "}
-              <span className="font-semibold text-primary">{syncStatus}</span>
-            </span>
-            <Button
-              onClick={handleConnectOrSync}
-              disabled={syncStatus === "connecting" || syncStatus === "syncing"}
-            >
-              {syncStatus === "connected" ? "Sync Now" : "Connect & Sync"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+					{/* Import Mode Selection */}
+					<div className="space-y-2">
+						<p className="text-sm font-medium">Import Mode</p>
+						<RadioGroup
+							value={importMode}
+							onValueChange={(v) => setImportMode(v as "merge" | "replace")}
+							className="flex gap-4"
+						>
+							<div className="flex items-center gap-2">
+								<RadioGroupItem value="merge" id="merge" />
+								<Label htmlFor="merge" className="cursor-pointer">
+									Merge (add new items)
+								</Label>
+							</div>
+							<div className="flex items-center gap-2">
+								<RadioGroupItem value="replace" id="replace" />
+								<Label htmlFor="replace" className="cursor-pointer">
+									Replace (clear first)
+								</Label>
+							</div>
+						</RadioGroup>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* About Card */}
+			<Card>
+				<CardHeader>
+					<CardTitle className="text-lg">About</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<Separator />
+
+					<div className="space-y-3">
+						<div className="flex justify-between">
+							<span className="text-muted-foreground">Version</span>
+							<span className="font-medium">1.0.0</span>
+						</div>
+						<div className="flex justify-between">
+							<span className="text-muted-foreground">Build</span>
+							<span className="font-medium">2024.04.12</span>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+		</div>
+	);
 }
