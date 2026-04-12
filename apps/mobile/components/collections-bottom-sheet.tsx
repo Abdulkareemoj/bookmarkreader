@@ -186,18 +186,6 @@ export function CollectionsBottomSheet({
 						</Text>
 					</TouchableOpacity>
 				</ScrollView>
-
-				{/* Footer */}
-				<View className="border-border border-t px-4 py-4">
-					<TouchableOpacity className="mb-2 flex-row items-center rounded-xl px-4 py-3 active:bg-accent">
-						<Settings size={20} className="text-muted-foreground" />
-						<Text className="ml-3 font-semibold text-foreground">Settings</Text>
-					</TouchableOpacity>
-					<TouchableOpacity className="flex-row items-center rounded-xl px-4 py-3 active:bg-accent">
-						<LogOut size={20} className="text-muted-foreground" />
-						<Text className="ml-3 font-semibold text-foreground">Log out</Text>
-					</TouchableOpacity>
-				</View>
 			</BottomSheetView>
 		</BottomSheet>
 	);
