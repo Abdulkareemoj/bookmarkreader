@@ -1,25 +1,28 @@
 {
-  "name": "@packages/db",
-  "version": "0.0.1",
-  "private": true,
-  "main": "./src/index.ts",
-  "type": "module",
-  "types": "./src/index.ts",
-  "scripts": {
-    "db:generate": "drizzle-kit generate --config ../../apps/desktop/drizzle.config.ts",
-    "db:migrate:desktop": "drizzle-kit migrate --config ../../apps/desktop/drizzle.config.ts",
-    "db:migrate:mobile": "drizzle-kit generate --config ../../apps/mobile/drizzle.config.ts",
-    "db:studio": "drizzle-kit studio --config ../apps/desktop/drizzle.config.ts"
-  },
-  "dependencies": {
-    "@libsql/client": "^0.17.0",
-    "drizzle-orm": "^0.45.1"
-  },
-  "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
-    "better-sqlite3": "^12.6.2",
-    "drizzle-kit": "^0.31.9",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
-  }
+	"name": "@packages/db",
+	"version": "0.0.1",
+	"private": true,
+	"main": "./src/index.ts",
+	"type": "module",
+	"types": "./src/index.ts",
+	"scripts": {
+		"db:generate": "drizzle-kit generate --config ../../apps/desktop/drizzle.config.ts",
+		"db:migrate:desktop": "drizzle-kit migrate --config ../../apps/desktop/drizzle.config.ts",
+		"db:migrate:mobile": "drizzle-kit generate --config ../../apps/mobile/drizzle.config.ts",
+		"db:studio": "drizzle-kit studio --config ../../apps/desktop/drizzle.config.ts",
+		"db:push": "drizzle-kit push",
+		"db:migrate": "drizzle-kit migrate"
+	},
+	"dependencies": {
+		"@libsql/client": "^0.17.0",
+		"drizzle-orm": "^0.45.1",
+		"expo-sqlite": "^55.0.11"
+	},
+	"devDependencies": {
+		"@types/better-sqlite3": "^7.6.13",
+		"better-sqlite3": "^12.6.2",
+		"drizzle-kit": "^0.31.9",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3"
+	}
 }
