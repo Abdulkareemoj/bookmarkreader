@@ -57,9 +57,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
-  '/bookmarks': typeof BookmarksIndexRoute
-  '/explore': typeof ExploreIndexRoute
-  '/rss': typeof RssIndexRoute
+  '/bookmarks/': typeof BookmarksIndexRoute
+  '/explore/': typeof ExploreIndexRoute
+  '/rss/': typeof RssIndexRoute
   '/rss/article/$id': typeof RssArticleIdRoute
 }
 export interface FileRoutesByTo {
@@ -87,9 +87,9 @@ export interface FileRouteTypes {
     | '/'
     | '/settings'
     | '/bookmarks/$id'
-    | '/bookmarks'
-    | '/explore'
-    | '/rss'
+    | '/bookmarks/'
+    | '/explore/'
+    | '/rss/'
     | '/rss/article/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -140,21 +140,21 @@ declare module '@tanstack/react-router' {
     '/rss/': {
       id: '/rss/'
       path: '/rss'
-      fullPath: '/rss'
+      fullPath: '/rss/'
       preLoaderRoute: typeof RssIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore/': {
       id: '/explore/'
       path: '/explore'
-      fullPath: '/explore'
+      fullPath: '/explore/'
       preLoaderRoute: typeof ExploreIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bookmarks/': {
       id: '/bookmarks/'
       path: '/bookmarks'
-      fullPath: '/bookmarks'
+      fullPath: '/bookmarks/'
       preLoaderRoute: typeof BookmarksIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
