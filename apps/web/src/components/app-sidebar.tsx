@@ -16,6 +16,7 @@ import AnimatedTabs from "@/components/animated-tabs";
 import { BookmarkSidebar } from "@/components/bookmarks/bookmark-sidebar";
 import { NavItems } from "@/components/navitems";
 import { FeedSidebar } from "@/components/rss/feed-sidebar";
+import { SettingsSidebar } from "@/components/settings-sidebar";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -151,7 +152,7 @@ export function AppSidebar() {
 		}
 
 		if (matchRoute({ to: "/settings", fuzzy: true })) {
-			return null; // No collections to show in settings
+			return <SettingsSidebar />;
 		}
 
 		return (
@@ -180,12 +181,12 @@ export function AppSidebar() {
 				</SidebarMenu>
 			</SidebarHeader>
 			<SidebarContent>
-				<div className="p-4">
+				<div className="p-2">
 					<AnimatedTabs />
 				</div>
 				<SidebarMenu>
 					<SidebarGroup>
-						<div className="mb-3 flex items-center justify-between px-4">
+						<div className="flex items-center justify-between px-4">
 							{showSearch ? (
 								<div className="relative w-full">
 									<Search className="absolute top-2.5 left-2.5 size-5 text-muted-foreground" />
@@ -207,16 +208,19 @@ export function AppSidebar() {
 											"Collections"}
 										{matchRoute({ to: "/rss", fuzzy: true }) && "Sources"}
 										{matchRoute({ to: "/explore", fuzzy: true }) && "Explore"}
+										{matchRoute({ to: "/settings", fuzzy: true }) && "Settings"}
 									</h2>
 									<div className="flex items-center gap-2">
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={() => setShowSearch(true)}
-											className="size-6 text-muted-foreground hover:text-foreground"
-										>
-											<Search className="size-5" />
-										</Button>
+										{!matchRoute({ to: "/settings", fuzzy: true }) && (
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() => setShowSearch(true)}
+												className="size-6 text-muted-foreground hover:text-foreground"
+											>
+												<Search className="size-5" />
+											</Button>
+										)}
 										{matchRoute({ to: "/bookmarks", fuzzy: true }) && (
 											<Dialog>
 												<DialogTrigger asChild>
@@ -228,7 +232,7 @@ export function AppSidebar() {
 														<Plus className="size-5" />
 													</Button>
 												</DialogTrigger>
-												<DialogContent className="sm:max-w-[425px]">
+												<DialogContent className="sm:max-w-106.25">
 													<DialogHeader>
 														<DialogTitle>New Collection</DialogTitle>
 														<DialogDescription>
