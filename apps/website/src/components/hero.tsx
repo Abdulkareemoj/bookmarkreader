@@ -1,256 +1,100 @@
 import { Link } from "@tanstack/react-router";
-import { CloudLightning, MoveRight, Sparkles } from "lucide-react";
+import { MoveRight } from "lucide-react";
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
-import { Beam } from "./gridbeam";
-import HomeBadge from "./home-badge";
-import { PixelCard } from "./pixelcards";
-import { CardHoverEffect } from "./pulse-card";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 export default function Hero() {
-	const cards = [
-		{
-			title: "Cross-Platform",
-			description: "Desktop, web, and mobile - your bookmarks everywhere.",
-			icon: <CloudLightning className="h-full w-full" />,
-			variant: "rose",
-			showGridLines: true,
-		},
-		{
-			title: "Local-First",
-			description: "Offline-ready with SQLite storage and future sync support.",
-			icon: <Sparkles className="h-full w-full" />,
-			variant: "rose",
-			showGridLines: true,
-		},
-	] as const;
-
-	const cardConfigurations = [
-		{
-			color: "rose",
-			icon: "📚",
-			label: "Bookmarks",
-			canvasProps: { gap: 3, speed: 80, colors: "#fff, #fda4af, #e11d48" },
-			number: 1000,
-			desc: "Organize your bookmarks",
-		},
-		{
-			color: "rose",
-			icon: "📰",
-			label: "RSS Feeds",
-			canvasProps: { gap: 3, speed: 80, colors: "#fff, #fda4af, #e11d48" },
-			number: 100,
-			desc: "Subscribe to feeds",
-		},
-	];
-
 	return (
-		<div
+		<section
 			id="hero-section"
-			className="relative min-h-screen w-full overflow-x-hidden bg-background py-32 md:px-6"
+			className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#080808] px-6 py-32 text-center"
 		>
-			<img
-				src="/vector1.webp"
-				alt="Vector"
-				width={300}
-				draggable={false}
-				height={300}
-				className="absolute top-0 right-0 z-[2] select-none object-cover object-center"
-			/>
-			<img
-				src="/vector2.png"
-				alt="Vector"
-				width={300}
-				height={300}
-				draggable={false}
-				className="absolute top-0 left-0 z-[2] select-none object-cover object-center"
-			/>
-			<img
-				src="/vector5.webp"
-				alt="Vector"
-				width={300}
-				draggable={false}
-				height={300}
-				className="absolute bottom-0 -left-44 z-[2] -rotate-90 select-none object-cover object-center"
-			/>
-			<img
-				src="/vector6.png"
-				alt="Vector"
-				width={300}
-				draggable={false}
-				height={300}
-				className="absolute -right-44 bottom-0 z-[2] rotate-90 select-none object-cover object-center"
-			/>
-			<div className="container mx-auto px-4 2xl:max-w-[1400px]">
-				<motion.div
-					className="flex justify-center"
-					initial={{ opacity: 0, y: 50 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.75, delay: 0.1 }}
-				>
-					<HomeBadge />
-				</motion.div>
-				<div className="mx-auto mt-5 max-w-3xl text-center">
-					<Beam />
-					<motion.h1
-						className={cn(
-							"max-w-5xl bg-gradient-to-r from-foreground/60 via-foreground to-foreground/60 bg-clip-text text-center font-semibold text-4xl text-transparent tracking-tighter sm:text-5xl xl:text-6xl/none dark:from-muted-foreground/55 dark:via-foreground dark:to-muted-foreground/55",
-						)}
-						initial={{ opacity: 0, y: 50 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.75, delay: 0.2 }}
+			{/* Radial glow */}
+			<div className="pointer-events-none absolute top-[35%] left-1/2 h-150 w-150 -translate-x-1/2 -translate-y-1/2 rounded-full bg-rose-600/6" />
+			{/* Top beam */}
+			<div className="absolute top-0 left-1/2 h-px w-3/5 -translate-x-1/2 bg-linear-to-r from-transparent via-rose-500/40 to-transparent" />
+
+			{/* Badge */}
+			<motion.div
+				className="mb-8 flex items-center gap-2 rounded-full border border-white/10 px-4 py-1.5"
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.6 }}
+			>
+				<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400" />
+				<span className="font-mono text-[11px] text-white/40 uppercase tracking-widest">
+					Early access · Phase 1
+				</span>
+			</motion.div>
+
+			{/* Headline */}
+			<motion.h1
+				className="max-w-3xl bg-linear-to-b from-white via-white/90 to-white/50 bg-clip-text font-semibold text-5xl text-transparent leading-[1.05] tracking-[-0.04em] sm:text-6xl xl:text-7xl"
+				initial={{ opacity: 0, y: 30 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.7, delay: 0.1 }}
+			>
+				Your bookmarks.
+				<br />
+				Your feeds.
+				<br />
+				<span className="text-rose-400">All in one place.</span>
+			</motion.h1>
+
+			{/* Subheading */}
+			<motion.p
+				className="mx-auto mt-6 max-w-md text-[15px] text-white/40 leading-relaxed"
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.7, delay: 0.2 }}
+			>
+				A local-first bookmark manager and RSS reader that works across desktop,
+				web, and mobile — your data always under your control.
+			</motion.p>
+
+			{/* CTAs */}
+			<motion.div
+				className="mt-10 flex flex-wrap justify-center gap-3"
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.7, delay: 0.3 }}
+			>
+				<Link to="/download">
+					<Button className="h-10 rounded-lg bg-rose-600 px-5 font-medium text-sm text-white shadow-lg shadow-rose-900/30 transition-all hover:-translate-y-0.5 hover:bg-rose-500">
+						Download — it's free
+					</Button>
+				</Link>
+				<Link to="#how">
+					<Button
+						variant="secondary"
+						className="h-10 rounded-lg border border-white/10 bg-white/5 px-5 text-sm text-white/60 hover:bg-white/10 hover:text-white"
 					>
-						BookmarkReader
-						<img
-							src="/rose.webp"
-							alt="Logo"
-							draggable={false}
-							className="mx-4 mb-2 inline-block h-12 w-12 md:h-16 md:w-16"
-						/>
-						Your personal bookmark & RSS manager.
-					</motion.h1>
-				</div>
-				<motion.div
-					className="mx-auto mt-5 max-w-3xl text-center"
-					initial={{ opacity: 0, y: 50 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.75, delay: 0.3 }}
-				>
-					<p className="text-muted-foreground text-xl">
-						Organize bookmarks with auto-fetched metadata, read RSS feeds
-						offline, and enjoy a consistent experience across all your devices.
-					</p>
-				</motion.div>
-				<motion.div
-					className="mt-8 flex justify-center gap-3"
-					initial={{ opacity: 0, y: 50 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.75, delay: 0.4 }}
-				>
-					<Link prefetch={false} href="/download">
-						<Button className="bg-gradient-to-b from-rose-500 to-rose-700 text-sm text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]">
-							Download Now
-						</Button>
-					</Link>
-					<Link prefetch={false} href="/docs/introduction">
-						<Button variant={"secondary"}>
-							Learn More <MoveRight className="ml-2 h-4 w-4" />
-						</Button>
-					</Link>
-				</motion.div>
-				<motion.div
-					className="mt-5 flex items-center justify-center gap-x-1"
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.75, delay: 0.75 }}
-				>
-					<motion.img
-						draggable={false}
-						initial={{ opacity: 0, x: -50 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 1, delay: 1.25 }}
-						src="/vector4.webp"
-						alt="Next.js"
-						className="mt-4 mr-2 hidden w-96 select-none brightness-[4] xl:block"
-					/>
-					<span className="text-gray-500 text-sm">
-						Built with modern technologies like
+						See how it works <MoveRight className="ml-2 h-3.5 w-3.5" />
+					</Button>
+				</Link>
+			</motion.div>
+
+			{/* Pill tags */}
+			<motion.div
+				className="mt-12 flex flex-wrap justify-center gap-2"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.8, delay: 0.5 }}
+			>
+				{[
+					"SQLite · local-first",
+					"React + Tauri + Expo",
+					"Open source",
+					"Desktop · Web · Mobile",
+				].map((tag) => (
+					<span
+						key={tag}
+						className="rounded-full border border-white/8 px-3 py-1 font-mono text-[10px] text-white/25 uppercase tracking-widest"
+					>
+						{tag}
 					</span>
-					<img
-						src="/react.webp"
-						alt="React"
-						width={28}
-						height={28}
-						className="h-7 w-7 select-none"
-					/>
-					<img
-						src="/tailwind.webp"
-						alt="Tailwind CSS"
-						width={28}
-						height={28}
-						className="h-7 w-7 select-none"
-						draggable={false}
-					/>
-					<img
-						src="/typescript.webp"
-						alt="TypeScript"
-						width={24}
-						height={24}
-						className="h-6 w-6 select-none"
-						draggable={false}
-					/>
-					<motion.div
-						initial={{ opacity: 0, x: 50 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 1, delay: 1.25 }}
-						className="mt-4 ml-2 hidden w-96 select-none xl:block"
-					>
-						<img
-							src="/vector3.webp"
-							alt="Vector graphic"
-							width={384}
-							height={100}
-							draggable={false}
-							className="brightness-[4]"
-						/>
-					</motion.div>
-				</motion.div>
-				<div className="mx-auto mt-5 max-w-2xl text-center">
-					<main className="m-auto flex w-full flex-col items-center justify-center gap-8 bg-background p-6 text-left text-gray-800 sm:flex-row xl:p-4 dark:bg-background dark:text-[#e3e3e3]">
-						<motion.div
-							className="absolute top-[45%] left-28 z-50 hidden h-[370px] w-[300px] bg-background xl:block"
-							initial={{ opacity: 0, y: 50 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.75, delay: 0.5 }}
-						>
-							<PixelCard
-								key={cardConfigurations[0].label}
-								label={cardConfigurations[0].label}
-								canvasProps={cardConfigurations[0].canvasProps}
-								number={cardConfigurations[0].number}
-								icon={cardConfigurations[0].icon}
-								desc={cardConfigurations[0].desc}
-								color={cardConfigurations[1].color}
-							/>
-						</motion.div>
-						<motion.div
-							className="absolute top-[45%] right-28 z-50 hidden h-[370px] w-[300px] bg-background xl:block"
-							initial={{ opacity: 0, y: 50 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.75, delay: 0.5 }}
-						>
-							<PixelCard
-								color={cardConfigurations[1].color}
-								icon={cardConfigurations[1].icon}
-								key={cardConfigurations[1].label}
-								label={cardConfigurations[1].label}
-								canvasProps={cardConfigurations[1].canvasProps}
-								number={cardConfigurations[1].number}
-								desc={cardConfigurations[1].desc}
-							/>
-						</motion.div>
-						{cards.map((card, i) => (
-							<motion.div
-								key={i}
-								initial={{ opacity: 0, y: 50 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 1, delay: 1.25 }}
-							>
-								<CardHoverEffect
-									title={card.title}
-									description={card.description}
-									icon={card.icon}
-									variant={card.variant}
-									glowEffect={true}
-									size={"lg"}
-									showGridLines={card.showGridLines}
-								/>
-							</motion.div>
-						))}
-					</main>
-				</div>
-			</div>
-		</div>
+				))}
+			</motion.div>
+		</section>
 	);
 }

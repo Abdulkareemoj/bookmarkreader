@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FAQSection } from "@/components/faq-section";
-import Features from "@/components/features";
+import { FeaturesSection } from "@/components/features";
 import Hero from "@/components/hero";
-import { NewReleasePromo } from "@/components/new-release-promo";
+import { HowItWorks } from "@/components/how-it-works";
+import { PromoBand } from "@/components/promo-band";
+
 import { TestimonialsSection } from "@/components/testimonials";
 
 export const Route = createFileRoute("/")({
@@ -11,35 +13,24 @@ export const Route = createFileRoute("/")({
 
 function App() {
 	return (
-		<main className="relative min-h-screen w-full bg-black">
-			{/* Pearl Mist Background with Top Glow */}
-			<div
-				className="absolute inset-0 z-0"
-				style={{
-					background:
-						"radial-gradient(ellipse 50% 35% at 50% 0%, rgba(226, 232, 240, 0.12), transparent 60%), #000000",
-				}}
-			/>
-
-			{/* Hero Section */}
+		<main>
+			{/* Hero */}
 			<Hero />
 
-			{/* Features Section */}
-			<div id="features">
-				<Features />
-			</div>
+			{/* How it works */}
+			<HowItWorks />
 
-			{/* Testimonials Section */}
-			<div id="testimonials">
-				<TestimonialsSection />
-			</div>
+			{/* Features — alternating rows with mockups */}
+			<FeaturesSection />
 
-			<NewReleasePromo />
+			{/* Testimonials */}
+			<TestimonialsSection />
 
-			{/* FAQ Section */}
-			<div id="faq">
-				<FAQSection />
-			</div>
+			{/* Promo CTA band */}
+			<PromoBand />
+
+			{/* FAQ */}
+			<FAQSection />
 		</main>
 	);
 }

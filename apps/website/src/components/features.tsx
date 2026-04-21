@@ -1,540 +1,415 @@
 import { motion, useInView } from "motion/react";
+import { useRef } from "react";
 
-import { useTheme } from "next-themes";
-import type React from "react";
-import { Suspense, useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-import { FollowerPointerCard } from "./following-pointer";
-import Earth from "./globe";
-import ScrambleHover from "./scramble";
-import { Button } from "./ui/button";
-
-export default function Features() {
-	const ref = useRef(null);
-	const isInView = useInView(ref, { once: true, amount: 0.3 });
-	const { theme } = useTheme();
-	const [isHovering, setIsHovering] = useState(false);
-	const [isCliHovering, setIsCliHovering] = useState(false);
-	const [isFeature3Hovering, setIsFeature3Hovering] = useState(false);
-	const [isFeature4Hovering, setIsFeature4Hovering] = useState(false);
-	const [inputValue, setInputValue] = useState("");
-
-	const [baseColor, setBaseColor] = useState<[number, number, number]>([
-		0.906, 0.541, 0.325,
-	]); // #e78a53 in RGB normalized
-	const [glowColor, setGlowColor] = useState<[number, number, number]>([
-		0.906, 0.541, 0.325,
-	]); // #e78a53 in RGB normalized
-
-	const [dark, setDark] = useState<number>(theme === "dark" ? 1 : 0);
-
-	useEffect(() => {
-		setBaseColor([0.906, 0.541, 0.325]); // #e78a53
-		setGlowColor([0.906, 0.541, 0.325]); // #e78a53
-		setDark(theme === "dark" ? 1 : 0);
-	}, [theme]);
-
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (e.key === "Enter") {
-			e.preventDefault();
-			setInputValue("");
-		}
-	};
-
+/* ─── Shared skeleton helper ─── */
+function Sk({
+	w = "100%",
+	h = 7,
+	accent = false,
+}: {
+	w?: string;
+	h?: number;
+	accent?: boolean;
+}) {
 	return (
-		<section
-			id="features"
-			className="relative overflow-hidden py-12 text-foreground sm:py-24 md:py-32"
-		>
-			<div className="absolute -top-10 left-1/2 h-16 w-44 -translate-x-1/2 select-none rounded-full bg-primary opacity-40 blur-3xl" />
-			<div className="absolute top-0 left-1/2 h-px w-3/5 -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/50 to-transparent transition-all ease-in-out" />
-			<motion.div
-				ref={ref}
-				initial={{ opacity: 0, y: 50 }}
-				animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-				transition={{ duration: 0.5, delay: 0 }}
-				className="container mx-auto flex flex-col items-center gap-6 sm:gap-12"
-			>
-				<h2
-					className={cn(
-						"mb-8 bg-gradient-to-b from-zinc-800 via-foreground to-zinc-700 bg-clip-text text-center font-semibold text-4xl text-transparent tracking-tighter md:text-[54px] md:leading-[60px]",
-					)}
-				>
-					Core Features
-				</h2>
-				<FollowerPointerCard
-					title={
-						<div className="flex items-center gap-2">
-							<span>✨</span>
-							<span>Interactive Features</span>
+		<div
+			style={{ width: w, height: h }}
+			className={`rounded ${accent ? "bg-rose-500/25" : "bg-white/[0.07]"} mb-1.5`}
+		/>
+	);
+}
+
+/* ─── Mockup: Bookmark Manager ─── */
+function BookmarkMockup() {
+	const items = [
+		{ emoji: "📰", tag: "News", w1: "75%", w2: "55%" },
+		{ emoji: "🛠", tag: "Dev", w1: "62%", w2: "42%" },
+		{ emoji: "🎨", tag: "Design", w1: "80%", w2: "65%" },
+		{ emoji: "📚", tag: "Books", w1: "55%", w2: "45%" },
+		{ emoji: "🎬", tag: "Video", w1: "70%", w2: "50%" },
+	];
+	return (
+		<div className="flex flex-col overflow-hidden rounded-xl border border-white/[0.09] bg-[#141414]">
+			{/* Window chrome */}
+			<div className="flex h-9 flex-shrink-0 items-center gap-1.5 border-white/[0.07] border-b bg-[#101010] px-3">
+				<div className="h-2 w-2 rounded-full bg-[#ff5f57]" />
+				<div className="h-2 w-2 rounded-full bg-[#febc2e]" />
+				<div className="h-2 w-2 rounded-full bg-[#28c840]" />
+				<div className="ml-2 h-5 flex-1 rounded border border-white/[0.05] bg-white/[0.05]" />
+			</div>
+			<div className="flex flex-col gap-2 p-4">
+				<div className="mb-2 flex items-center">
+					<span className="font-mono text-[9px] text-white/20 uppercase tracking-widest">
+						All bookmarks
+					</span>
+					<div className="ml-auto h-5 w-14 rounded bg-rose-600/70" />
+				</div>
+				{items.map((item) => (
+					<div
+						key={item.emoji}
+						className="flex items-center gap-2.5 rounded-lg border border-white/[0.06] bg-[#0f0f0f] px-3 py-2"
+					>
+						<span className="text-sm">{item.emoji}</span>
+						<div className="flex-1">
+							<Sk w={item.w1} h={7} accent />
+							<Sk w={item.w2} h={6} />
 						</div>
-					}
-				>
-					<div className="cursor-none">
-						<div className="grid grid-cols-12 justify-center gap-4">
-							{/* Bookmark Management */}
-							<motion.div
-								className="group relative col-span-12 flex flex-col overflow-hidden rounded-xl border-2 border-secondary/40 p-6 text-card-foreground shadow-xl transition-all ease-in-out md:col-span-6 xl:col-span-6 xl:col-start-2"
-								onMouseEnter={() => setIsCliHovering(true)}
-								onMouseLeave={() => setIsCliHovering(false)}
-								ref={ref}
-								initial={{ opacity: 0, y: 50 }}
-								animate={
-									isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }
-								}
-								transition={{ duration: 0.5, delay: 0.5 }}
-								whileHover={{
-									scale: 1.02,
-									borderColor: "rgba(231, 138, 83, 0.6)",
-									boxShadow: "0 0 30px rgba(231, 138, 83, 0.2)",
-								}}
-								style={{ transition: "all 0s ease-in-out" }}
+						<span className="rounded bg-rose-500/10 px-1.5 py-0.5 font-mono text-[9px] text-rose-400">
+							{item.tag}
+						</span>
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
+/* ─── Mockup: RSS Reader ─── */
+function RssMockup() {
+	const feeds = ["The Verge", "Hacker News", "CSS-Tricks", "Smashing Mag"];
+	const articles = [
+		{
+			title: "The future of local-first software",
+			time: "2h ago",
+			unread: true,
+		},
+		{
+			title: "How RSS changed how I read the web",
+			time: "5h ago",
+			unread: true,
+		},
+		{ title: "Building with Tauri in 2025", time: "1d ago", unread: false },
+		{
+			title: "Offline-first patterns explained",
+			time: "2d ago",
+			unread: false,
+		},
+	];
+	return (
+		<div className="flex flex-col overflow-hidden rounded-xl border border-white/[0.09] bg-[#141414]">
+			<div className="flex h-9 flex-shrink-0 items-center gap-1.5 border-white/[0.07] border-b bg-[#101010] px-3">
+				<div className="h-2 w-2 rounded-full bg-[#ff5f57]" />
+				<div className="h-2 w-2 rounded-full bg-[#febc2e]" />
+				<div className="h-2 w-2 rounded-full bg-[#28c840]" />
+				<span className="ml-2 font-mono text-[10px] text-white/20 tracking-wider">
+					RSS Feeds
+				</span>
+			</div>
+			<div className="flex">
+				{/* Sidebar */}
+				<div className="w-36 flex-shrink-0 border-white/[0.07] border-r p-3">
+					<p className="mb-2 font-mono text-[9px] text-white/20 uppercase tracking-widest">
+						Subscribed
+					</p>
+					{feeds.map((f, i) => (
+						<div
+							key={f}
+							className={`flex items-center gap-1.5 rounded px-2 py-1 ${i === 1 ? "bg-white/[0.07]" : ""}`}
+						>
+							<div
+								className={`h-1.5 w-1.5 rounded-full ${i === 1 ? "bg-rose-400" : "bg-white/15"}`}
+							/>
+							<span
+								className={`text-[10px] ${i === 1 ? "text-white/70" : "text-white/25"}`}
 							>
-								<div className="flex flex-col gap-4">
-									<h3 className="font-semibold text-2xl leading-none tracking-tight">
-										Bookmark Management
-									</h3>
-									<div className="flex flex-col gap-2 text-md text-muted-foreground text-sm">
-										<p className="max-w-[460px]">
-											Organize bookmarks with auto-fetched titles, favicons,
-											descriptions, and tags. Create collections and manage your
-											favorites.
-										</p>
-									</div>
-								</div>
-								<div className="pointer-events-none relative flex grow select-none items-center justify-center">
-									<div
-										className="relative h-[400px] w-full overflow-hidden rounded-xl"
-										style={{ borderRadius: "20px" }}
-									>
-										{/* Background Image */}
-										<div className="absolute inset-0">
-											<img
-												src="https://framerusercontent.com/images/UjqUIiBHmIcSH9vos9HlG2BF4bo.png"
-												alt="Arrow-CoreExchange"
-												className="h-full w-full rounded-xl object-cover"
-											/>
-										</div>
-
-										{/* Animated SVG Connecting Lines */}
-										<motion.div
-											className="absolute inset-0 flex items-center justify-center"
-											initial={{ opacity: 0 }}
-											animate={isCliHovering ? { opacity: 1 } : { opacity: 0 }}
-											transition={{ duration: 0.5 }}
-										>
-											<svg
-												width="100%"
-												height="100%"
-												viewBox="0 0 121 94"
-												className="absolute"
-											>
-												<motion.path
-													d="M 60.688 1.59 L 60.688 92.449 M 60.688 92.449 L 119.368 92.449 M 60.688 92.449 L 1.414 92.449"
-													stroke="rgb(255,222,213)"
-													fill="transparent"
-													strokeDasharray="2 2"
-													initial={{ pathLength: 0 }}
-													animate={
-														isCliHovering
-															? { pathLength: 1 }
-															: { pathLength: 0 }
-													}
-													transition={{
-														duration: 2,
-														ease: "easeInOut",
-													}}
-												/>
-											</svg>
-											<svg
-												width="100%"
-												height="100%"
-												viewBox="0 0 121 94"
-												className="absolute"
-											>
-												<motion.path
-													d="M 60.688 92.449 L 60.688 1.59 M 60.688 1.59 L 119.368 1.59 M 60.688 1.59 L 1.414 1.59"
-													stroke="rgb(255,222,213)"
-													fill="transparent"
-													strokeDasharray="2 2"
-													initial={{ pathLength: 0 }}
-													animate={
-														isCliHovering
-															? { pathLength: 1 }
-															: { pathLength: 0 }
-													}
-													transition={{
-														duration: 2,
-														delay: 0.5,
-														ease: "easeInOut",
-													}}
-												/>
-											</svg>
-										</motion.div>
-
-										{/* Animated Purple Blur Effect */}
-										<motion.div
-											className="absolute top-1/2 left-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-purple-500 opacity-65 blur-[74px]"
-											initial={{ scale: 1 }}
-											animate={
-												isCliHovering
-													? { scale: [1, 1.342, 1, 1.342] }
-													: { scale: 1 }
-											}
-											transition={{
-												duration: 3,
-												ease: "easeInOut",
-												repeat: isCliHovering ? Number.POSITIVE_INFINITY : 0,
-												repeatType: "loop",
-											}}
-										/>
-
-										{/* Main Content Container with Staggered Animations */}
-										<div className="absolute inset-0 flex items-center justify-center">
-											<div className="flex items-center gap-8">
-												{/* Left Column */}
-												<div className="flex flex-col gap-3">
-													{["Feature-1", "Feature-1", "Feature-1"].map(
-														(item, index) => (
-															<motion.div
-																key={`left-${index}`}
-																className="flex items-center gap-2 rounded bg-white px-3 py-2 font-medium text-black text-sm shadow-sm"
-																initial={{ opacity: 1, x: 0 }}
-																animate={
-																	isCliHovering ? { x: [-20, 0] } : { x: 0 }
-																}
-																transition={{
-																	duration: 0.5,
-																	delay: index * 0.1,
-																}}
-																whileHover={{ scale: 1.05 }}
-															>
-																<div className="flex h-4 w-4 items-center justify-center">
-																	{index === 0 && (
-																		<span className="text-xs">📄</span>
-																	)}
-																	{index === 1 && (
-																		<span className="text-xs">💰</span>
-																	)}
-																	{index === 2 && (
-																		<span className="text-xs">🏢</span>
-																	)}
-																</div>
-																{item}
-															</motion.div>
-														),
-													)}
-												</div>
-
-												{/* Center Logo */}
-												<motion.div
-													className="h-16 w-16 overflow-hidden rounded-lg border border-gray-300 shadow-lg"
-													initial={{ opacity: 1, scale: 1 }}
-													animate={
-														isCliHovering
-															? { scale: [1, 1.1, 1] }
-															: { scale: 1 }
-													}
-													transition={{ duration: 0.6, ease: "easeOut" }}
-													whileHover={{ scale: 1.1, rotate: 5 }}
-												>
-													<img
-														src="https://framerusercontent.com/images/q43ivjLz67lXhWf6TKfLIh0FY.png"
-														alt="Logo"
-														className="h-full w-full object-cover"
-													/>
-												</motion.div>
-
-												{/* Right Column */}
-												<div className="flex flex-col gap-3">
-													{["Feature-1", "Feature-1", "Feature-1"].map(
-														(item, index) => (
-															<motion.div
-																key={`right-${index}`}
-																className="flex items-center gap-2 rounded bg-white px-3 py-2 font-medium text-black text-sm shadow-sm"
-																initial={{ opacity: 1, x: 0 }}
-																animate={
-																	isCliHovering ? { x: [20, 0] } : { x: 0 }
-																}
-																transition={{
-																	duration: 0.5,
-																	delay: index * 0.1,
-																}}
-																whileHover={{ scale: 1.05 }}
-															>
-																<div className="flex h-4 w-4 items-center justify-center">
-																	{index === 0 && (
-																		<span className="text-xs">👥</span>
-																	)}
-																	{index === 1 && (
-																		<span className="text-xs">💳</span>
-																	)}
-																	{index === 2 && (
-																		<span className="text-xs">👨‍⚕️</span>
-																	)}
-																</div>
-																{item}
-															</motion.div>
-														),
-													)}
-												</div>
-											</div>
-										</div>
-
-										{/* Animated Circular Border */}
-										<motion.div
-											className="absolute inset-0 flex items-center justify-center"
-											initial={{ opacity: 0 }}
-											animate={isCliHovering ? { opacity: 1 } : { opacity: 0 }}
-											transition={{ duration: 0.5 }}
-										>
-											<svg
-												width="350"
-												height="350"
-												viewBox="0 0 350 350"
-												className="opacity-40"
-											>
-												<motion.path
-													d="M 175 1.159 C 271.01 1.159 348.841 78.99 348.841 175 C 348.841 271.01 271.01 348.841 175 348.841 C 78.99 348.841 1.159 271.01 1.159 175 C 1.159 78.99 78.99 1.159 175 1.159 Z"
-													stroke="rgba(255, 255, 255, 0.38)"
-													strokeWidth="1.16"
-													fill="transparent"
-													strokeDasharray="4 4"
-													initial={{ pathLength: 0, rotate: 0 }}
-													animate={
-														isCliHovering
-															? { pathLength: 1, rotate: 360 }
-															: { pathLength: 0, rotate: 0 }
-													}
-													transition={{
-														pathLength: { duration: 3, ease: "easeInOut" },
-														rotate: {
-															duration: 20,
-															repeat: isCliHovering
-																? Number.POSITIVE_INFINITY
-																: 0,
-															ease: "linear",
-														},
-													}}
-												/>
-											</svg>
-										</motion.div>
-									</div>
-								</div>
-							</motion.div>
-
-							{/* Cross-Platform Sync */}
-							<motion.div
-								className="group relative col-span-12 flex flex-col overflow-hidden rounded-xl border-2 border-secondary/40 p-6 text-card-foreground shadow-xl transition-all ease-in-out md:col-span-6 xl:col-span-6 xl:col-start-8"
-								onMouseEnter={() => setIsHovering(true)}
-								onMouseLeave={() => setIsHovering(false)}
-								ref={ref}
-								initial={{ opacity: 0, y: 50 }}
-								animate={
-									isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }
-								}
-								transition={{ duration: 0.5, delay: 0.5 }}
-								whileHover={{
-									scale: 1.02,
-									borderColor: "rgba(231, 138, 83, 0.6)",
-									boxShadow: "0 0 30px rgba(231, 138, 83, 0.2)",
-								}}
-								style={{ transition: "all 0s ease-in-out" }}
+								{f}
+							</span>
+						</div>
+					))}
+				</div>
+				{/* Articles */}
+				<div className="flex-1 p-3">
+					{articles.map((a) => (
+						<div
+							key={a.title}
+							className="mb-2.5 border-white/[0.06] border-b pt-0 pb-2.5 last:mb-0 last:border-0"
+						>
+							<p
+								className={`mb-1 text-[11px] leading-snug ${a.unread ? "font-medium text-white/75" : "text-white/30"}`}
 							>
-								<div className="flex flex-col gap-4">
-									<h3 className="font-semibold text-2xl leading-none tracking-tight">
-										Cross-Platform Sync
-									</h3>
-									<div className="flex flex-col gap-2 text-md text-muted-foreground text-sm">
-										<p className="max-w-[460px]">
-											Available on desktop (Tauri), web, and mobile (Expo). Your
-											bookmarks and RSS feeds sync seamlessly across all
-											devices.
-										</p>
-									</div>
-								</div>
-								<div className="flex min-h-[300px] grow select-none items-start justify-center">
-									<h1 className="mt-8 text-center font-semibold text-5xl leading-[100%] sm:leading-normal lg:mt-12 lg:text-6xl">
-										<span className='relative mt-3 inline-block w-fit rounded-md border bg-background px-1.5 py-0.5 before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-full before:bg-[url("/noise.gif")] before:opacity-[0.09] before:content-[""]'>
-											<ScrambleHover
-												text="feature-2"
-												scrambleSpeed={70}
-												maxIterations={20}
-												useOriginalCharsOnly={false}
-												className="cursor-pointer bg-gradient-to-t from-[#e78a53] to-[#e78a53] bg-clip-text text-transparent"
-												isHovering={isHovering}
-												setIsHovering={setIsHovering}
-												characters="abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;':\,./<>?"
-											/>
-										</span>
-									</h1>
-									<div className="absolute top-64 z-10 flex items-center justify-center">
-										<div className="h-[400px] w-[400px]">
-											<Suspense
-												fallback={
-													<div className="h-[400px] w-[400px] animate-pulse rounded-full bg-secondary/20" />
-												}
-											>
-												<Earth
-													baseColor={baseColor}
-													markerColor={[0, 0, 0]}
-													glowColor={glowColor}
-													dark={dark}
-												/>
-											</Suspense>
-										</div>
-									</div>
-									<div className="absolute top-1/2 w-full translate-y-20 scale-x-[1.2] opacity-70 transition-all duration-1000 group-hover:translate-y-8 group-hover:opacity-100">
-										<div className="absolute left-1/2 h-[256px] w-[60%] -translate-x-1/2 scale-[2.5] rounded-[50%] bg-radial from-10% from-primary/50 to-60% to-primary/0 opacity-20 sm:h-[512px] dark:opacity-100" />
-										<div className="absolute left-1/2 h-[128px] w-[40%] -translate-x-1/2 scale-200 rounded-[50%] bg-radial from-10% from-primary/30 to-60% to-primary/0 opacity-20 sm:h-[256px] dark:opacity-100" />
-									</div>
-								</div>
-							</motion.div>
+								{a.title}
+							</p>
+							<span className="font-mono text-[9px] text-white/20">
+								{a.time}
+							</span>
+						</div>
+					))}
+				</div>
+			</div>
+		</div>
+	);
+}
 
-							{/* RSS Reader */}
-							<motion.div
-								className="group relative col-span-12 flex flex-col overflow-hidden rounded-xl border-2 border-secondary/40 p-6 text-card-foreground shadow-xl transition-all ease-in-out md:col-span-6 xl:col-span-6 xl:col-start-2"
-								onMouseEnter={() => setIsFeature3Hovering(true)}
-								onMouseLeave={() => setIsFeature3Hovering(false)}
-								initial={{ opacity: 0, y: 50 }}
-								animate={
-									isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }
-								}
-								transition={{ duration: 0.5, delay: 1.0 }}
-								whileHover={{
-									scale: 1.02,
-									borderColor: "rgba(231, 138, 83, 0.5)",
-									boxShadow: "0 0 30px rgba(231, 138, 83, 0.2)",
-								}}
-								style={{ transition: "all 0s ease-in-out" }}
+/* ─── Mockup: Collections ─── */
+function CollectionsMockup() {
+	const folders = [
+		{ name: "Research", count: 48, active: true },
+		{ name: "Frontend", count: 22, active: false },
+		{ name: "Design", count: 31, active: false },
+		{ name: "Tools", count: 15, active: false },
+		{ name: "Reading", count: 67, active: false },
+	];
+	const tags = ["CSS", "React", "Performance", "TypeScript", "WASM"];
+	return (
+		<div className="flex flex-col overflow-hidden rounded-xl border border-white/[0.09] bg-[#141414]">
+			<div className="flex h-9 flex-shrink-0 items-center gap-1.5 border-white/[0.07] border-b bg-[#101010] px-3">
+				<div className="h-2 w-2 rounded-full bg-[#ff5f57]" />
+				<div className="h-2 w-2 rounded-full bg-[#febc2e]" />
+				<div className="h-2 w-2 rounded-full bg-[#28c840]" />
+				<span className="ml-2 font-mono text-[10px] text-white/20 tracking-wider">
+					Collections
+				</span>
+			</div>
+			<div className="flex">
+				<div className="w-36 flex-shrink-0 border-white/[0.07] border-r p-3">
+					<p className="mb-2 font-mono text-[9px] text-white/20 uppercase tracking-widest">
+						Workspace
+					</p>
+					{folders.map((f) => (
+						<div
+							key={f.name}
+							className={`flex items-center gap-1.5 rounded px-2 py-1 ${f.active ? "bg-white/[0.07]" : ""}`}
+						>
+							<span className="text-[11px]">📁</span>
+							<span
+								className={`flex-1 text-[10px] ${f.active ? "text-white/70" : "text-white/25"}`}
 							>
-								<div className="flex flex-col gap-4">
-									<h3 className="font-semibold text-2xl leading-none tracking-tight">
-										RSS Reader
-									</h3>
-									<div className="flex flex-col gap-2 text-md text-muted-foreground text-sm">
-										<p className="max-w-[460px]">
-											Subscribe to RSS feeds and read articles offline. Track
-											read/unread states and get notifications for new content.
-										</p>
-									</div>
-								</div>
-								<div className="relative flex min-h-[300px] grow select-none items-center justify-center p-4">
-									<div className="w-full max-w-lg">
-										<div className="relative rounded-2xl border border-white/10 bg-black/20 backdrop-blur-sm dark:bg-white/5">
-											<div className="p-4">
-												<textarea
-													className="min-h-[100px] w-full resize-none border-none bg-transparent text-base text-white leading-relaxed placeholder:text-white/50 focus:outline-none"
-													placeholder="Search the web..."
-													value={inputValue}
-													onChange={(e) => setInputValue(e.target.value)}
-													onKeyDown={handleKeyDown}
-												/>
-											</div>
-											<div className="flex items-center justify-between px-4 pb-4">
-												<div className="flex items-center gap-3">
-													<Button className="rounded-full bg-white/10 p-2 transition-colors hover:bg-white/20">
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															width="16"
-															height="16"
-															viewBox="0 0 24 24"
-															fill="none"
-															stroke="currentColor"
-															strokeWidth="2"
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															className="text-white/70"
-														>
-															<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-														</svg>
-													</Button>
-													<Button className="flex items-center gap-2 rounded-full bg-[#e78a53] px-4 py-2 font-medium text-white transition-colors hover:bg-[#e78a53]/90">
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															width="16"
-															height="16"
-															viewBox="0 0 24 24"
-															fill="none"
-															stroke="currentColor"
-															strokeWidth="2"
-															strokeLinecap="round"
-															strokeLinejoin="round"
-														>
-															<circle cx="12" cy="12" r="10" />
-															<path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-															<path d="M2 12h20" />
-														</svg>
-														Search
-													</Button>
-												</div>
-												<Button className="rounded-full bg-white/10 p-2 transition-colors hover:bg-white/20">
-													<svg
-														xmlns="http://www.w3.org/2000/svg"
-														width="16"
-														height="16"
-														viewBox="0 0 24 24"
-														fill="none"
-														stroke="currentColor"
-														strokeWidth="2"
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														className="text-white/70"
-													>
-														<path d="m22 2-7 20-4-9-9-4Z" />
-														<path d="M22 2 11 13" />
-													</svg>
-												</Button>
-											</div>
-										</div>
-									</div>
-								</div>
-							</motion.div>
+								{f.name}
+							</span>
+							<span className="font-mono text-[9px] text-white/20">
+								{f.count}
+							</span>
+						</div>
+					))}
+				</div>
+				<div className="flex-1 p-3">
+					<div className="mb-3 flex flex-wrap gap-1">
+						{tags.map((t, i) => (
+							<span
+								key={t}
+								className={`rounded-full border px-2 py-0.5 text-[9px] ${i === 0 ? "border-rose-400/40 text-rose-400" : "border-white/10 text-white/25"}`}
+							>
+								{t}
+							</span>
+						))}
+					</div>
+					{[0, 1, 2, 3].map((i) => (
+						<div
+							key={i}
+							className="mb-2 rounded-md border border-white/[0.06] bg-[#0f0f0f] p-2"
+						>
+							<Sk w="80%" h={7} accent />
+							<Sk w="55%" h={6} />
+						</div>
+					))}
+				</div>
+			</div>
+		</div>
+	);
+}
 
-							{/* Local-First Storage */}
-							<motion.div
-								className="group relative col-span-12 flex flex-col overflow-hidden rounded-xl border-2 border-secondary/40 p-6 text-card-foreground shadow-xl transition-all ease-in-out md:col-span-6 xl:col-span-6 xl:col-start-8"
-								onMouseEnter={() => setIsFeature4Hovering(true)}
-								onMouseLeave={() => setIsFeature4Hovering(false)}
-								initial={{ opacity: 0, y: 50 }}
-								animate={
-									isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }
-								}
-								transition={{ duration: 0.5, delay: 1.0 }}
-								whileHover={{
-									rotateY: 5,
-									rotateX: 2,
-									boxShadow: "0 20px 40px rgba(231, 138, 83, 0.3)",
-									borderColor: "rgba(231, 138, 83, 0.6)",
-								}}
-								style={{ transition: "all 0s ease-in-out" }}
-							>
-								<div className="flex flex-col gap-4">
-									<h3 className="font-semibold text-2xl leading-none tracking-tight">
-										Local-First Storage
-									</h3>
-									<div className="flex flex-col gap-2 text-md text-muted-foreground text-sm">
-										<p className="max-w-[460px]">
-											SQLite for desktop/web, AsyncStorage for mobile. Your data
-											stays private with optional cloud sync coming soon.
-										</p>
-									</div>
-								</div>
-								<div className="relative flex min-h-[300px] grow select-none items-center justify-center p-4">
-									<div className="relative w-full max-w-sm">
-										<img
-											src="/modern-grid-layout.png"
-											alt="Dynamic Layout Example"
-											className="h-auto w-full rounded-lg shadow-lg"
-										/>
-										<div className="absolute inset-0 rounded-lg bg-gradient-to-t from-black/20 to-transparent" />
-									</div>
-								</div>
-							</motion.div>
+/* ─── Mockup: Cross-platform ─── */
+function PlatformMockup() {
+	const platforms = ["Windows", "macOS", "Linux", "iOS", "Android", "Web"];
+	return (
+		<div className="flex items-center justify-center rounded-xl border border-white/[0.09] bg-[#141414] p-8">
+			<div className="text-center">
+				<div className="mb-6 flex items-center justify-center gap-5">
+					{/* Desktop */}
+					<div className="flex w-20 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0f0f0f]">
+						<div className="flex items-center gap-1 border-white/[0.07] border-b bg-[#0a0a0a] px-1.5 py-1">
+							<div className="h-1.5 w-1.5 rounded-full bg-[#ff5f57]" />
+							<div className="h-1.5 w-1.5 rounded-full bg-[#febc2e]" />
+							<div className="h-1.5 w-1.5 rounded-full bg-[#28c840]" />
+						</div>
+						<div className="space-y-1 p-2">
+							<Sk w="100%" h={5} />
+							<Sk w="70%" h={5} accent />
+							<Sk w="85%" h={5} />
 						</div>
 					</div>
-				</FollowerPointerCard>
+					{/* Sync arrow */}
+					<div className="flex flex-col items-center gap-1.5">
+						<div className="h-px w-10 bg-rose-500/30" />
+						<div className="flex h-7 w-7 items-center justify-center rounded-full border border-rose-500/20 bg-rose-500/10 text-xs">
+							🔖
+						</div>
+						<div className="h-px w-10 bg-rose-500/30" />
+					</div>
+					{/* Mobile */}
+					<div className="flex w-12 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0f0f0f]">
+						<div className="h-3 border-white/[0.07] border-b bg-[#0a0a0a]" />
+						<div className="space-y-1 p-1.5">
+							<Sk w="100%" h={4} />
+							<Sk w="70%" h={4} accent />
+							<Sk w="85%" h={4} />
+							<Sk w="60%" h={4} />
+						</div>
+						<div className="h-1.5 bg-[#0a0a0a]" />
+					</div>
+				</div>
+				<p className="mb-4 text-[12px] text-white/30 leading-relaxed">
+					Your library, everywhere.
+					<br />
+					Always in sync.
+				</p>
+				<div className="flex flex-wrap justify-center gap-1.5">
+					{platforms.map((p) => (
+						<span
+							key={p}
+							className="rounded-full border border-white/[0.08] px-2 py-0.5 font-mono text-[9px] text-white/25 tracking-wide"
+						>
+							{p}
+						</span>
+					))}
+				</div>
+			</div>
+		</div>
+	);
+}
+
+/* ─── Feature row data ─── */
+const featureRows = [
+	{
+		icon: "🔖",
+		title: "Bookmark Manager",
+		desc: "Save any URL and get a beautiful library with auto-fetched titles, descriptions, favicons, and previews. Find anything instantly with full-text search and tags.",
+		points: [
+			"Auto-fetched metadata on save",
+			"Collections, tags, and smart filters",
+			"Import from Chrome, Firefox, Safari",
+			"Full-text search across all bookmarks",
+		],
+		mockup: <BookmarkMockup />,
+		reverse: false,
+	},
+	{
+		icon: "📡",
+		title: "RSS Reader",
+		desc: "Subscribe to any RSS or Atom feed. Articles are fetched automatically, stored locally, and always readable offline — even with no connection.",
+		points: [
+			"Subscribe to any RSS or Atom feed",
+			"Read/unread tracking per article",
+			"Full offline reading support",
+			"Folder-based feed organization",
+		],
+		mockup: <RssMockup />,
+		reverse: true,
+	},
+	{
+		icon: "🗂",
+		title: "Collections & Tags",
+		desc: "Organize hundreds of bookmarks with a flexible tagging and collection system. Filter, sort, and surface exactly what you need without digging.",
+		points: [
+			"Nested collections and sub-folders",
+			"Multi-tag filtering with AND/OR logic",
+			"Smart collections by domain or date",
+			"Drag-and-drop organization",
+		],
+		mockup: <CollectionsMockup />,
+		reverse: false,
+	},
+	{
+		icon: "🔄",
+		title: "Cross-Platform Sync",
+		desc: "Start saving on desktop, pick up where you left off on mobile. Optional encrypted sync keeps every device in perfect lockstep without compromising privacy.",
+		points: [
+			"Desktop: Windows, macOS, Linux via Tauri",
+			"Mobile: iOS and Android via Expo",
+			"Web app available right now",
+			"End-to-end encrypted optional sync",
+		],
+		mockup: <PlatformMockup />,
+		reverse: true,
+	},
+];
+
+function FeatureRow({
+	icon,
+	title,
+	desc,
+	points,
+	mockup,
+	reverse,
+	index,
+}: (typeof featureRows)[0] & { index: number }) {
+	const ref = useRef(null);
+	const inView = useInView(ref, { once: true, amount: 0.2 });
+
+	return (
+		<div
+			ref={ref}
+			className="grid grid-cols-1 items-center gap-12 border-white/[0.06] border-t py-20 md:grid-cols-2 md:gap-16"
+		>
+			<motion.div
+				className={reverse ? "md:order-2" : ""}
+				initial={{ opacity: 0, x: reverse ? 24 : -24 }}
+				animate={inView ? { opacity: 1, x: 0 } : {}}
+				transition={{ duration: 0.6, delay: index * 0.05 }}
+			>
+				<div className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl border border-rose-500/20 bg-rose-500/10 text-lg">
+					{icon}
+				</div>
+				<h3 className="mb-3 font-semibold text-2xl text-white/90 tracking-tight">
+					{title}
+				</h3>
+				<p className="mb-6 text-sm text-white/40 leading-relaxed">{desc}</p>
+				<ul className="space-y-2.5">
+					{points.map((p) => (
+						<li
+							key={p}
+							className="flex items-start gap-2.5 text-sm text-white/40"
+						>
+							<span className="mt-2 h-1 w-1 flex-shrink-0 rounded-full bg-rose-400" />
+							{p}
+						</li>
+					))}
+				</ul>
 			</motion.div>
+
+			<motion.div
+				className={reverse ? "md:order-1" : ""}
+				initial={{ opacity: 0, x: reverse ? -24 : 24 }}
+				animate={inView ? { opacity: 1, x: 0 } : {}}
+				transition={{ duration: 0.6, delay: index * 0.05 + 0.1 }}
+			>
+				{mockup}
+			</motion.div>
+		</div>
+	);
+}
+
+export function FeaturesSection() {
+	const ref = useRef(null);
+	const inView = useInView(ref, { once: true, amount: 0.1 });
+
+	return (
+		<section id="features" className="bg-[#080808] py-4">
+			<div className="mx-auto max-w-5xl px-6">
+				{/* Header */}
+				<motion.div
+					ref={ref}
+					className="pt-20 pb-4 text-center"
+					initial={{ opacity: 0, y: 20 }}
+					animate={inView ? { opacity: 1, y: 0 } : {}}
+					transition={{ duration: 0.6 }}
+				>
+					<span className="mb-3 block font-mono text-[10px] text-rose-400 uppercase tracking-[0.12em]">
+						Features
+					</span>
+					<h2 className="font-semibold text-3xl text-white/90 tracking-tight sm:text-4xl">
+						Everything in one tool.
+					</h2>
+					<p className="mx-auto mt-3 max-w-md text-sm text-white/35">
+						Get multiple products in one. Use only what you need.
+					</p>
+				</motion.div>
+
+				{/* Rows */}
+				{featureRows.map((row, i) => (
+					<FeatureRow key={row.title} {...row} index={i} />
+				))}
+			</div>
 		</section>
 	);
 }
