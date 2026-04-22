@@ -1,204 +1,116 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
+"use client";
+import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
+import { useScroll } from "@/hooks/use-scroll";
+import { Button, buttonVariants } from '@/components/ui/button';
+import React from "react";
+import { Portal, PortalBackdrop } from "./ui/portal";
+import { MenuIcon, XIcon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+
+
+export const navLinks = [
+	{
+		label: "Features",
+		href: "#",
+	},
+	{
+		label: "Pricing",
+		href: "#",
+	},
+	{
+		label: "About",
+		href: "#",
+	},
+];
 
 export default function Header() {
-	const [isScrolled, setIsScrolled] = useState(false);
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-	const location = useLocation();
-	const navigate = useNavigate();
-
-	const scrollToElement = (elementId: string) => {
-		const element = document.getElementById(elementId);
-		if (element) {
-			const headerOffset = 120; // Account for sticky header height + margin
-			const elementPosition =
-				element.getBoundingClientRect().top + window.scrollY;
-			const offsetPosition = elementPosition - headerOffset;
-
-			window.scrollTo({
-				top: offsetPosition,
-				behavior: "smooth",
-			});
-		} else if (location.pathname !== "/") {
-			navigate(`/#${elementId}`);
-		}
-	};
-
-	useEffect(() => {
-		const handleScroll = () => {
-			setIsScrolled(window.scrollY > 100);
-		};
-
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
-
-	useEffect(() => {
-		if (location.hash) {
-			const elementId = location.hash.replace("#", "");
-			setTimeout(() => {
-				scrollToElement(elementId);
-			}, 100);
-		}
-	}, [location]);
-
-	const handleNavClick = (e: React.MouseEvent, elementId: string) => {
-		e.preventDefault();
-		scrollToElement(elementId);
-	};
-
-	const handleMobileNavClick = (elementId: string) => {
-		setIsMobileMenuOpen(false);
-		setTimeout(() => {
-			scrollToElement(elementId);
-		}, 100);
-	};
-
+	const scrolled = useScroll(10);
+const [open, setOpen] = React.useState(false);
 	return (
-		<>
-			{/* Desktop Header */}
-			<header
-				className={`sticky top-4 z-9999 mx-auto hidden w-full flex-row items-center justify-between self-start rounded-full border border-border/50 bg-background/80 shadow-lg backdrop-blur-sm transition-all duration-300 md:flex ${
-					isScrolled ? "max-w-3xl px-2" : "max-w-5xl px-4"
-				} py-2`}
-				style={{
-					willChange: "transform",
-					transform: "translateZ(0)",
-					backfaceVisibility: "hidden",
-					perspective: "1000px",
-				}}
+		<header
+			className={cn(
+				"sticky top-0 z-50 mx-auto w-full max-w-5xl border-transparent border-b md:rounded-md md:border md:transition-all md:ease-out",
+				{
+					"border-border bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/50 md:top-2 md:max-w-4xl md:shadow":
+						scrolled,
+				}
+			)}
+		>
+			<nav
+				className={cn(
+					"flex h-14 w-full items-center justify-between px-4 md:h-12 md:transition-all md:ease-out",
+					{
+						"md:px-2": scrolled,
+					}
+				)}
 			>
 				<Link
-					className={`z-50 flex items-center justify-center gap-2 transition-all duration-300 ${
-						isScrolled ? "ml-4" : ""
-					}`}
+					className="rounded-md p-2 hover:bg-muted dark:hover:bg-muted/50"
 					to="/"
 				>
-					<img
-						src="/rose.webp"
-						alt="BookmarkReader Logo"
-						className="size-8 w-8 rounded-full text-foreground"
-						width={32}
-						height={32}
-					/>
-					<span className="font-bold text-foreground">BookmarkReader</span>
+					<Logo className="h-4" />
 				</Link>
-
-				<div className="absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 font-medium text-muted-foreground text-sm transition duration-200 hover:text-foreground md:flex md:space-x-2">
-					<Link
-						to=""
-						className="relative cursor-pointer px-4 py-2 text-muted-foreground transition-colors hover:text-foreground"
-						onClick={(e) => handleNavClick(e, "features")}
-					>
-						<span className="relative z-20">Features</span>
-					</Link>
-					<Link
-						to="/download"
-						className="relative cursor-pointer px-4 py-2 text-muted-foreground transition-colors hover:text-foreground"
-					>
-						<span className="relative z-20">Download</span>
-					</Link>
-					<Link
-						to=""
-						className="relative cursor-pointer px-4 py-2 text-muted-foreground transition-colors hover:text-foreground"
-						onClick={(e) => handleNavClick(e, "testimonials")}
-					>
-						<span className="relative z-20">Testimonials</span>
-					</Link>
-					<Link
-						to=""
-						className="relative cursor-pointer px-4 py-2 text-muted-foreground transition-colors hover:text-foreground"
-						onClick={(e) => handleNavClick(e, "faq")}
-					>
-						<span className="relative z-20">FAQ</span>
-					</Link>
-				</div>
-
-				<div className="flex items-center gap-4">
-					<Link
-						to="/download"
-						className="relative inline-block cursor-pointer rounded-md bg-gradient-to-b from-primary to-primary/80 px-4 py-2 text-center font-bold text-primary-foreground text-sm shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset] transition duration-200 hover:-translate-y-0.5"
-					>
-						Download Now
-					</Link>
-				</div>
-			</header>
-
-			{/* Mobile Header */}
-			<header className="sticky top-4 z-9999 mx-4 flex w-auto flex-row items-center justify-between rounded-full border border-border/50 bg-background/80 px-4 py-3 shadow-lg backdrop-blur-sm md:hidden">
-				<Link className="flex items-center justify-center gap-2" to="/">
-					<img
-						src="/rose.webp"
-						alt="BookmarkReader Logo"
-						className="size-7 w-7 rounded-full text-foreground"
-						width={28}
-						height={28}
-					/>
-				</Link>
-
-				<Button
-					onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-					className="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 bg-background/50 transition-colors hover:bg-background/80"
-					aria-label="Toggle menu"
-				>
-					<div className="flex h-5 w-5 flex-col items-center justify-center space-y-1">
-						<span
-							className={`block h-0.5 w-4 bg-foreground transition-all duration-300 ${isMobileMenuOpen ? "translate-y-1.5 rotate-45" : ""}`}
-						/>
-						<span
-							className={`block h-0.5 w-4 bg-foreground transition-all duration-300 ${isMobileMenuOpen ? "opacity-0" : ""}`}
-						/>
-						<span
-							className={`block h-0.5 w-4 bg-foreground transition-all duration-300 ${isMobileMenuOpen ? "-translate-y-1.5 -rotate-45" : ""}`}
-						/>
+				<div className="hidden items-center gap-2 md:flex">
+					<div>
+						{navLinks.map((link) => (
+							<Button asChild key={link.label} size="sm" variant="ghost">
+								<Link to={link.href}>{link.label}</Link>
+							</Button>
+						))}
 					</div>
-				</Button>
-			</header>
-
-			{/* Mobile Menu Overlay */}
-			{isMobileMenuOpen && (
-				<div className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm md:hidden">
-					<div className="absolute top-20 right-4 left-4 rounded-2xl border border-border/50 bg-background/95 p-6 shadow-2xl backdrop-blur-md">
-						<nav className="flex flex-col space-y-4">
-							<Button
-								onClick={() => handleMobileNavClick("features")}
-								className="rounded-lg px-4 py-3 text-left font-medium text-lg text-muted-foreground transition-colors hover:bg-background/50 hover:text-foreground"
-							>
-								Features
-							</Button>
-							<Link
-								to="/download"
-								onClick={() => setIsMobileMenuOpen(false)}
-								className="rounded-lg px-4 py-3 text-left font-medium text-lg text-muted-foreground transition-colors hover:bg-background/50 hover:text-foreground"
-							>
-								Download
-							</Link>
-							<Button
-								onClick={() => handleMobileNavClick("testimonials")}
-								className="rounded-lg px-4 py-3 text-left font-medium text-lg text-muted-foreground transition-colors hover:bg-background/50 hover:text-foreground"
-							>
-								Testimonials
-							</Button>
-							<Button
-								onClick={() => handleMobileNavClick("faq")}
-								className="rounded-lg px-4 py-3 text-left font-medium text-lg text-muted-foreground transition-colors hover:bg-background/50 hover:text-foreground"
-							>
-								FAQ
-							</Button>
-							<div className="mt-4 flex flex-col space-y-3 border-border/50 border-t pt-4">
-								<Link
-									to="/download"
-									onClick={() => setIsMobileMenuOpen(false)}
-									className="rounded-lg bg-gradient-to-b from-primary to-primary/80 px-4 py-3 text-center font-bold text-lg text-primary-foreground shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+	    <Button asChild>
+      <Link to="/download">Download</Link>
+    </Button>
+				</div>
+				<div className="md:hidden">
+			<Button
+				aria-controls="mobile-menu"
+				aria-expanded={open}
+				aria-label="Toggle menu"
+				className="md:hidden"
+				onClick={() => setOpen(!open)}
+				size="icon"
+				variant="outline"
+			>
+				{open ? (
+					<XIcon className="size-4.5" />
+				) : (
+					<MenuIcon className="size-4.5" />
+				)}
+			</Button>
+			{open && (
+				<Portal className="top-14" id="mobile-menu">
+					<PortalBackdrop />
+					<div
+						className={cn(
+							"data-[slot=open]:zoom-in-97 ease-out data-[slot=open]:animate-in",
+							"size-full p-4"
+						)}
+						data-slot={open ? "open" : "closed"}
+					>
+						<div className="grid gap-y-2">
+							{navLinks.map((link) => (
+								<Button
+									asChild
+									className="justify-start"
+									key={link.label}
+									variant="ghost"
 								>
-									Download Now
-								</Link>
-							</div>
-						</nav>
+									<a href={link.href}>{link.label}</a>
+								</Button>
+							))}
+						</div>
+						<div className="mt-12 flex flex-col gap-2">
+							    <Button asChild>
+      <Link to="/download">Download</Link>
+    </Button>
+						</div>
 					</div>
-				</div>
+				</Portal>
 			)}
-		</>
+		</div>
+			</nav>
+		</header>
 	);
 }
