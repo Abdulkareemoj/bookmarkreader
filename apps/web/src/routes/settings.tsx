@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cloud, Download, Monitor, Moon, Sun, Upload } from "lucide-react";
+import { Cloud, Download, Monitor, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
-import { exportSyncData, importSyncData } from "@/lib/sync";
 import { useReaderStore, useSettingsStore } from "@/lib/store";
+import { exportSyncData, importSyncData } from "@/lib/sync";
 
 export const Route = createFileRoute("/settings")({
 	component: SettingsComponent,
@@ -16,7 +16,7 @@ function ThemePreview({ mode }: { mode: "light" | "dark" | "system" }) {
 	const isDark = mode === "dark" || mode === "system";
 	return (
 		<div
-			className={`relative h-20 w-full rounded-lg overflow-hidden ${isDark ? "bg-[oklch(0.15_0.02_260)]" : "bg-[oklch(0.92_0.01_260)]"}`}
+			className={`relative h-20 w-full overflow-hidden rounded-lg ${isDark ? "bg-[oklch(0.15_0.02_260)]" : "bg-[oklch(0.92_0.01_260)]"}`}
 		>
 			{/* Title bar */}
 			<div
@@ -58,10 +58,12 @@ function SettingRow({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="flex items-center justify-between py-4 border-b border-border last:border-b-0">
+		<div className="flex items-center justify-between border-border border-b py-4 last:border-b-0">
 			<div className="space-y-0.5">
-				<p className="text-sm font-medium">{label}</p>
-				{description && <p className="text-xs text-muted-foreground">{description}</p>}
+				<p className="font-medium text-sm">{label}</p>
+				{description && (
+					<p className="text-muted-foreground text-xs">{description}</p>
+				)}
 			</div>
 			<div>{children}</div>
 		</div>
@@ -77,8 +79,10 @@ function SectionHeader({
 }) {
 	return (
 		<div className="mb-1 pt-6 first:pt-0">
-			<h2 className="text-lg font-semibold">{title}</h2>
-			{description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
+			<h2 className="font-semibold text-lg">{title}</h2>
+			{description && (
+				<p className="mt-0.5 text-muted-foreground text-sm">{description}</p>
+			)}
 		</div>
 	);
 }
@@ -143,41 +147,67 @@ function SettingsComponent() {
 	};
 
 	const themes = [
-		{ value: "system", label: "System default", desc: "Automatic based on device settings" },
-		{ value: "light", label: "Light mode", desc: "Always use the light appearance" },
-		{ value: "dark", label: "Dark mode", desc: "Always use the dark appearance" },
+		{
+			value: "system",
+			label: "System default",
+			desc: "Automatic based on device settings",
+		},
+		{
+			value: "light",
+			label: "Light mode",
+			desc: "Always use the light appearance",
+		},
+		{
+			value: "dark",
+			label: "Dark mode",
+			desc: "Always use the dark appearance",
+		},
 	] as const;
 
 	return (
 		<div className="min-h-screen bg-background">
-			<div className="mx-auto max-w-3xl px-6 py-10">
+			<div className="p-6">
+				<h1 className="truncate font-semibold text-2xl text-foreground">
+					Settings
+				</h1>
+				<p className="mt-1 text-muted-foreground">
+					Discover content and insights from your feeds
+				</p>
+			</div>
+			<div className="mx-auto max-w-4xl px-6 py-10">
 				{/* Theme */}
 				<div id="theme">
-					<SectionHeader title="Theme" description="Automatic based on device settings" />
-					<div className="grid grid-cols-3 gap-3 mt-3">
+					<SectionHeader
+						title="Theme"
+						description="Automatic based on device settings"
+					/>
+					<div className="mt-3 grid grid-cols-3 gap-3">
 						{themes.map((t) => {
 							const isActive = theme === t.value;
 							return (
-								<button
-									key={t.value}
-									onClick={() => handleThemeChange(t.value)}
-									className={`rounded-xl p-2.5 text-left transition-all border ${
-										isActive ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-accent"
-									}`}
-								>
-									<ThemePreview mode={t.value} />
-									<div className="mt-2 flex items-center justify-between">
-										<div>
-											<p className="text-xs font-medium">{t.label}</p>
-											<p className="text-[10px] text-muted-foreground mt-0.5">{t.desc}</p>
-										</div>
-										<Switch
-											checked={isActive}
-											onCheckedChange={() => handleThemeChange(t.value)}
-											className="scale-75"
-										/>
+								<RadioGroup value={theme} onValueChange={handleThemeChange}>
+									<div
+										key={t.value}
+										className={`cursor-pointer rounded-xl border p-2.5 text-left transition-all ${
+											isActive
+												? "border-primary bg-primary/10"
+												: "border-border bg-card hover:bg-accent"
+										}`}
+									>
+										<Label className="block cursor-pointer" htmlFor={t.value}>
+											<ThemePreview mode={t.value} />
+											<div className="mt-2 flex items-center justify-between">
+												<div>
+													<p className="font-medium text-xs">{t.label}</p>
+													<p className="mt-0.5 text-[10px] text-muted-foreground">
+														{t.desc}
+													</p>
+												</div>
+												<RadioGroupItem value={t.value} id={t.value} />
+											</div>
+										</Label>
 									</div>
-								</button>
+								</RadioGroup>
 							);
 						})}
 					</div>
@@ -186,7 +216,7 @@ function SettingsComponent() {
 				{/* Sync */}
 				<div id="sync" className="mt-6">
 					<SectionHeader title="Sync Data" />
-					<div className="mt-1 rounded-xl bg-card border border-border">
+					<div className="mt-1 rounded-xl border border-border bg-card">
 						<div className="px-4">
 							<SettingRow
 								label="Status"
@@ -199,7 +229,7 @@ function SettingsComponent() {
 								}
 							>
 								<span
-									className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+									className={`inline-flex items-center gap-1.5 font-medium text-xs ${
 										syncStatus === "connected"
 											? "text-green-400"
 											: syncStatus === "error"
@@ -212,27 +242,36 @@ function SettingsComponent() {
 								</span>
 							</SettingRow>
 
-							<SettingRow label="Export" description="Download your data as JSON">
-								<button
+							<SettingRow
+								label="Export"
+								description="Download your data as JSON"
+							>
+								<Button
 									onClick={handleExport}
-									className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:bg-accent"
+									className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 font-medium text-secondary-foreground text-xs transition-colors hover:bg-accent"
 								>
 									<Download className="h-3.5 w-3.5" />
 									Export
-								</button>
+								</Button>
 							</SettingRow>
 
-							<SettingRow label="Import" description="Load data from a JSON file">
-								<button
+							<SettingRow
+								label="Import"
+								description="Load data from a JSON file"
+							>
+								<Button
 									onClick={handleImport}
-									className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:bg-accent"
+									className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 font-medium text-secondary-foreground text-xs transition-colors hover:bg-accent"
 								>
 									<Upload className="h-3.5 w-3.5" />
 									Import
-								</button>
+								</Button>
 							</SettingRow>
 
-							<SettingRow label="Import Mode" description="How to handle existing data">
+							<SettingRow
+								label="Import Mode"
+								description="How to handle existing data"
+							>
 								<RadioGroup
 									value={importMode}
 									onValueChange={(v) => setImportMode(v as "merge" | "replace")}
@@ -240,13 +279,13 @@ function SettingsComponent() {
 								>
 									<div className="flex items-center gap-1.5">
 										<RadioGroupItem value="merge" id="merge" />
-										<Label htmlFor="merge" className="text-xs cursor-pointer">
+										<Label htmlFor="merge" className="cursor-pointer text-xs">
 											Merge
 										</Label>
 									</div>
 									<div className="flex items-center gap-1.5">
 										<RadioGroupItem value="replace" id="replace" />
-										<Label htmlFor="replace" className="text-xs cursor-pointer">
+										<Label htmlFor="replace" className="cursor-pointer text-xs">
 											Replace
 										</Label>
 									</div>
@@ -259,13 +298,15 @@ function SettingsComponent() {
 				{/* About */}
 				<div id="about" className="mt-6">
 					<SectionHeader title="About" />
-					<div className="mt-1 rounded-xl bg-card border border-border">
+					<div className="mt-1 rounded-xl border border-border bg-card">
 						<div className="px-4">
 							<SettingRow label="Version">
-								<span className="text-xs text-muted-foreground">1.0.0</span>
+								<span className="text-muted-foreground text-xs">1.0.0</span>
 							</SettingRow>
 							<SettingRow label="Build">
-								<span className="text-xs text-muted-foreground">2024.04.12</span>
+								<span className="text-muted-foreground text-xs">
+									2024.04.12
+								</span>
 							</SettingRow>
 						</div>
 					</div>

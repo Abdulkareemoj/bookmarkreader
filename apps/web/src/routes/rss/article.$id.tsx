@@ -1,46 +1,146 @@
-import { createFileRoute } from "@tanstack/react-router";
-import ArticleDisplay from "@/components/rss/article-display";
+import { createFileRoute } from "@tanstack/react-router"
+import { Button } from "@/components/ui/button";
+import { Bookmark, Heart, Share2, Clock, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface ArticleCardProps {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  readTime: number;
+  author: string;
+  date: string;
+  imageUrl?: string;
+  feedTitle?: string;
+  liked?: boolean;
+  saved?: boolean;
+  read?: boolean;
+  onLike?: () => void;
+  onSave?: () => void;
+  onShare?: () => void;
+  onClick?: () => void;
+}
 
 export const Route = createFileRoute("/rss/article/$id")({
-  component: ArticlePageComponent,
+  component: ArticleCardComponent,
 });
 
-function ArticlePageComponent() {
-  const { id } = Route.useParams();
-
-  // In a real app, you'd fetch the article based on the ID.
-  // For now, we'll use the same hardcoded article.
-  const article = {
-    id: id,
-    title: "The Future of Web Development",
-    subtitle:
-      "Exploring emerging technologies and best practices shaping the next generation of web applications.",
-    category: "Technology",
-    readTime: 5,
-    author: "Sarah Chen",
-    date: "Oct 20, 2025",
-    content: `The web development landscape continues to evolve at a rapid pace. With new frameworks, tools, and methodologies emerging constantly, developers must stay informed about the latest trends and best practices.
- ## Key Trends to Watch
-
-
-		Several important trends are shaping the future of web development. Server-side rendering, edge computing, and AI-powered development tools are becoming increasingly important in modern applications.
-
-- AI-assisted code generation and debugging
-- Edge computing and serverless architectures
-- Enhanced performance optimization techniques
-- Improved developer experience and tooling
-
-## Best Practices
-
-Following established best practices ensures your applications are maintainable, performant, and secure. Focus on clean code, proper testing, and continuous learning.
-
-The future of web development is exciting and full of possibilities. By staying informed and adapting to new technologies, developers can build better applications that serve users more effectively.`,
-    tags: ["Web Development", "AI", "Performance", "Best Practices"],
-  };
-
+function ArticleCardComponent({
+  id,
+  title,
+  excerpt,
+  category,
+  readTime,
+  author,
+  date,
+  imageUrl,
+  feedTitle,
+  liked = false,
+  saved = false,
+  read = false,
+  onLike,
+  onSave,
+  onShare,
+  onClick,
+}: ArticleCardProps) {
   return (
-    <main className="flex-1 overflow-y-auto">
-      <ArticleDisplay {...article} />
-    </main>
+    <article
+      onClick={onClick}
+      className={cn(
+        "group relative flex flex-col cursor-pointer rounded-xl border border-border bg-card overflow-hidden transition-all duration-200",
+        "hover:border-border/80 hover:shadow-lg hover:shadow-black/5 hover:-translate-y-0.5",
+        read && "opacity-60"
+      )}
+    >
+      {/* Thumbnail */}
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+            <div className="text-4xl font-bold text-muted-foreground/20 select-none">
+              {title.charAt(0)}
+            </div>
+          </div>
+        )}
+
+        {/* Category badge overlaid on image */}
+        <div className="absolute top-3 left-3">
+          <span className="inline-flex items-center rounded-md bg-background/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-foreground border border-border/50">
+            {category}
+          </span>
+        </div>
+
+        {/* Read indicator */}
+        {read && (
+          <div className="absolute inset-0 bg-background/20" />
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-col flex-1 p-4 gap-3">
+        {/* Feed source */}
+        {feedTitle && (
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide truncate">
+            {feedTitle}
+          </p>
+        )}
+
+        {/* Title */}
+        <h3 className="font-semibold text-foreground text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+
+        {/* Excerpt */}
+        {excerpt && (
+          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed flex-1">
+            {excerpt}
+          </p>
+        )}
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-1 mt-auto">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+            <Clock className="h-3 w-3 shrink-0" />
+            <span className="shrink-0">{readTime}m</span>
+            <span className="text-border">·</span>
+            <span className="truncate">{date}</span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-0.5 shrink-0 -mr-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={(e) => { e.stopPropagation(); onLike?.(); }}
+            >
+              <Heart className={cn("h-3.5 w-3.5", liked && "fill-current text-red-500")} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={(e) => { e.stopPropagation(); onSave?.(); }}
+            >
+              <Bookmark className={cn("h-3.5 w-3.5", saved && "fill-current text-primary")} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={(e) => { e.stopPropagation(); onShare?.(); }}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }
