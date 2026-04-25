@@ -10,9 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RssIndexRouteImport } from './routes/rss/index'
-import { Route as ExploreIndexRouteImport } from './routes/explore/index'
 import { Route as BookmarksIndexRouteImport } from './routes/bookmarks/index'
 import { Route as BookmarksIdRouteImport } from './routes/bookmarks/$id'
 import { Route as RssArticleIdRouteImport } from './routes/rss/article.$id'
@@ -20,6 +20,11 @@ import { Route as RssArticleIdRouteImport } from './routes/rss/article.$id'
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -30,11 +35,6 @@ const IndexRoute = IndexRouteImport.update({
 const RssIndexRoute = RssIndexRouteImport.update({
   id: '/rss/',
   path: '/rss/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExploreIndexRoute = ExploreIndexRouteImport.update({
-  id: '/explore/',
-  path: '/explore/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookmarksIndexRoute = BookmarksIndexRouteImport.update({
@@ -55,29 +55,29 @@ const RssArticleIdRoute = RssArticleIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks/': typeof BookmarksIndexRoute
-  '/explore/': typeof ExploreIndexRoute
   '/rss/': typeof RssIndexRoute
   '/rss/article/$id': typeof RssArticleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks': typeof BookmarksIndexRoute
-  '/explore': typeof ExploreIndexRoute
   '/rss': typeof RssIndexRoute
   '/rss/article/$id': typeof RssArticleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks/': typeof BookmarksIndexRoute
-  '/explore/': typeof ExploreIndexRoute
   '/rss/': typeof RssIndexRoute
   '/rss/article/$id': typeof RssArticleIdRoute
 }
@@ -85,38 +85,38 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/explore'
     | '/settings'
     | '/bookmarks/$id'
     | '/bookmarks/'
-    | '/explore/'
     | '/rss/'
     | '/rss/article/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/explore'
     | '/settings'
     | '/bookmarks/$id'
     | '/bookmarks'
-    | '/explore'
     | '/rss'
     | '/rss/article/$id'
   id:
     | '__root__'
     | '/'
+    | '/explore'
     | '/settings'
     | '/bookmarks/$id'
     | '/bookmarks/'
-    | '/explore/'
     | '/rss/'
     | '/rss/article/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExploreRoute: typeof ExploreRoute
   SettingsRoute: typeof SettingsRoute
   BookmarksIdRoute: typeof BookmarksIdRoute
   BookmarksIndexRoute: typeof BookmarksIndexRoute
-  ExploreIndexRoute: typeof ExploreIndexRoute
   RssIndexRoute: typeof RssIndexRoute
   RssArticleIdRoute: typeof RssArticleIdRoute
 }
@@ -128,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -142,13 +149,6 @@ declare module '@tanstack/react-router' {
       path: '/rss'
       fullPath: '/rss/'
       preLoaderRoute: typeof RssIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/explore/': {
-      id: '/explore/'
-      path: '/explore'
-      fullPath: '/explore/'
-      preLoaderRoute: typeof ExploreIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bookmarks/': {
@@ -177,10 +177,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExploreRoute: ExploreRoute,
   SettingsRoute: SettingsRoute,
   BookmarksIdRoute: BookmarksIdRoute,
   BookmarksIndexRoute: BookmarksIndexRoute,
-  ExploreIndexRoute: ExploreIndexRoute,
   RssIndexRoute: RssIndexRoute,
   RssArticleIdRoute: RssArticleIdRoute,
 }
