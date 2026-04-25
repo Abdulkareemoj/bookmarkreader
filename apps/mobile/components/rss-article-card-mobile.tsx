@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import { Heart, Bookmark, Check, Link as LinkIcon } from "lucide-react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import { Heart, Bookmark, Check, Link as LinkIcon, Image as ImageIcon } from "lucide-react-native";
 import type { Article } from "@packages/store";
 import { cn } from "@/lib/utils";
 import { Link } from "expo-router";
@@ -24,7 +24,7 @@ export function RssArticleCardMobile({
   return (
     <Link
       href={{
-        pathname: "/article/[id]",
+        pathname: "/rss/[id]",
         params: { id: article.id, article: JSON.stringify(article) },
       }}
       asChild
@@ -32,12 +32,26 @@ export function RssArticleCardMobile({
       <TouchableOpacity
         onPress={onPress}
         className={cn(
-          "mb-4 rounded-lg border border-border p-4 active:opacity-80",
+          "mb-4 rounded-lg border border-border active:opacity-80",
           article.read ? "bg-card/50 opacity-70" : "bg-card shadow-sm"
         )}
       >
-        <View className="flex-row justify-between items-start">
-          <View className="flex-1 pr-4">
+        <View className="flex-row">
+          {/* Image Section */}
+          {article.image ? (
+            <Image 
+              source={{ uri: article.image }} 
+              className="w-24 h-24 rounded-l-lg"
+             	resizeMode="cover"
+            />
+          ) : (
+            <View className="w-24 h-24 bg-muted rounded-l-lg items-center justify-center">
+              <ImageIcon size={20} className="text-muted-foreground" />
+            </View>
+          )}
+
+          {/* Content Section */}
+          <View className="flex-1 p-4">
             <Text
               className={cn(
                 "text-lg font-bold text-foreground",
@@ -47,16 +61,16 @@ export function RssArticleCardMobile({
             >
               {article.title}
             </Text>
+            <Text className="text-sm text-muted-foreground line-clamp-2 mt-1">
+              {article.contentSnippet || "No snippet available."}
+            </Text>
           </View>
         </View>
 
-        <Text className="text-sm text-muted-foreground line-clamp-2 mt-1">
-          {article.contentSnippet || "No snippet available."}
-        </Text>
-
-        {/* Metadata */}
-        <View className="flex-row justify-between items-center mt-3">
-          <View className="flex-row items-center gap-2">
+       
+        {/* Actions */}
+        <View className="flex-row gap-3 justify-between px-4 pb-3 border-t border-border/50 pt-2">
+       <View className="flex-row items-center gap-2">
             <LinkIcon size={14} className="text-muted-foreground" />
             <Text className="text-xs text-muted-foreground font-medium">
               {feedTitle}
@@ -67,12 +81,9 @@ export function RssArticleCardMobile({
                 ? new Date(article.pubDate).toLocaleDateString()
                 : "Unknown Date"}
             </Text>
-          </View>
-        </View>
-
-        {/* Actions */}
-        <View className="flex-row gap-3 mt-3 justify-end border-t border-border/50 pt-2">
-          <TouchableOpacity onPress={() => onToggleLike(article.id)}>
+          </View>  
+          
+           <View className="flex-row items-center gap-2"> <TouchableOpacity onPress={() => onToggleLike(article.id)}>
             <Heart
               size={20}
               color={article.liked ? "#ef4444" : "#d1d5db"}
@@ -94,7 +105,8 @@ export function RssArticleCardMobile({
             />
           </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+        </View>
+      </TouchableOpacity>   
     </Link>
   );
 }

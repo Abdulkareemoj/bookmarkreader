@@ -49,6 +49,7 @@ export function AddFeedModal({ onAddFeed }: AddFeedModalProps) {
 			},
 		},
 		onSubmit: async ({ value }) => {
+			console.log("[AddFeedModal] Submitting feed:", value);
 			onAddFeed(value);
 			form.reset();
 			setOpen(false);
