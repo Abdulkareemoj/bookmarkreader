@@ -1,3 +1,5 @@
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import {
 	Cloud,
 	Download,
@@ -7,8 +9,7 @@ import {
 	Upload,
 } from "lucide-react-native";
 import { useId, useState } from "react";
-import { Alert } from "react-native";
-import { ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { Uniwind, useUniwind } from "uniwind";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import * as FileSystem from "expo-file-system";
-import * as DocumentPicker from "expo-document-picker";
-import { useReaderStore, useSettingsStore } from "@/lib/store";
 import { getInitializedAgents } from "@/lib/agents";
+import { useReaderStore, useSettingsStore } from "@/lib/store";
 
 export default function Settings() {
 	const { theme } = useUniwind();
@@ -161,7 +160,7 @@ export default function Settings() {
 					<Separator className="mb-4" />
 
 					<RadioGroup value={theme} onValueChange={_handleThemeChange}>
-						<View className="relative flex flex-row items-center justify-between rounded-md border border-input p-4 mb-3">
+						<View className="relative mb-3 flex flex-row items-center justify-between rounded-md border border-input p-4">
 							<View className="flex-row items-center gap-3">
 								<Icon as={Sun} size={20} className="text-yellow-500" />
 								<View>
@@ -174,7 +173,7 @@ export default function Settings() {
 							<RadioGroupItem value="light" id={`${themeId}-light`} />
 						</View>
 
-						<View className="relative flex flex-row items-center justify-between rounded-md border border-input p-4 mb-3">
+						<View className="relative mb-3 flex flex-row items-center justify-between rounded-md border border-input p-4">
 							<View className="flex-row items-center gap-3">
 								<Icon as={Moon} size={20} className="text-blue-500" />
 								<View>
@@ -259,7 +258,7 @@ export default function Settings() {
 					<Button
 						onPress={handleExport}
 						disabled={syncStatus === "syncing"}
-						className="w-full mb-3"
+						className="mb-3 w-full"
 					>
 						<Icon as={Upload} size={16} className="mr-2" />
 						<Text className="text-primary-foreground">Export Data</Text>
@@ -268,7 +267,7 @@ export default function Settings() {
 					<Button
 						onPress={handleImport}
 						disabled={syncStatus === "syncing"}
-						className="w-full mb-4"
+						className="mb-4 w-full"
 						variant="outline"
 					>
 						<Icon as={Download} size={16} className="mr-2" />
@@ -276,12 +275,12 @@ export default function Settings() {
 					</Button>
 
 					<View className="mb-2">
-						<Text className="text-sm font-medium mb-2">Import Mode</Text>
+						<Text className="mb-2 font-medium text-sm">Import Mode</Text>
 						<RadioGroup
 							value={importMode}
 							onValueChange={(v) => setImportMode(v as "merge" | "replace")}
 						>
-							<View className="flex-row items-center gap-2 mr-4">
+							<View className="mr-4 flex-row items-center gap-2">
 								<RadioGroupItem value="merge" id="merge" />
 								<Label>Merge</Label>
 							</View>

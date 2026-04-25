@@ -1,5 +1,6 @@
 import {
 	router,
+	Stack,
 	Tabs,
 	useFocusEffect,
 	useLocalSearchParams,
@@ -69,7 +70,7 @@ export default function TabsLayout() {
 					tabBarInactiveTintColor: "#9ca3af",
 					header: ({ route, options }) => (
 						<View
-							style={{ paddingTop: top + 10 }}
+							style={{ paddingTop: top + 7 }}
 							className="flex-row items-center justify-between border-border border-b bg-background px-4 pb-4"
 						>
 							<View className="flex-1 flex-row items-center gap-3">
@@ -94,7 +95,7 @@ export default function TabsLayout() {
 									</Text>
 								)}
 							</View>
-
+ 
 							{route.name !== "settings" && (
 								<View className="flex-row items-center">
 									<TouchableOpacity
@@ -111,7 +112,7 @@ export default function TabsLayout() {
 										/>
 									</TouchableOpacity>
 								</View>
-							)}
+							)} 
 						</View>
 					),
 				}}
@@ -127,16 +128,18 @@ export default function TabsLayout() {
 					name="bookmarks"
 					options={{
 						title: "Bookmarks",
-						tabBarIcon: ({ color }) => <Bookmark size={24} color={color} />,
+						tabBarIcon: ({ color }: any) => <Bookmark size={24} color={color} />,
 					}}
 				/>
+		
 				<Tabs.Screen
 					name="rss"
 					options={{
 						title: "RSS",
-						tabBarIcon: ({ color }) => <Radio size={24} color={color} />,
+						tabBarIcon: ({ color }: any) => <Radio size={24} color={color} />,
 					}}
 				/>
+		
 				<Tabs.Screen
 					name="explore"
 					options={{
@@ -152,6 +155,7 @@ export default function TabsLayout() {
 					}}
 				/>
 			</Tabs>
+		
 		</>
 	);
 }
