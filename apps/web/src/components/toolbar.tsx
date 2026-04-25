@@ -1,9 +1,8 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Menu, Moon, Settings, Sun } from "lucide-react";
+import { Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import SearchBar from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Toolbar() {
@@ -54,9 +53,9 @@ export default function Toolbar() {
 						)}
 						<span className="sr-only">Toggle theme</span>
 					</Button>
-					<Button variant="outline" size="sm" title="Settings">
+					{/* <Button variant="outline" size="sm" title="Settings">
 						<Settings className="size-5" />
-					</Button>
+					</Button> */}
 				</div>
 			</div>
 		</header>
