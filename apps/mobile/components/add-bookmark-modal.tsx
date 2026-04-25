@@ -25,12 +25,14 @@ import {
 } from "@/components/ui/select";
 import { Text } from "@/components/ui/text";
 import { useCollectionsStore } from "@/lib/store";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 // Define the form schema with Zod
 const bookmarkSchema = z.object({
 	url: z.string().url("Please enter a valid URL"),
 	title: z.string().min(1, "Title is required"),
 	collectionId: z.string().min(1, "Collection is required"),
+	tags: z.array(z.string()).default([]),
 });
 
 interface AddBookmarkModalProps {
@@ -38,6 +40,7 @@ interface AddBookmarkModalProps {
 		url: string;
 		title: string;
 		collectionId: string;
+		tags: string[];
 	}) => void;
 }
 
@@ -50,6 +53,7 @@ export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 			url: "",
 			title: "",
 			collectionId: "inbox",
+			tags: [] as string[],
 		},
 		validators: {
 			onChange: ({ value }) => {
@@ -62,7 +66,33 @@ export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 			},
 		},
 		onSubmit: async ({ value }) => {
-			onAddBookmark(value);
+			console.log("[AddBookmarkModal] Submitting bookmark:", value);
+			
+			// Fetch metadata including image
+			try {
+				// Import the bookmark agent directly
+				const { createBookmarkAgent } = await import("@packages/utils");
+				const { initializeMobileAgents } = await import("@/lib/db");
+				
+				const agents = await initializeMobileAgents();
+				const bookmarkAgent = createBookmarkAgent(agents.bookmarkAgent.db);
+				const metadata = await bookmarkAgent.fetchMetadata(value.url);
+				
+				const bookmarkData = {
+					...value,
+					title: value.title || metadata.title,
+					image: metadata.image,
+					tags: value.tags || [],
+				};
+				
+				console.log("[AddBookmarkModal] Bookmark data with metadata:", bookmarkData);
+				onAddBookmark(bookmarkData);
+			} catch (error) {
+				console.error("[AddBookmarkModal] Failed to fetch metadata:", error);
+				// Fallback to original data without metadata
+				onAddBookmark(value);
+			}
+			
 			form.reset();
 			setOpen(false);
 		},
@@ -172,6 +202,39 @@ export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 										</SelectGroup>
 									</SelectContent>
 								</Select>
+							</View>
+						)}
+					/>
+
+					<form.Field
+						name="tags"
+						children={(field) => (
+							<View className="gap-2">
+								<Label nativeID="tags-label">Tags</Label>
+								<MultiSelect
+									value={Array.isArray(field.state.value) ? field.state.value.map((tag: string) => ({
+										value: tag,
+										label: tag,
+									})) : []}
+									options={[
+										{ value: "development", label: "Development" },
+										{ value: "design", label: "Design" },
+										{ value: "productivity", label: "Productivity" },
+										{ value: "news", label: "News" },
+										{ value: "tutorial", label: "Tutorial" },
+										{ value: "reference", label: "Reference" },
+									]}
+									onChange={(options) => {
+										field.handleChange(options.map((opt) => opt.value));
+									}}
+									creatable
+									placeholder="Select tags"
+								/>
+								{field.state.meta.errors && (
+									<Text className="text-destructive text-xs">
+										{field.state.meta.errors.join(", ")}
+									</Text>
+								)}
 							</View>
 						)}
 					/>

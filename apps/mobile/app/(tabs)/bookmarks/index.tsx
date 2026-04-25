@@ -129,6 +129,7 @@ export default function Bookmarks() {
 					<View className="p-4">
 						<AddBookmarkModal
 							onAddBookmark={(data) => {
+								console.log("[BookmarksPage] Adding bookmark:", data);
 								addBookmark({
 									...data,
 									tags: [],

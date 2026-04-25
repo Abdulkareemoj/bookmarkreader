@@ -5,14 +5,14 @@ import {
 	Heart,
 	Home,
 	Inbox,
-	LogOut,
-	Settings,
 	X,
 } from "lucide-react-native";
 import React, { useCallback, useMemo, useRef } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useCollectionsStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { AddBookmarkModal } from "./add-bookmark-modal";
+import { useBookmarks } from "@/hooks/use-bookmarks";
 
 interface CollectionsBottomSheetProps {
 	isOpen: boolean;
@@ -28,6 +28,7 @@ export function CollectionsBottomSheet({
 	onTabChange,
 }: CollectionsBottomSheetProps) {
 	const { bookmarkCollections } = useCollectionsStore();
+	const { addBookmark } = useBookmarks();
 	const bottomSheetRef = useRef<BottomSheet>(null);
 
 	// Snap points
@@ -155,36 +156,21 @@ export function CollectionsBottomSheet({
 							</TouchableOpacity>
 						);
 					})}
-
-					{/* RSS Feeds Section */}
-					<Text className="mt-6 mb-4 px-2 font-bold text-[10px] text-muted-foreground uppercase tracking-widest">
-						RSS Feeds
-					</Text>
-					<TouchableOpacity
-						onPress={() => {
-							onTabChange("rss");
-							onClose();
-						}}
-						className={cn(
-							"mb-2 flex-row items-center rounded-xl px-4 py-3",
-							activeTab === "rss" ? "bg-primary/10" : "active:bg-accent",
-						)}
-					>
-						<Bookmark
-							size={20}
-							className={cn(
-								activeTab === "rss" ? "text-primary" : "text-muted-foreground",
-							)}
-						/>
-						<Text
-							className={cn(
-								"ml-3 font-semibold",
-								activeTab === "rss" ? "text-primary" : "text-foreground",
-							)}
-						>
-							All RSS Articles
-						</Text>
-					</TouchableOpacity>
+{/* Add Bookmark Section */}
+						<View className="mt-6">
+							<Text className="font-medium text-foreground mb-3">Add New Bookmark</Text>
+							<AddBookmarkModal
+								onAddBookmark={(data) => {
+									console.log("[CollectionsBottomSheet] Adding bookmark:", data);
+									addBookmark({
+										...data,
+										tags: [],
+									});
+									onClose(); // Close the bottom sheet after adding
+								}}
+							/>
+						</View>
+		
 				</ScrollView>
 			</BottomSheetView>
 		</BottomSheet>
