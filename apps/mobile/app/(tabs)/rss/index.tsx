@@ -1,14 +1,18 @@
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { ArrowUpDown, Filter, Plus, Rss, X } from "lucide-react-native";
-import { useMemo, useState } from "react";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { BookMarked, Check, Filter, Rss, X } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { AddFeedModal } from "@/components/add-feed-modal";
 import { RssArticleCardMobile } from "@/components/rss-article-card-mobile";
 import { Icon } from "@/components/ui/icon";
+import { Text } from "@/components/ui/text";
 import { useFeeds } from "@/hooks/use-feeds";
 
 export default function RssScreen() {
 	const router = useRouter();
+	const bottomSheetRef = useRef<BottomSheet>(null);
+	const snapPoints = useMemo(() => ["55%", "78%"], []);
 	const {
 		feeds,
 		articles,
@@ -16,27 +20,65 @@ export default function RssScreen() {
 		toggleArticleRead,
 		toggleArticleLike,
 		toggleArticleSave,
+		refreshFeed,
 	} = useFeeds();
 
-	const [sortBy, setSortBy] = useState<"newest" | "oldest" | "unread" | "liked" | "source">("newest");
+	const [sortBy, setSortBy] = useState<"Latest" | "Oldest" | "Unread" | "Liked" | "Source">("Latest");
 	const [showBottomSheet, setShowBottomSheet] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
+
+	const handleSheetChanges = useCallback((index: number) => {
+		if (index === -1) {
+			setShowBottomSheet(false);
+		}
+	}, []);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		try {
+			// Refresh all feeds individually to handle failures gracefully
+			const refreshPromises = feeds.map(async (feed) => {
+				try {
+					await refreshFeed(feed.id);
+				} catch (error) {
+					console.error(`Failed to refresh feed ${feed.title || feed.id}:`, error);
+					// Continue with other feeds even if this one fails
+				}
+			});
+			await Promise.all(refreshPromises);
+		} catch (error) {
+			console.error("Failed to refresh feeds:", error);
+		} finally {
+			setRefreshing(false);
+		}
+	}, [feeds, refreshFeed]);
+
+	useEffect(() => {
+		if (showBottomSheet) {
+			requestAnimationFrame(() => {
+				bottomSheetRef.current?.snapToIndex(0);
+			});
+		} else {
+			bottomSheetRef.current?.close();
+		}
+	}, [showBottomSheet]);
 
 	// Sort articles based on selected option
 	const sortedArticles = useMemo(() => {
 		const sorted = [...articles];
 		
 		switch (sortBy) {
-			case "newest":
+			case "Latest":
 				return sorted.sort(
 					(a, b) =>
 						new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime(),
 				);
-			case "oldest":
+			case "Oldest":
 				return sorted.sort(
 					(a, b) =>
 						new Date(a.pubDate || 0).getTime() - new Date(b.pubDate || 0).getTime(),
 				);
-			case "unread":
+			case "Unread":
 				return sorted.sort((a, b) => {
 					// Unread articles first, then by date
 					if (a.read !== b.read) {
@@ -44,7 +86,7 @@ export default function RssScreen() {
 					}
 					return new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime();
 				});
-			case "liked":
+			case "Liked":
 				return sorted.sort((a, b) => {
 					// Liked articles first, then by date
 					if (a.liked !== b.liked) {
@@ -52,7 +94,7 @@ export default function RssScreen() {
 					}
 					return new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime();
 				});
-			case "source":
+			case "Source":
 				return sorted.sort((a, b) => {
 					const feedA = feeds.find((f) => f.id === a.feedId);
 					const feedB = feeds.find((f) => f.id === b.feedId);
@@ -74,28 +116,38 @@ export default function RssScreen() {
 		return feeds.find((f) => f.id === feedId)?.title || "Unknown Feed";
 	};
 
-	const handleArticlePress = (articleId: string) => {
+	const handleArticlePress = useCallback((articleId: string) => {
 		router.push(`/rss/${articleId}` as any);
-	};
+	}, [router]);
 
 	return (
 		<View className="flex-1 bg-background pt-4">
 			{/* Header with Filter Button */}
 			<View className="flex-row items-center justify-between px-4 pb-3">
-				<Text className="font-medium text-foreground">
-					{sortedArticles.length} articles
-				</Text>
-				<TouchableOpacity
-					onPress={() => setShowBottomSheet(true)}
-					className="flex-row items-center gap-2 rounded-lg bg-secondary px-3 py-2"
-				>
-					<Filter size={16} className="text-secondary-foreground" />
-					<Text className="text-secondary-foreground text-sm font-medium">
-						{sortBy}
-					</Text>
-				</TouchableOpacity>
-			</View>
-
+  <Text className="font-medium text-foreground">
+    {sortedArticles.length} articles
+  </Text>
+  <View className="flex-row items-center gap-2">
+    <Pressable
+      onPress={() => router.push("/rss/sources" as any)}
+      className="flex-row items-center gap-2 rounded-xl bg-secondary px-3 py-2 active:opacity-80"
+    >
+      <BookMarked size={16} className="text-secondary-foreground" />
+      <Text className="text-secondary-foreground text-sm font-medium">
+        Sources
+      </Text>
+    </Pressable>
+    <Pressable
+      onPress={() => setShowBottomSheet(true)}
+      className="flex-row items-center gap-2 rounded-xl bg-secondary px-3 py-2 active:opacity-80"
+    >
+      <Filter size={16} className="text-secondary-foreground" />
+      <Text className="text-secondary-foreground text-sm font-medium">
+        {sortBy}
+      </Text>
+    </Pressable>
+  </View>
+</View>
 			{sortedArticles.length > 0 ? (
 				<FlatList
 					data={sortedArticles}
@@ -110,7 +162,15 @@ export default function RssScreen() {
 						/>
 					)}
 					keyExtractor={(item) => item.id}
-					contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+					contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+					showsVerticalScrollIndicator={false}
+					refreshControl={
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={onRefresh}
+							tintColor="#6b7280"
+						/>
+					}
 				/>
 			) : (
 				<View className="flex-1 items-center justify-center p-8">
@@ -122,88 +182,82 @@ export default function RssScreen() {
 						Subscribe to an RSS feed to start reading articles.
 					</Text>
 					<View className="p-4">
-						<TouchableOpacity
+						<Pressable
 							onPress={() => setShowBottomSheet(true)}
-							className="rounded-lg bg-primary px-4 py-3 active:opacity-70"
+							className="rounded-xl bg-primary px-4 py-3 active:opacity-70"
 						>
 							<Text className="text-primary-foreground text-center font-medium">
 								Add Feed
 							</Text>
-						</TouchableOpacity>
+						</Pressable>
 					</View>
 				</View>
 			)}
 
-			{/* Bottom Sheet */}
-			{showBottomSheet && (
-				<View className="absolute inset-0 bg-black/50" style={{ zIndex: 1000 }}>
-					<TouchableOpacity
-						className="flex-1"
-						onPress={() => setShowBottomSheet(false)}
-						activeOpacity={1}
-					/>
-					<View className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl p-6">
-						{/* Handle */}
-						<View className="w-12 h-1 bg-muted rounded-full mx-auto mb-6" />
-						
-						{/* Header */}
-						<View className="flex-row items-center justify-between mb-6">
-							<Text className="font-semibold text-foreground text-lg">RSS Controls</Text>
-							<TouchableOpacity onPress={() => setShowBottomSheet(false)}>
-								<X size={24} className="text-muted-foreground" />
-							</TouchableOpacity>
-						</View>
+			<BottomSheet
+				ref={bottomSheetRef}
+				index={-1}
+				snapPoints={snapPoints}
+				enablePanDownToClose
+				onChange={handleSheetChanges}
+				backgroundStyle={{ backgroundColor: "hsl(var(--background))" }}
+				handleIndicatorStyle={{ backgroundColor: "hsl(var(--muted-foreground))" }}
+			>
+				<BottomSheetView className="flex-1 px-5 pb-6">
+					<View className="mb-5 flex-row items-center justify-between">
+						<Text className="font-semibold text-foreground text-xl">RSS Controls</Text>
+						<Pressable
+							onPress={() => setShowBottomSheet(false)}
+							className="rounded-full bg-accent p-2 active:opacity-80"
+						>
+							<X size={20} className="text-muted-foreground" />
+						</Pressable>
+					</View>
 
-						{/* Sorting Options */}
-						<View className="mb-6">
-							<Text className="font-medium text-foreground mb-3">Sort Articles</Text>
-							<View className="space-y-2">
-								{[
-									{ key: "newest", label: "Newest First", icon: "📅" },
-									{ key: "oldest", label: "Oldest First", icon: "📜" },
-									{ key: "unread", label: "Unread First", icon: "📖" },
-									{ key: "liked", label: "Liked First", icon: "❤️" },
-									{ key: "source", label: "By Source", icon: "📡" },
-								].map((option) => (
-									<TouchableOpacity
-										key={option.key}
-										onPress={() => {
-											setSortBy(option.key as any);
-											setShowBottomSheet(false);
-										}}
-										className={`flex-row items-center justify-between rounded-lg p-3 ${
-											sortBy === option.key ? "bg-secondary" : "bg-muted/50"
-										}`}
-									>
-										<View className="flex-row items-center gap-3">
-											<Text className="text-lg">{option.icon}</Text>
-											<Text className="text-foreground font-medium">{option.label}</Text>
-										</View>
-										{sortBy === option.key && (
-											<View className="w-2 h-2 bg-primary rounded-full" />
-										)}
-									</TouchableOpacity>
-								))}
-							</View>
-						</View>
-
-						{/* Add Feed Section */}
-						<View>
-							<Text className="font-medium text-foreground mb-3">Add New Feed</Text>
-							<AddFeedModal
-								onAddFeed={(data) => {
-									console.log("[RssPage] Adding feed:", data);
-									addFeed({
-										feedUrl: data.feedUrl,
-										title: data.title || "New Feed",
-									});
+					<View className="mb-6 gap-2">
+						<Text className="mb-1 font-medium text-foreground">Sort Articles</Text>
+						{[
+							{ key: "newest", label: "Newest First" },
+							{ key: "oldest", label: "Oldest First" },
+							{ key: "unread", label: "Unread First" },
+							{ key: "liked", label: "Liked First" },
+							{ key: "source", label: "By Source" },
+						].map((option) => (
+							<Pressable
+								key={option.key}
+								onPress={() => {
+									setSortBy(option.key as typeof sortBy);
 									setShowBottomSheet(false);
 								}}
-							/>
-						</View>
+								className={`flex-row items-center justify-between rounded-xl border px-4 py-3 active:opacity-80 ${
+									sortBy === option.key
+										? "border-primary/30 bg-primary/10"
+										: "border-border bg-muted/40"
+								}`}
+							>
+								<Text className="font-medium text-foreground">{option.label}</Text>
+								{sortBy === option.key ? (
+									<Icon as={Check} size={18} className="text-primary" />
+								) : null}
+							</Pressable>
+						))}
 					</View>
-				</View>
-			)}
+
+					<View>
+						<Text className="mb-3 font-medium text-foreground">Add New Feed</Text>
+						<AddFeedModal
+							onAddFeed={(data) => {
+								console.log("[RssPage] Adding feed:", data);
+								addFeed({
+									feedUrl: data.feedUrl,
+									title: data.title || "New Feed",
+								});
+								setShowBottomSheet(false);
+							}}
+						/>
+					</View>
+				</BottomSheetView>
+			</BottomSheet>
 		</View>
 	);
 }
