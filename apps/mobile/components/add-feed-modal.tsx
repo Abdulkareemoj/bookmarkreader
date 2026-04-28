@@ -2,36 +2,50 @@ import * as React from "react";
 import { View } from "react-native";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { Plus } from "lucide-react-native";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Text } from "@/components/ui/text";
+import { Button } from "@/components/ui/button";
 
 // Define the form schema with Zod
 const feedSchema = z.object({
-	feedUrl: z.string().url("Please enter a valid RSS feed URL"),
+	feedUrl: z.url("Please enter a valid RSS feed URL").min(1, "URL is required").refine(
+			(url) => {
+				try {
+					const urlObj = new URL(url);
+					// Ensure the URL has a valid domain
+					return urlObj.hostname.includes(".");
+				} catch {
+					return false;
+				}
+			},
+			"Please enter a valid domain (e.g., https://example.com/feed.xml)"
+		),
 	title: z.string().optional(),
 });
 
 interface AddFeedModalProps {
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 	onAddFeed: (data: {
 		feedUrl: string;
 		title?: string;
 	}) => void;
 }
 
-export function AddFeedModal({ onAddFeed }: AddFeedModalProps) {
-	const [open, setOpen] = React.useState(false);
+export function AddFeedModal({ open, onOpenChange, onAddFeed }: AddFeedModalProps) {
+	const [internalOpen, setInternalOpen] = React.useState(false);
+	const isControlled = open !== undefined;
+	const isOpen = isControlled ? open : internalOpen;
+
+	const setOpen = (value: boolean) => {
+		if (isControlled) {
+			onOpenChange?.(value);
+		} else {
+			setInternalOpen(value);
+		}
+	};
 
 	const form = useForm({
 		defaultValues: {
@@ -58,20 +72,9 @@ export function AddFeedModal({ onAddFeed }: AddFeedModalProps) {
 
 	return (
 		<Dialog
-			open={open}
-			onOpenChange={(isOpen) => {
-				setOpen(isOpen);
-				if (!isOpen) {
-					form.reset();
-				}
-			}}
+			open={isOpen}
+			onOpenChange={setOpen}
 		>
-			<DialogTrigger asChild>
-				<Button variant="outline" className="w-full">
-					<Plus size={20} color="#3b82f6" className="mr-2" />
-					<Text className="font-semibold text-blue-500">Add New Feed</Text>
-				</Button>
-			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle>Add New RSS Feed</DialogTitle>
