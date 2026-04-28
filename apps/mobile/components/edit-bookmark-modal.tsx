@@ -91,13 +91,12 @@ export function EditBookmarkModal({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent>
+	<DialogContent className="sm:max-w-106.25">
 				<DialogHeader>
 					<DialogTitle>Edit Bookmark</DialogTitle>
 					<DialogDescription>Update your bookmark details</DialogDescription>
 				</DialogHeader>
-
-				<View className="space-y-4">
+	<View className="gap-4 py-4">
 					<form.Field
 						name="url"
 						validators={{
@@ -177,7 +176,7 @@ export function EditBookmarkModal({
 									<SelectContent>
 										<SelectGroup>
 											{bookmarkCollections.map((collection) => (
-												<SelectItem key={collection.id} value={collection.id}>
+												<SelectItem label={collection.name} key={collection.id} value={collection.id}>
 													{collection.name}
 												</SelectItem>
 											))}

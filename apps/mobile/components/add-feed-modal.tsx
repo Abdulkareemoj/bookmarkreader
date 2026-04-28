@@ -75,7 +75,7 @@ export function AddFeedModal({ open, onOpenChange, onAddFeed }: AddFeedModalProp
 			open={isOpen}
 			onOpenChange={setOpen}
 		>
-			<DialogContent className="sm:max-w-[425px]">
+			<DialogContent className="sm:max-w-106.25">
 				<DialogHeader>
 					<DialogTitle>Add New RSS Feed</DialogTitle>
 					<DialogDescription>
