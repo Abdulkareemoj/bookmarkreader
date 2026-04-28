@@ -1,6 +1,8 @@
 import { Stack } from "expo-router";
 import { Bookmark, Compass, Heart, Rss } from "lucide-react-native";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Text } from "@/components/ui/text";
 import { DashboardCardMobile } from "@/components/dashboard-card-mobile";
 import { useReaderStore } from "@/lib/store";
 
@@ -46,18 +48,18 @@ export default function Home() {
 	];
 
 	return (
-		<ScrollView className="flex-1 bg-background p-4">
+		<ScrollView
+			className="flex-1 bg-background"
+			contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 28 }}
+			showsVerticalScrollIndicator={false}
+		>
 			<Stack.Screen
 				options={{
 					title: "Home",
-					headerStyle: {
-						backgroundColor: "#000",
-					},
-					headerTintColor: "#fff",
 				}}
 			/>
 
-			<Text className="mb-8 text-muted-foreground">
+			<Text className="mb-5 text-muted-foreground">
 				A quick overview of your saved content and feeds.
 			</Text>
 
@@ -69,18 +71,19 @@ export default function Home() {
 				))}
 			</View>
 
-			{/* Placeholder for recent activity or quick actions */}
-			<View className="mt-10">
-				<Text className="mb-4 font-semibold text-2xl text-foreground">
-					Recent Activity
-				</Text>
-				<View className="rounded-lg border border-border bg-card p-6">
-					<Text className="text-muted-foreground">
+			<View className="mt-7">
+				<Card >
+					<CardHeader>
+						<CardTitle >Recent Activity</CardTitle>
+					</CardHeader>
+					<CardContent className="">
+						<Text className="text-sm text-muted-foreground">
 						{totalBookmarks === 0 && totalFeeds === 0
 							? "No recent activity yet. Start saving bookmarks or subscribing to feeds!"
 							: `You have ${totalBookmarks} bookmarks and ${unreadArticles} unread articles across ${totalFeeds} feeds.`}
-					</Text>
-				</View>
+						</Text>
+					</CardContent>
+				</Card>
 			</View>
 		</ScrollView>
 	);

@@ -271,7 +271,7 @@ export default function Settings() {
 						variant="outline"
 					>
 						<Icon as={Download} size={16} className="mr-2" />
-						<Text className="text-primary-foreground">Import Data</Text>
+						<Text>Import Data</Text>
 					</Button>
 
 					<View className="mb-2">
