@@ -1,8 +1,8 @@
 import type { Bookmark } from "@packages/store";
 import { router, useLocalSearchParams } from "expo-router";
 import { BookmarkIcon, LayoutGrid, List, Menu } from "lucide-react-native";
-import { useState } from "react";
-import { FlatList, Linking, TouchableOpacity, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { FlatList, Linking, Pressable, View } from "react-native";
 import { AddBookmarkModal } from "@/components/add-bookmark-modal";
 import BookmarkCard from "@/components/bookmark-card";
 import { CollectionsBottomSheet } from "@/components/collections-bottom-sheet";
@@ -28,15 +28,19 @@ export default function Bookmarks() {
 			: searchQuery
 		)?.toLowerCase() || "";
 
-	const filteredBookmarks = bookmarks.filter((bookmark: Bookmark) => {
-		const titleMatch = bookmark.title.toLowerCase().includes(search);
-		const urlMatch = bookmark.url?.toLowerCase().includes(search) || false;
-		const tagMatch =
-			bookmark.tags?.some((tag: string) =>
-				tag.toLowerCase().includes(search),
-			) || false;
-		return titleMatch || urlMatch || tagMatch;
-	});
+	const filteredBookmarks = useMemo(
+		() =>
+			bookmarks.filter((bookmark: Bookmark) => {
+				const titleMatch = bookmark.title.toLowerCase().includes(search);
+				const urlMatch = bookmark.url?.toLowerCase().includes(search) || false;
+				const tagMatch =
+					bookmark.tags?.some((tag: string) =>
+						tag.toLowerCase().includes(search),
+					) || false;
+				return titleMatch || urlMatch || tagMatch;
+			}),
+		[bookmarks, search],
+	);
 
 	const handleBookmarkPress = (url: string) => {
 		Linking.openURL(url);
@@ -56,45 +60,52 @@ export default function Bookmarks() {
 		router.setParams({ collectionId: id });
 	};
 
-	const renderBookmarkItem = ({ item }: { item: Bookmark }) => (
-		<BookmarkCard
-			{...item}
-			onLike={() => toggleLike(item.id)}
-			onSave={() => toggleSave(item.id)}
-			onDelete={() => removeBookmark(item.id)}
-			onOpenExternal={() => handleBookmarkPress(item.url)}
-			onEdit={() => handleEdit(item)}
-		/>
+	const renderBookmarkItem = useCallback(
+		({ item }: { item: Bookmark }) => (
+			<View className={viewMode === "grid" ? "flex-1" : ""}>
+				<BookmarkCard
+					{...item}
+					onLike={() => toggleLike(item.id)}
+					onSave={() => toggleSave(item.id)}
+					onDelete={() => removeBookmark(item.id)}
+					onOpenExternal={() => handleBookmarkPress(item.url)}
+					onEdit={() => handleEdit(item)}
+				/>
+			</View>
+		),
+		[handleBookmarkPress, handleEdit, removeBookmark, toggleLike, toggleSave, viewMode],
 	);
+
+	const keyExtractor = useCallback((item: Bookmark) => item.id, []);
 
 	return (
 		<View className="flex-1 bg-background">
 			{/* View Mode Toggle */}
-			<View className="flex-row justify-between p-4 pb-2">
-				<TouchableOpacity
+			<View className="flex-row items-center justify-between px-4 pb-2 pt-3">
+				<Pressable
 					onPress={() => setIsSidebarOpen(true)}
-					className="rounded-full p-2 active:bg-accent"
+					className="rounded-xl border border-border bg-card p-2.5 active:opacity-80"
 				>
-					<Menu size={22} className="text-primary" />
-				</TouchableOpacity>
+					<Menu size={20} className="text-primary" />
+				</Pressable>
 
-				<View className="flex-row">
-					<TouchableOpacity
+				<View className="flex-row rounded-xl border border-border bg-card p-1">
+					<Pressable
 						onPress={() => setViewMode("list")}
-						className={`rounded-md p-2 ${
-							viewMode === "list" ? "bg-muted" : "bg-transparent"
+						className={`rounded-lg px-3 py-2 ${
+							viewMode === "list" ? "bg-secondary" : "bg-transparent"
 						}`}
 					>
 						<Icon as={List} size={20} className="text-foreground" />
-					</TouchableOpacity>
-					<TouchableOpacity
+					</Pressable>
+					<Pressable
 						onPress={() => setViewMode("grid")}
-						className={`ml-2 rounded-md p-2 ${
-							viewMode === "grid" ? "bg-muted" : "bg-transparent"
+						className={`ml-1 rounded-lg px-3 py-2 ${
+							viewMode === "grid" ? "bg-secondary" : "bg-transparent"
 						}`}
 					>
 						<Icon as={LayoutGrid} size={20} className="text-foreground" />
-					</TouchableOpacity>
+					</Pressable>
 				</View>
 			</View>
 
@@ -102,14 +113,14 @@ export default function Bookmarks() {
 				<FlatList
 					data={filteredBookmarks}
 					renderItem={renderBookmarkItem}
-					keyExtractor={(item) => item.id}
+					keyExtractor={keyExtractor}
 					numColumns={viewMode === "grid" ? 2 : 1}
 					contentContainerStyle={{
 						paddingHorizontal: 16,
-						paddingBottom: 16,
-						...(viewMode === "grid" && { gap: 12 }),
+						paddingBottom: 20,
 					}}
 					columnWrapperStyle={viewMode === "grid" ? { gap: 12 } : undefined}
+					showsVerticalScrollIndicator={false}
 				/>
 			) : (
 				<View className="flex-1 items-center justify-center">
