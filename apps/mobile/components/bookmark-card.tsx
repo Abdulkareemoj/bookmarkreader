@@ -6,7 +6,9 @@ import {
 	Trash2,
 	Image as ImageIcon,
 } from "lucide-react-native";
-import { Image, TouchableOpacity, View } from "react-native";
+import { memo } from "react";
+import { Image, Pressable, View } from "react-native";
+import { Card, CardContent } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
 
 interface BookmarkCardProps {
@@ -23,7 +25,7 @@ interface BookmarkCardProps {
 	onEdit?: () => void;
 }
 
-export default function BookmarkCard({
+function BookmarkCard({
 	id,
 	title,
 	url,
@@ -37,63 +39,68 @@ export default function BookmarkCard({
 	onEdit,
 }: BookmarkCardProps) {
 	return (
-		<TouchableOpacity
+		<Pressable
 			onPress={onOpenExternal}
 			disabled={!onOpenExternal}
-			className="mb-4 rounded-lg border border-border bg-card active:opacity-80"
+			className="mb-3 active:opacity-90"
 		>
-			{/* Image Section */}
-			{image ? (
-				<Image 
-					source={{ uri: image }} 
-					className="w-full h-32 rounded-t-lg"
-					resizeMode="cover"
-					onError={() => {
-						// Handle image loading error - could set state to show fallback
-					}}
-				/>
-			) : (
-				<View className="w-full h-32 bg-muted rounded-t-lg items-center justify-center">
-					<ImageIcon size={32} className="text-muted-foreground" />
-				</View>
-			)}
+			<Card className="gap-0 overflow-hidden py-0">
+				{/* Image Section */}
+				{image ? (
+					<Image
+						source={{ uri: image }}
+						className="h-36 w-full"
+						resizeMode="cover"
+						onError={() => {
+							// Keep silent fallback behavior to avoid user-facing noise.
+						}}
+					/>
+				) : (
+					<View className="h-36 w-full items-center justify-center bg-muted">
+						<ImageIcon size={30} className="text-muted-foreground" />
+					</View>
+				)}
 
-			{/* Content Section */}
-			<View className="p-4">
-				<Text className="font-bold text-foreground text-lg">{title}</Text>
-				<View className="mt-2 flex-row items-center gap-2">
-					<LinkIcon size={16} className="text-muted-foreground" />
-					<Text className="flex-1 truncate text-muted-foreground text-sm">
-						{url}
-					</Text>
-				</View>
+				<CardContent className="p-3">
+					
 
-				{/* Actions */}
-				<View className="mt-4 flex-row justify-end gap-4">
-					{onEdit && (
-						<TouchableOpacity onPress={onEdit} className="p-1">
-							<Edit size={20} className="text-muted-foreground" />
-						</TouchableOpacity>
-					)}
-					<TouchableOpacity onPress={onLike} className="p-1">
-						<Heart
-							size={20}
-							color={liked ? "#ef4444" : "#6b7280"}
-							fill={liked ? "#ef4444" : "none"}
-						/>
-					</TouchableOpacity>
-					<TouchableOpacity onPress={onSave} className="p-1">
-						<Bookmark
-							size={20}
-							color={saved ? "#3b82f6" : "#6b7280"}
-							fill={saved ? "#3b82f6" : "none"}
-						/>
-					</TouchableOpacity>
-					<TouchableOpacity onPress={onDelete} className="p-1">
-						<Trash2 size={20} className="text-red-500" />
-					</TouchableOpacity>
-				</View>
-			</View>
-		</TouchableOpacity>
+					<View className=" flex-row justify-between gap-2">
+						<View className="flex-col  gap-2">
+							<Text className="text-lg font-semibold text-foreground" numberOfLines={2}>
+								{title}
+							</Text>
+							<Text className="text-muted-foreground text-sm" numberOfLines={1}>
+								{url}
+							</Text>
+						</View>
+						<View className="flex-row items-center gap-2">
+						{onEdit && (
+							<Pressable onPress={onEdit} className="rounded-md p-2 active:bg-accent">
+								<Edit size={18} className="text-muted-foreground" />
+							</Pressable>
+						)}
+						<Pressable onPress={onLike} className="rounded-md p-2 active:bg-accent">
+							<Heart
+								size={18}
+								color={liked ? "#ef4444" : "#6b7280"}
+								fill={liked ? "#ef4444" : "none"}
+							/>
+						</Pressable>
+						<Pressable onPress={onSave} className="rounded-md p-2 active:bg-accent">
+							<Bookmark
+								size={18}
+								color={saved ? "#3b82f6" : "#6b7280"}
+								fill={saved ? "#3b82f6" : "none"}
+							/>
+						</Pressable>
+						<Pressable onPress={onDelete} className="rounded-md p-2 active:bg-accent">
+							<Trash2 size={18} className="text-red-500" />
+						</Pressable>
+					</View></View>
+				</CardContent>
+			</Card>
+		</Pressable>
 	);
 }
+
+export default memo(BookmarkCard);
