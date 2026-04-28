@@ -9,16 +9,16 @@ import {
 	Bookmark,
 	Compass,
 	Home,
-	Menu,
 	Radio,
 	Search,
 	Settings,
 } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { Platform, Text, TouchableOpacity, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CollectionsBottomSheet } from "@/components/collections-bottom-sheet";
 import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
 
 export default function TabsLayout() {
 	const [showSearchInput, setShowSearchInput] = useState(false);
@@ -71,11 +71,11 @@ export default function TabsLayout() {
 					header: ({ route, options }) => (
 						<View
 							style={{ paddingTop: top + 7 }}
-							className="flex-row items-center justify-between border-border border-b bg-background px-4 pb-4"
+							className="flex-row items-center justify-between border-border border-b bg-background px-4 pb-3"
 						>
 							<View className="flex-1 flex-row items-center gap-3">
 								{route.name === "settings" ? (
-									<Text className="font-bold text-foreground text-xl">
+									<Text className="text-xl font-bold text-foreground">
 										{options.title}
 									</Text>
 								) : showSearchInput ? (
@@ -86,11 +86,11 @@ export default function TabsLayout() {
 											setSearchQuery(text);
 											router.setParams({ searchQuery: text });
 										}}
-										className="mr-2 h-9 flex-1"
+										className="mr-2 h-10 flex-1"
 										autoFocus
 									/>
 								) : (
-									<Text className="font-bold text-foreground text-xl">
+									<Text className="text-xl font-bold text-foreground">
 										{options.title}
 									</Text>
 								)}
@@ -98,19 +98,19 @@ export default function TabsLayout() {
  
 							{route.name !== "settings" && (
 								<View className="flex-row items-center">
-									<TouchableOpacity
+									<Pressable
 										onPress={() => setShowSearchInput((prev) => !prev)}
-										className="rounded-full p-2 active:bg-accent"
+										className="rounded-xl border border-border bg-card p-2.5 active:opacity-80"
 									>
 										<Search
-											size={22}
+											size={20}
 											className={
 												showSearchInput
 													? "text-primary"
 													: "text-muted-foreground"
 											}
 										/>
-									</TouchableOpacity>
+									</Pressable>
 								</View>
 							)} 
 						</View>
