@@ -124,6 +124,7 @@ function BookmarksComponent() {
 								title: data.title,
 								tags: data.tags,
 								collectionId: data.collectionId || filter || "inbox",
+								image: data.image,
 							});
 						}}
 					/>

@@ -4,7 +4,6 @@ import { FeaturesSection } from "@/components/features";
 import Hero from "@/components/hero";
 import { HowItWorks } from "@/components/how-it-works";
 import { PromoBand } from "@/components/promo-band";
-
 import { TestimonialsSection } from "@/components/testimonials";
 
 export const Route = createFileRoute("/")({
