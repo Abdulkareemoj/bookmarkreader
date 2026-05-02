@@ -143,24 +143,24 @@ export default function Settings() {
 	};
 
 	return (
-		<ScrollView className="flex-1 bg-background p-4">
+		<ScrollView className="flex-1 bg-background " 	contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 28 }}
+			showsVerticalScrollIndicator={false}>
 			{/* Header */}
-			<View className="mb-8">
+			<View className="mb-4">
 				<Text className="text-base text-muted-foreground">
 					Manage your application preferences and reading experience.
 				</Text>
 			</View>
 
 			{/* Theme Selection Card */}
-			<Card className="mb-6">
-				<View className="p-6">
+			<Card className="px-4 mb-4">
+				<View className="py-2">
 					<Text className="mb-4 font-semibold text-foreground text-lg">
 						Appearance
 					</Text>
-					<Separator className="mb-4" />
 
 					<RadioGroup value={theme} onValueChange={_handleThemeChange}>
-						<View className="relative mb-3 flex flex-row items-center justify-between rounded-md border border-input p-4">
+						<View className="relative mb-3 flex flex-row items-center justify-between rounded-md border border-input p-2">
 							<View className="flex-row items-center gap-3">
 								<Icon as={Sun} size={20} className="text-yellow-500" />
 								<View>
@@ -173,7 +173,7 @@ export default function Settings() {
 							<RadioGroupItem value="light" id={`${themeId}-light`} />
 						</View>
 
-						<View className="relative mb-3 flex flex-row items-center justify-between rounded-md border border-input p-4">
+						<View className="relative mb-3 flex flex-row items-center justify-between rounded-md border border-input p-2">
 							<View className="flex-row items-center gap-3">
 								<Icon as={Moon} size={20} className="text-blue-500" />
 								<View>
@@ -186,7 +186,7 @@ export default function Settings() {
 							<RadioGroupItem value="dark" id={`${themeId}-dark`} />
 						</View>
 
-						<View className="relative flex flex-row items-center justify-between rounded-md border border-input p-4">
+						<View className="relative flex flex-row items-center justify-between rounded-md border border-input p-2">
 							<View className="flex-row items-center gap-3">
 								<Icon
 									as={Monitor}
@@ -206,29 +206,11 @@ export default function Settings() {
 				</View>
 			</Card>
 
-			{/* Offline Mode Card */}
-			<Card className="mb-6">
-				<View className="p-6">
-					<Text className="mb-4 font-semibold text-foreground text-lg">
-						Offline Mode
-					</Text>
-					<Separator className="mb-4" />
-
-					<View className="flex-row items-center justify-between">
-						<View className="flex-1">
-							<Label className="font-medium">Enable Offline Mode</Label>
-							<Text className="text-muted-foreground text-sm">
-								Use local storage only
-							</Text>
-						</View>
-						<Switch checked={offlineMode} onCheckedChange={setOfflineMode} />
-					</View>
-				</View>
-			</Card>
+		
 
 			{/* Sync Card */}
-			<Card className="mb-6">
-				<View className="p-6">
+			<Card className="px-4 mb-4">
+				<View className="p-2">
 					<View className="mb-4 flex-row items-center justify-between">
 						<Text className="font-semibold text-foreground text-lg">
 							Sync Data
@@ -294,9 +276,10 @@ export default function Settings() {
 			</Card>
 
 			{/* About Card */}
+			<View>
 			<Card>
-				<View className="p-6">
-					<Text className="mb-4 font-semibold text-foreground text-lg">
+				<View className="px-4">
+					<Text className="mb-2 font-semibold text-foreground text-lg">
 						About
 					</Text>
 					<Separator className="mb-4" />
@@ -313,6 +296,7 @@ export default function Settings() {
 					</View>
 				</View>
 			</Card>
+			</View>
 		</ScrollView>
 	);
 }

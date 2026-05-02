@@ -1,7 +1,7 @@
 import type { Bookmark } from "@packages/store";
 import { router, useLocalSearchParams } from "expo-router";
 import { BookmarkIcon, LayoutGrid, List, Menu } from "lucide-react-native";
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FlatList, Linking, Pressable, View } from "react-native";
 import { AddBookmarkModal } from "@/components/add-bookmark-modal";
 import BookmarkCard from "@/components/bookmark-card";
@@ -73,7 +73,14 @@ export default function Bookmarks() {
 				/>
 			</View>
 		),
-		[handleBookmarkPress, handleEdit, removeBookmark, toggleLike, toggleSave, viewMode],
+		[
+			handleBookmarkPress,
+			handleEdit,
+			removeBookmark,
+			toggleLike,
+			toggleSave,
+			viewMode,
+		],
 	);
 
 	const keyExtractor = useCallback((item: Bookmark) => item.id, []);
@@ -81,7 +88,7 @@ export default function Bookmarks() {
 	return (
 		<View className="flex-1 bg-background">
 			{/* View Mode Toggle */}
-			<View className="flex-row items-center justify-between px-4 pb-2 pt-3">
+			<View className="flex-row items-center justify-between px-4 pt-3 pb-2">
 				<Pressable
 					onPress={() => setIsSidebarOpen(true)}
 					className="rounded-xl border border-border bg-card p-2.5 active:opacity-80"
