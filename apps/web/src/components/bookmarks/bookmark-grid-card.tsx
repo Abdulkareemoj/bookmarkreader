@@ -16,6 +16,7 @@ interface BookmarkGridCardProps {
   title: string;
   url?: string;
   favicon?: string;
+  image?: string;
   liked: boolean;
   saved: boolean;
   onLike: (id: string) => void;
@@ -31,6 +32,7 @@ export function BookmarkGridCard({
   title,
   url,
   favicon,
+  image,
   liked,
   saved,
   onLike,
@@ -51,17 +53,32 @@ export function BookmarkGridCard({
       <ContextMenuTrigger asChild>
         <article
           onClick={onClick}
-          className="group relative cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:bg-card/80"
+          className="group relative cursor-pointer rounded-lg border border-border bg-card transition-colors hover:bg-card/80"
         >
-          <CardHeader className="p-0">
+          {/* Image Section */}
+          {image ? (
+            <div className="relative h-32 w-full overflow-hidden rounded-t-lg bg-muted">
+              <img
+                src={image}
+                alt={title}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  // Hide image if it fails to load
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          ) : null}
+
+          <CardHeader className="p-4">
             <CardTitle className="line-clamp-2 text-lg">{title}</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 pt-2">
+          <CardContent className="p-4 pt-0">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               {favicon ? (
-                <img 
-                  src={favicon} 
-                  alt="Favicon" 
+                <img
+                  src={favicon}
+                  alt="Favicon"
                   className="h-4 w-4 shrink-0"
                   onError={(e) => {
                     // Hide favicon if it fails to load

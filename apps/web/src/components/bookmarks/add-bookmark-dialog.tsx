@@ -49,6 +49,7 @@ interface AddBookmarkDialogProps {
 		title: string;
 		tags: string[];
 		collectionId: string;
+		image?: string;
 	}) => void;
 }
 
@@ -56,6 +57,7 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [fetchError, setFetchError] = useState<string>("");
+	const [fetchedImage, setFetchedImage] = useState<string | undefined>(undefined);
 
 	const { bookmarkAgent } = useReaderStore((state) => state);
 	const { tagOptions } = useTags();
@@ -79,8 +81,12 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 			},
 		},
 		onSubmit: async ({ value }) => {
-			onAddBookmark(value);
+			onAddBookmark({
+				...value,
+				image: fetchedImage,
+			});
 			form.reset();
+			setFetchedImage(undefined);
 			setOpen(false);
 		},
 	});
@@ -107,6 +113,8 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 				if (!title.trim()) {
 					form.setFieldValue("title", metadata.title || "");
 				}
+				// Store the fetched image
+				setFetchedImage(metadata.image);
 			} catch (error) {
 				console.error("Failed to fetch metadata:", error);
 				// Don't show error for CORS/network issues, just log it

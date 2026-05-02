@@ -52,6 +52,16 @@ function BookmarkListItem({
           params={{ id: bookmark.id }}
           className="group flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-muted/50"
         >
+          {bookmark.image && (
+            <img
+              src={bookmark.image}
+              alt={bookmark.title}
+              className="h-12 w-12 shrink-0 rounded object-cover mr-3"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
           <div className="flex min-w-0 flex-col gap-1">
             <span className="truncate font-medium">{bookmark.title}</span>
             <div className="flex items-center gap-2 text-muted-foreground text-sm">

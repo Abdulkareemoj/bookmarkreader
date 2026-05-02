@@ -48,6 +48,7 @@ export function BookmarkGridView({
 								title={bookmark.title}
 								url={bookmark.url || ""}
 								favicon={bookmark.favicon}
+								image={bookmark.image}
 								liked={bookmark.liked}
 								saved={bookmark.saved}
 								onLike={onLike}
