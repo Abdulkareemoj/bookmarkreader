@@ -1,4 +1,6 @@
 import { X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface TagPillProps {
@@ -16,32 +18,41 @@ export default function TagPill({
 	onRemove,
 	onClick,
 }: TagPillProps) {
-	const variantStyles = {
-		default: "bg-muted text-foreground hover:bg-muted/80",
-		primary: "bg-primary/10 text-primary hover:bg-primary/20",
-		secondary: "bg-secondary/10 text-secondary hover:bg-secondary/20",
-	};
+	const badgeVariant =
+		variant === "primary"
+			? "outline"
+			: variant === "secondary"
+				? "secondary"
+				: "default";
+	const customClass =
+		variant === "primary"
+			? "bg-primary/10 text-primary hover:bg-primary/20"
+			: "";
 
 	return (
-		<div
+		<Badge
 			onClick={onClick}
+			variant={badgeVariant}
 			className={cn(
-				"inline-flex cursor-pointer items-center gap-2 rounded-full px-3 py-1 font-medium text-sm transition-colors",
-				variantStyles[variant],
+				"cursor-pointer px-3 py-1 font-medium text-sm",
+				customClass,
 			)}
 		>
 			<span>{label}</span>
 			{removable && (
-				<button
+				<Button
+					type="button"
+					variant="ghost"
+					size="icon"
 					onClick={(e) => {
 						e.stopPropagation();
 						onRemove?.();
 					}}
-					className="ml-1 transition-opacity hover:opacity-70"
+					className="ml-1 size-4 transition-opacity hover:opacity-70"
 				>
-					<X className="h-3 w-3" />
-				</button>
+					<X data-icon="inline-start" className="size-3" />
+				</Button>
 			)}
-		</div>
+		</Badge>
 	);
 }

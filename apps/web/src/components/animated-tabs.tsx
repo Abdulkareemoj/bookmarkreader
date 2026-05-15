@@ -57,7 +57,7 @@ export default function AnimatedTabs() {
 											exit={{ filter: "blur(2px)" }}
 											transition={{ duration: 0.25, ease: "easeOut" }}
 										>
-											<Icon className="h-4 w-4 flex-shrink-0" />
+											<Icon data-icon="inline-start" className="shrink-0" />
 											<AnimatePresence initial={false}>
 												{isActive && (
 													<motion.span

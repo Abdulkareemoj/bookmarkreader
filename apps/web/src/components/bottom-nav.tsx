@@ -1,5 +1,5 @@
 import { Link, useMatchRoute } from "@tanstack/react-router";
-import { Home, BookMarked, Rss, Compass } from "lucide-react";
+import { BookMarked, Compass, Home, Rss } from "lucide-react";
 
 export default function BottomNav() {
 	const matchRoute = useMatchRoute();
@@ -22,7 +22,7 @@ export default function BottomNav() {
 								to={to as any}
 								className={`flex flex-col items-center justify-center py-2 text-xs ${active ? "text-primary" : "text-muted-foreground"}`}
 							>
-								<Icon className="mb-1 h-5 w-5" />
+								<Icon data-icon="inline-start" className="mb-1" />
 								<span>{label}</span>
 							</Link>
 						</li>
