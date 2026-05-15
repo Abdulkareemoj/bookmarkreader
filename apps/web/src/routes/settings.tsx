@@ -27,7 +27,7 @@ function ThemePreview({ mode }: { mode: "light" | "dark" | "system" }) {
 				<div
 					className={`h-8 w-10 rounded ${isDark ? "bg-[oklch(0.25_0.02_250)]" : "bg-[oklch(0.82_0.02_250)]"}`}
 				/>
-				<div className="flex-1 space-y-1.5">
+				<div className="flex flex-col gap-1.5">
 					<div
 						className={`h-1.5 w-full rounded-full ${isDark ? "bg-[oklch(0.3_0.015_260)]" : "bg-[oklch(0.82_0.01_260)]"}`}
 					/>
@@ -41,7 +41,10 @@ function ThemePreview({ mode }: { mode: "light" | "dark" | "system" }) {
 			</div>
 			{mode === "system" && (
 				<div className="absolute inset-0 flex items-center justify-center">
-					<Monitor className="h-6 w-6 text-muted-foreground/50" />
+					<Monitor
+						data-icon="inline-start"
+						className="size-6 text-muted-foreground/50"
+					/>
 				</div>
 			)}
 		</div>
@@ -59,7 +62,7 @@ function SettingRow({
 }) {
 	return (
 		<div className="flex items-center justify-between border-border border-b py-4 last:border-b-0">
-			<div className="space-y-0.5">
+			<div className="flex flex-col gap-0.5">
 				<p className="font-medium text-sm">{label}</p>
 				{description && (
 					<p className="text-muted-foreground text-xs">{description}</p>

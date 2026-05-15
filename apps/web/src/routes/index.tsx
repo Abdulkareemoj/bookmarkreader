@@ -163,11 +163,11 @@ function DashboardComponent() {
 				</div>
 				<div className="flex gap-2">
 					<Button variant="outline" size="sm">
-						<Plus className="mr-2 h-4 w-4" />
+						<Plus data-icon="inline-start" className="mr-2" />
 						Add Bookmark
 					</Button>
 					<Button size="sm">
-						<Plus className="mr-2 h-4 w-4" />
+						<Plus data-icon="inline-start" className="mr-2" />
 						Add Feed
 					</Button>
 				</div>
@@ -180,7 +180,7 @@ function DashboardComponent() {
 			</div>
 
 			{/* Time-based sections */}
-			<div className="mt-10 space-y-6">
+			<div className="mt-10 flex flex-col gap-6">
 				{(bookmarksToday.length > 0 || articlesToday.length > 0) && (
 					<div className="rounded-lg border border-border bg-card p-6">
 						<h2 className="mb-4 font-semibold text-foreground text-xl">
@@ -326,7 +326,7 @@ function DashboardComponent() {
 						<h2 className="mb-4 font-semibold text-foreground text-xl">
 							Reading Stats
 						</h2>
-						<div className="space-y-2">
+						<div className="flex flex-col gap-2">
 							<div className="flex justify-between">
 								<span className="text-muted-foreground text-sm">
 									Articles Read
@@ -351,7 +351,7 @@ function DashboardComponent() {
 						<h2 className="mb-4 font-semibold text-foreground text-xl">
 							Pinned Items
 						</h2>
-						<div className="space-y-3">
+						<div className="flex flex-col gap-3">
 							{pinnedBookmarks.slice(0, 5).map((bookmark) => (
 								<div
 									key={bookmark.id}
@@ -384,7 +384,7 @@ function DashboardComponent() {
 						<h2 className="mb-4 font-semibold text-foreground text-xl">
 							From Your Feeds
 						</h2>
-						<div className="space-y-6">
+						<div className="flex flex-col gap-6">
 							{articlesByFeed.map(
 								({ feed, articles: feedArticles }) =>
 									feedArticles.length > 0 && (

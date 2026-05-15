@@ -78,7 +78,7 @@ function BookmarksComponent() {
 					<Empty className="rounded-lg border">
 						<EmptyHeader>
 							<EmptyMedia variant="icon">
-								<BookmarkIcon className="h-6 w-6" />
+								<BookmarkIcon data-icon="inline-start" className="size-6" />
 							</EmptyMedia>
 							<EmptyTitle>No Bookmarks Found</EmptyTitle>
 							<EmptyDescription>
@@ -129,14 +129,14 @@ function BookmarksComponent() {
 						}}
 					/>
 				</div>
-				<div className="flex items-center space-x-2">
+				<div className="flex items-center gap-2">
 					<Button
 						variant={viewMode === "list" ? "secondary" : "ghost"}
 						size="icon"
 						onClick={() => setViewMode("list")}
 						title="List View"
 					>
-						<List className="h-5 w-5" />
+						<List data-icon="inline-start" />
 					</Button>
 					<Button
 						variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -144,7 +144,7 @@ function BookmarksComponent() {
 						onClick={() => setViewMode("grid")}
 						title="Grid View"
 					>
-						<LayoutGrid className="h-5 w-5" />
+						<LayoutGrid data-icon="inline-start" />
 					</Button>
 				</div>
 			</header>

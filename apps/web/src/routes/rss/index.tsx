@@ -59,13 +59,19 @@ function ArticleGrid({
 		return (
 			<div className="flex justify-center p-8">
 				<Empty className="w-full max-w-sm rounded-xl border">
-					<div className="space-y-3 p-8 text-center">
+					<div className="flex flex-col gap-3 p-8 text-center">
 						<div className="flex justify-center">
-							<div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+							<div className="flex size-12 items-center justify-center rounded-full bg-muted">
 								{hasNoFeeds ? (
-									<Rss className="h-5 w-5 text-muted-foreground" />
+									<Rss
+										data-icon="inline-start"
+										className="text-muted-foreground"
+									/>
 								) : (
-									<Check className="h-5 w-5 text-muted-foreground" />
+									<Check
+										data-icon="inline-start"
+										className="text-muted-foreground"
+									/>
 								)}
 							</div>
 						</div>
@@ -97,7 +103,7 @@ function ArticleGrid({
 
 	if (viewMode === "list") {
 		return (
-			<div className="space-y-px">
+			<div className="flex flex-col gap-px">
 				{sorted.map((article) => {
 					const feedTitle = feeds.find((f) => f.id === article.feedId)?.title;
 					return (
@@ -139,15 +145,15 @@ function ArticleGrid({
 											<Button
 												variant="ghost"
 												size="icon"
-												className="h-7 w-7 text-muted-foreground hover:text-foreground"
+												className="size-7 text-muted-foreground hover:text-foreground"
 												onClick={(e) => {
 													e.preventDefault();
 													toggleArticleLike(article.id);
 												}}
 											>
 												<Heart
+													data-icon="inline-start"
 													className={cn(
-														"h-3.5 w-3.5",
 														article.liked && "fill-current text-red-500",
 													)}
 												/>
@@ -155,15 +161,15 @@ function ArticleGrid({
 											<Button
 												variant="ghost"
 												size="icon"
-												className="h-7 w-7 text-muted-foreground hover:text-foreground"
+												className="size-7 text-muted-foreground hover:text-foreground"
 												onClick={(e) => {
 													e.preventDefault();
 													toggleArticleSave(article.id);
 												}}
 											>
 												<Bookmark
+													data-icon="inline-start"
 													className={cn(
-														"h-3.5 w-3.5",
 														article.saved && "fill-current text-primary",
 													)}
 												/>
@@ -171,17 +177,15 @@ function ArticleGrid({
 											<Button
 												variant="ghost"
 												size="icon"
-												className="h-7 w-7 text-muted-foreground hover:text-foreground"
+												className="size-7 text-muted-foreground hover:text-foreground"
 												onClick={(e) => {
 													e.preventDefault();
 													toggleArticleRead(article.id);
 												}}
 											>
 												<Check
-													className={cn(
-														"h-3.5 w-3.5",
-														article.read && "text-primary",
-													)}
+													data-icon="inline-start"
+													className={cn(article.read && "text-primary")}
 												/>
 											</Button>
 										</div>
@@ -337,7 +341,10 @@ function RssComponent() {
 					<div className="flex items-center gap-2">
 						{/* Search */}
 						<div className="relative hidden sm:block">
-							<Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+							<Search
+								data-icon="inline-start"
+								className="absolute top-1/2 left-2.5 -translate-y-1/2 text-muted-foreground"
+							/>
 							<Input
 								placeholder="Search articles..."
 								value={search}
@@ -351,18 +358,18 @@ function RssComponent() {
 							<Button
 								variant={viewMode === "grid" ? "secondary" : "ghost"}
 								size="icon"
-								className="h-7 w-7"
+								className="size-7"
 								onClick={() => setViewMode("grid")}
 							>
-								<LayoutGrid className="h-3.5 w-3.5" />
+								<LayoutGrid data-icon="inline-start" />
 							</Button>
 							<Button
 								variant={viewMode === "list" ? "secondary" : "ghost"}
 								size="icon"
-								className="h-7 w-7"
+								className="size-7"
 								onClick={() => setViewMode("list")}
 							>
-								<List className="h-3.5 w-3.5" />
+								<List data-icon="inline-start" />
 							</Button>
 						</div>
 
@@ -375,7 +382,8 @@ function RssComponent() {
 							className="h-8 gap-1.5"
 						>
 							<RefreshCw
-								className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
+								data-icon="inline-start"
+								className={cn(isRefreshing && "animate-spin")}
 							/>
 							<span className="hidden sm:inline">Refresh</span>
 						</Button>
@@ -385,7 +393,10 @@ function RssComponent() {
 				{/* Mobile search */}
 				<div className="px-6 pb-3 sm:hidden">
 					<div className="relative">
-						<Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+						<Search
+							data-icon="inline-start"
+							className="absolute top-1/2 left-2.5 -translate-y-1/2 text-muted-foreground"
+						/>
 						<Input
 							placeholder="Search articles..."
 							value={search}

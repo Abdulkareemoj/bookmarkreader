@@ -1,146 +1,182 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router";
+import {
+	ArrowLeft,
+	Bookmark,
+	Clock,
+	ExternalLink,
+	Heart,
+	MoreVertical,
+} from "lucide-react";
+import ArticleRenderer from "@/components/rss/article-renderer";
 import { Button } from "@/components/ui/button";
-import { Bookmark, Heart, Share2, Clock, ExternalLink } from "lucide-react";
+import { useReaderStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-interface ArticleCardProps {
-  id: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  readTime: number;
-  author: string;
-  date: string;
-  imageUrl?: string;
-  feedTitle?: string;
-  liked?: boolean;
-  saved?: boolean;
-  read?: boolean;
-  onLike?: () => void;
-  onSave?: () => void;
-  onShare?: () => void;
-  onClick?: () => void;
-}
-
 export const Route = createFileRoute("/rss/article/$id")({
-  component: ArticleCardComponent,
+	component: ArticleReaderComponent,
 });
 
-function ArticleCardComponent({
-  id,
-  title,
-  excerpt,
-  category,
-  readTime,
-  author,
-  date,
-  imageUrl,
-  feedTitle,
-  liked = false,
-  saved = false,
-  read = false,
-  onLike,
-  onSave,
-  onShare,
-  onClick,
-}: ArticleCardProps) {
-  return (
-    <article
-      onClick={onClick}
-      className={cn(
-        "group relative flex flex-col cursor-pointer rounded-xl border border-border bg-card overflow-hidden transition-all duration-200",
-        "hover:border-border/80 hover:shadow-lg hover:shadow-black/5 hover:-translate-y-0.5",
-        read && "opacity-60"
-      )}
-    >
-      {/* Thumbnail */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-            <div className="text-4xl font-bold text-muted-foreground/20 select-none">
-              {title.charAt(0)}
-            </div>
-          </div>
-        )}
+function ArticleReaderComponent() {
+	const { id } = Route.useParams();
+	const {
+		articles,
+		feeds,
+		toggleArticleLike,
+		toggleArticleSave,
+		markArticleRead,
+	} = useReaderStore();
 
-        {/* Category badge overlaid on image */}
-        <div className="absolute top-3 left-3">
-          <span className="inline-flex items-center rounded-md bg-background/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-foreground border border-border/50">
-            {category}
-          </span>
-        </div>
+	const article = articles.find((a) => a.id === id);
+	const feed = article ? feeds.find((f) => f.id === article.feedId) : undefined;
 
-        {/* Read indicator */}
-        {read && (
-          <div className="absolute inset-0 bg-background/20" />
-        )}
-      </div>
+	// Mark as read when viewing
+	if (article && !article.read) {
+		void markArticleRead(id, true);
+	}
 
-      {/* Content */}
-      <div className="flex flex-col flex-1 p-4 gap-3">
-        {/* Feed source */}
-        {feedTitle && (
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide truncate">
-            {feedTitle}
-          </p>
-        )}
+	if (!article) {
+		return (
+			<div className="flex min-h-screen items-center justify-center">
+				<div className="text-center">
+					<h1 className="font-semibold text-2xl">Article not found</h1>
+					<p className="mt-2 text-muted-foreground">
+						The article you're looking for doesn't exist.
+					</p>
+				</div>
+			</div>
+		);
+	}
 
-        {/* Title */}
-        <h3 className="font-semibold text-foreground text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-          {title}
-        </h3>
+	const title = article.title || "Untitled";
+	const content = article.content || article.contentSnippet || "";
+	const readTime = Math.ceil(content.length / 5 / 200); // Rough estimate: 200 words per minute
+	const date = article.pubDate
+		? new Date(article.pubDate).toLocaleDateString(undefined, {
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			})
+		: "";
+	const imageUrl = article.imageUrl || undefined;
+	const feedTitle = feed?.title || undefined;
 
-        {/* Excerpt */}
-        {excerpt && (
-          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed flex-1">
-            {excerpt}
-          </p>
-        )}
+	const handleLike = () => {
+		void toggleArticleLike(id);
+	};
 
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-1 mt-auto">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
-            <Clock className="h-3 w-3 shrink-0" />
-            <span className="shrink-0">{readTime}m</span>
-            <span className="text-border">·</span>
-            <span className="truncate">{date}</span>
-          </div>
+	const handleSave = () => {
+		void toggleArticleSave(id);
+	};
 
-          {/* Actions */}
-          <div className="flex items-center gap-0.5 shrink-0 -mr-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-foreground"
-              onClick={(e) => { e.stopPropagation(); onLike?.(); }}
-            >
-              <Heart className={cn("h-3.5 w-3.5", liked && "fill-current text-red-500")} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-foreground"
-              onClick={(e) => { e.stopPropagation(); onSave?.(); }}
-            >
-              <Bookmark className={cn("h-3.5 w-3.5", saved && "fill-current text-primary")} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-foreground"
-              onClick={(e) => { e.stopPropagation(); onShare?.(); }}
-            >
-              <Share2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
+	const handleBack = () => {
+		window.history.back();
+	};
+
+	return (
+		<div className="flex min-h-screen flex-col bg-background">
+			{/* Header */}
+			<header className="sticky top-0 z-10 border-border border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+				<div className="container mx-auto max-w-4xl px-4 py-4">
+					<div className="flex items-center justify-between">
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={handleBack}
+							className="text-muted-foreground hover:text-foreground"
+						>
+							<ArrowLeft className="size-5" />
+						</Button>
+
+						<div className="flex items-center gap-2">
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={handleLike}
+								className={cn(
+									"text-muted-foreground hover:text-foreground",
+									article.liked && "text-red-500",
+								)}
+							>
+								<Heart
+									className={cn("size-5", article.liked && "fill-current")}
+								/>
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={handleSave}
+								className={cn(
+									"text-muted-foreground hover:text-foreground",
+									article.saved && "text-primary",
+								)}
+							>
+								<Bookmark
+									className={cn("size-5", article.saved && "fill-current")}
+								/>
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => window.open(article.link, "_blank")}
+								className="text-muted-foreground hover:text-foreground"
+							>
+								<ExternalLink className="size-5" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="text-muted-foreground hover:text-foreground"
+							>
+								<MoreVertical className="size-5" />
+							</Button>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			{/* Article Content */}
+			<main className="flex-1">
+				<div className="container mx-auto max-w-4xl px-4 py-8">
+					{/* Article Header */}
+					<article className="mb-8">
+						{feedTitle && (
+							<div className="mb-4">
+								<span className="font-medium text-primary text-sm">
+									{feedTitle}
+								</span>
+							</div>
+						)}
+
+						<h1 className="mb-4 font-bold text-4xl text-foreground leading-tight">
+							{title}
+						</h1>
+
+						<div className="mb-6 flex items-center gap-4 text-muted-foreground text-sm">
+							<div className="flex items-center gap-2">
+								<Clock className="size-4" />
+								<span>{readTime} min read</span>
+							</div>
+							<div className="text-border">·</div>
+							<div>{date}</div>
+						</div>
+
+						{imageUrl && (
+							<div className="mb-8 overflow-hidden rounded-xl">
+								<img
+									src={imageUrl}
+									alt={title}
+									className="h-auto w-full object-cover"
+								/>
+							</div>
+						)}
+					</article>
+
+					{/* Article Body */}
+					<div className="prose prose-invert max-w-none">
+						<ArticleRenderer content={content} />
+					</div>
+				</div>
+			</main>
+		</div>
+	);
 }

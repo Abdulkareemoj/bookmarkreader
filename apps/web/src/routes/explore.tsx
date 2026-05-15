@@ -88,8 +88,8 @@ function EmptyCard({
 }) {
 	return (
 		<div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-			<div className="mb-1 flex h-9 w-9 items-center justify-center rounded-xl border bg-muted/40">
-				<Icon className="h-4 w-4 text-muted-foreground" />
+			<div className="mb-1 flex size-9 items-center justify-center rounded-xl border bg-muted/40">
+				<Icon data-icon="inline-start" className="text-muted-foreground" />
 			</div>
 			<p className="font-medium text-foreground text-sm">{title}</p>
 			<p className="max-w-[240px] text-muted-foreground text-sm leading-relaxed">
@@ -106,7 +106,7 @@ function EmptyCard({
 				</Button>
 			)}
 		</div>
-	)
+	);
 }
 
 function SectionCard({
@@ -122,16 +122,16 @@ function SectionCard({
 }) {
 	return (
 		<Card className="rounded-xl">
-			<CardHeader className="space-y-1">
+			<CardHeader className="flex flex-col gap-1">
 				<CardTitle className="flex items-center gap-2 text-base">
-					<Icon className="h-4 w-4 text-primary" />
+					<Icon data-icon="inline-start" className="text-primary" />
 					<span>{title}</span>
 				</CardTitle>
 				<p className="text-muted-foreground text-sm">{subtitle}</p>
 			</CardHeader>
 			<CardContent>{children}</CardContent>
 		</Card>
-	)
+	);
 }
 
 function Explore() {
@@ -150,8 +150,11 @@ function Explore() {
 				{stats.map((s) => (
 					<Card key={s.label} className="rounded-xl">
 						<CardContent className="p-4">
-							<div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-								<s.icon className="h-4 w-4 text-muted-foreground" />
+							<div className="mb-3 flex size-8 items-center justify-center rounded-lg bg-muted">
+								<s.icon
+									data-icon="inline-start"
+									className="text-muted-foreground"
+								/>
 							</div>
 							<div className="font-semibold text-2xl text-foreground leading-none">
 								{s.value}
@@ -209,9 +212,9 @@ function Explore() {
 
 			{/* Discover feeds */}
 			<Card className="rounded-xl">
-				<CardHeader className="space-y-1">
+				<CardHeader className="flex flex-col gap-1">
 					<CardTitle className="flex items-center gap-2 text-base">
-						<TrendingUp className="h-4 w-4 text-primary" />
+						<TrendingUp data-icon="inline-start" className="text-primary" />
 						<span>Discover feeds</span>
 					</CardTitle>
 					<p className="text-muted-foreground text-sm">
@@ -225,7 +228,7 @@ function Explore() {
 								key={feed.name}
 								className="flex items-center gap-3 rounded-lg border bg-card px-3.5 py-3 transition-colors hover:bg-accent"
 							>
-								<div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border bg-muted text-sm">
+								<div className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-muted text-sm">
 									{feed.icon}
 								</div>
 								<div className="min-w-0 flex-1">
@@ -245,9 +248,9 @@ function Explore() {
 									type="button"
 									variant="ghost"
 									size="icon"
-									className="h-8 w-8"
+									className="size-8"
 								>
-									<Plus className="h-4 w-4" />
+									<Plus data-icon="inline-start" />
 								</Button>
 							</div>
 						))}
@@ -255,5 +258,5 @@ function Explore() {
 				</CardContent>
 			</Card>
 		</div>
-	)
+	);
 }
