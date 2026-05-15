@@ -1,4 +1,6 @@
 import { Bookmark, Heart, Rss, Share2 } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +44,7 @@ export default function ArticleCard({
 			onClick={onClick}
 			className="group cursor-pointer rounded-lg border border-border bg-card transition-colors hover:bg-card/80"
 		>
-			<div className="space-y-3">
+			<div className="flex flex-col gap-3">
 				{/* Image */}
 				{imageSrc ? (
 					<div className="relative h-32 w-full overflow-hidden rounded-t-lg bg-muted">
@@ -57,15 +59,15 @@ export default function ArticleCard({
 					</div>
 				) : (
 					<div className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-t-lg bg-muted">
-						<Rss className="h-12 w-12 text-muted-foreground/50" />
+						<Rss className="size-12 text-muted-foreground/50" />
 					</div>
 				)}
 
 				{/* Header with category and read time */}
 				<div className="flex items-center gap-2 px-4 pt-4">
-					<span className="inline-block rounded-full bg-primary/10 px-2 py-1 font-medium text-primary text-xs">
+					<Badge variant="secondary" className="text-xs">
 						{category}
-					</span>
+					</Badge>
 					<span className="text-muted-foreground text-xs">
 						{readTime} min read
 					</span>
@@ -84,7 +86,9 @@ export default function ArticleCard({
 				{/* Footer with author, date, and actions */}
 				<div className="flex items-center justify-between px-4 pt-2 pb-4">
 					<div className="flex items-center gap-2">
-						<div className="h-6 w-6 rounded-full bg-primary/20" />
+						<Avatar className="size-6">
+							<AvatarFallback className="bg-primary/20 text-xs" />
+						</Avatar>
 						<div className="text-xs">
 							<p className="font-medium text-foreground">{author}</p>
 							<p className="text-muted-foreground">{date}</p>
@@ -96,37 +100,41 @@ export default function ArticleCard({
 						<Button
 							variant="ghost"
 							size="icon"
-							className="h-8 w-8"
+							className="size-8"
 							onClick={(e) => {
 								e.stopPropagation();
 								onLike?.();
 							}}
 						>
 							<Heart
-								className={cn("h-4 w-4", liked && "fill-current text-red-500")}
+								data-icon="inline-start"
+								className={cn(liked && "fill-current text-red-500")}
 							/>
 						</Button>
 						<Button
 							variant="ghost"
 							size="icon"
-							className="h-8 w-8"
+							className="size-8"
 							onClick={(e) => {
 								e.stopPropagation();
 								onSave?.();
 							}}
 						>
-							<Bookmark className={cn("h-4 w-4", saved && "fill-current")} />
+							<Bookmark
+								data-icon="inline-start"
+								className={cn(saved && "fill-current")}
+							/>
 						</Button>
 						<Button
 							variant="ghost"
 							size="icon"
-							className="h-8 w-8"
+							className="size-8"
 							onClick={(e) => {
 								e.stopPropagation();
 								onShare?.();
 							}}
 						>
-							<Share2 className="h-4 w-4" />
+							<Share2 data-icon="inline-start" />
 						</Button>
 					</div>
 				</div>

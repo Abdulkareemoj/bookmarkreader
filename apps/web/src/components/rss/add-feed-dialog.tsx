@@ -73,7 +73,7 @@ export function AddFeedDialog() {
 		>
 			<DialogTrigger asChild>
 				<Button variant="secondary" className="w-full">
-					<Plus className="mr-2 h-4 w-4" />
+					<Plus data-icon="inline-start" className="mr-2" />
 					Add New Feed
 				</Button>
 			</DialogTrigger>
@@ -158,7 +158,10 @@ export function AddFeedDialog() {
 								>
 									{state.isSubmitting ? (
 										<>
-											<Spinner className="mr-2 h-4 w-4 animate-spin" />
+											<Spinner
+												data-icon="inline-start"
+												className="mr-2 animate-spin"
+											/>
 											Adding...
 										</>
 									) : (
