@@ -57,7 +57,9 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [fetchError, setFetchError] = useState<string>("");
-	const [fetchedImage, setFetchedImage] = useState<string | undefined>(undefined);
+	const [fetchedImage, setFetchedImage] = useState<string | undefined>(
+		undefined,
+	);
 
 	const { bookmarkAgent } = useReaderStore((state) => state);
 	const { tagOptions } = useTags();
@@ -147,7 +149,7 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 		>
 			<DialogTrigger asChild>
 				<Button>
-					<Plus className="mr-2 h-4 w-4" />
+					<Plus data-icon="inline-start" className="mr-2" />
 					Add Bookmark
 				</Button>
 			</DialogTrigger>
@@ -185,7 +187,10 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 												className={isInvalid ? "border-red-500" : ""}
 											/>
 											{isLoading && (
-												<Spinner className="absolute top-2.5 right-2 h-4 w-4 animate-spin text-muted-foreground" />
+												<Spinner
+													data-icon="inline-end"
+													className="absolute top-2.5 right-2 animate-spin text-muted-foreground"
+												/>
 											)}
 										</div>
 										{isInvalid && (
@@ -314,12 +319,18 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 									>
 										{state.isSubmitting ? (
 											<>
-												<Spinner className="mr-2 h-4 w-4 animate-spin" />
+												<Spinner
+													data-icon="inline-start"
+													className="mr-2 animate-spin"
+												/>
 												Saving...
 											</>
 										) : isLoading ? (
 											<>
-												<Spinner className="mr-2 h-4 w-4 animate-spin" />
+												<Spinner
+													data-icon="inline-start"
+													className="mr-2 animate-spin"
+												/>
 												Fetching...
 											</>
 										) : (
