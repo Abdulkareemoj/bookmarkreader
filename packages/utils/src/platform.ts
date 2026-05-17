@@ -1,53 +1,65 @@
-import type { IBookmarkAgent, IRssAgent, ISyncAgent } from "./index";
+
+import type { IBookmarkAgent, IRssAgent } from "./index";
 
 export interface IAgents {
 	bookmarkAgent: IBookmarkAgent;
 	rssAgent: IRssAgent;
-	syncAgent: ISyncAgent;
 }
 
 let initializedAgents: IAgents | null = null;
 
-export async function initializeAgents(): Promise<IAgents> {
-	// NOTE: We use dynamic imports to ensure platform-specific dependencies are not bundled unnecessarily.
+function isTauri(): boolean {
+	return (
+		typeof window !== "undefined" &&
+		// Tauri v1
+		((window as any).__TAURI__ !== undefined ||
+			// Tauri v2
+			(window as any).__TAURI_INTERNALS__ !== undefined)
+	);
+}
 
-	// Check for Tauri environment (Node-like context, but often has __TAURI__ global)
-	if (
-		// @ts-expect-error
-		typeof window === "undefined" ||
-		// @ts-expect-error
-		(typeof window !== "undefined" && (window as any).__TAURI__)
-	) {
-		// Tauri/Node environment
-		// @ts-expect-error
+function isReactNative(): boolean {
+	// navigator.product is deprecated but React Native still sets it
+	// More reliable: check for the global that RN always defines
+	return (
+		(typeof global !== "undefined" &&
+			typeof (global as any).nativeCallSyncHook !== "undefined") ||
+		(typeof navigator !== "undefined" && navigator.product === "ReactNative")
+	);
+}
+
+function isNode(): boolean {
+	return (
+		typeof process !== "undefined" &&
+		process.versions != null &&
+		process.versions.node != null &&
+		typeof window === "undefined"
+	);
+}
+
+export async function initializeAgents(): Promise<IAgents> {
+	if (initializedAgents) return initializedAgents;
+
+	if (isTauri()) {
 		const { initializeTauriAgents } = await import(
 			"../../../apps/desktop/src/db"
 		);
-		const agents = await initializeTauriAgents();
-		initializedAgents = agents;
-		return agents;
+		initializedAgents = await initializeTauriAgents();
+		return initializedAgents;
 	}
-	if (
-		// @ts-expect-error
-		typeof navigator !== "undefined" &&
-		// @ts-expect-error
-		(navigator as any).product === "ReactNative"
-	) {
-		// Mobile (Expo/React Native) environment
-		// @ts-expect-error
+
+	if (isReactNative()) {
 		const { initializeMobileAgents } = await import(
 			"../../../apps/mobile/lib/db"
 		);
-		const agents = await initializeMobileAgents();
-		initializedAgents = agents;
-		return agents;
+		initializedAgents = await initializeMobileAgents();
+		return initializedAgents;
 	}
-	// Browser/Web environment
-	// ../../../ts-ignore
+
+	// Web (browser) — default
 	const { initializeWebAgents } = await import("../../../apps/web/src/lib/db");
-	const agents = await initializeWebAgents();
-	initializedAgents = agents;
-	return agents;
+	initializedAgents = await initializeWebAgents();
+	return initializedAgents;
 }
 
 export function getInitializedAgents(): IAgents {
@@ -55,4 +67,9 @@ export function getInitializedAgents(): IAgents {
 		throw new Error("Agents not initialized. Call initializeAgents() first.");
 	}
 	return initializedAgents;
+}
+
+/** Reset — useful for testing or re-init after logout */
+export function resetAgents(): void {
+	initializedAgents = null;
 }
