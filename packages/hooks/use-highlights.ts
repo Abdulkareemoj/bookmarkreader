@@ -1,26 +1,32 @@
-import type { Highlight, ReaderState } from "@packages/store";
-import type { UseBoundStore, StoreApi } from "zustand";
+// @packages/hooks/src/use-highlights.ts
 
-export const createUseHighlights = (
-  useStore: UseBoundStore<StoreApi<ReaderState>>
-) => {
-  return (articleId?: string) => {
-    const allHighlights = useStore((state) => state.highlights);
-    const highlights = articleId
-      ? allHighlights.filter((h) => h.articleId === articleId)
-      : allHighlights;
+import { useReaderStore } from "@packages/store";
+import { useMemo } from "react";
 
-    const addHighlight = useStore((state) => state.addHighlight);
-    const removeHighlight = useStore((state) => state.removeHighlight);
-    const addAnnotation = useStore((state) => state.addAnnotation);
-    const removeAnnotation = useStore((state) => state.removeAnnotation);
+/**
+ * Hook for accessing highlights, optionally filtered to one article.
+ */
+export function useHighlights(articleId?: string) {
+	const allHighlights = useReaderStore((s) => s.highlights);
 
-    return {
-      highlights,
-      addHighlight,
-      removeHighlight,
-      addAnnotation,
-      removeAnnotation,
-    };
-  };
-};
+	const highlights = useMemo(
+		() =>
+			articleId
+				? allHighlights.filter((h) => h.articleId === articleId)
+				: allHighlights,
+		[allHighlights, articleId],
+	);
+
+	const addHighlight = useReaderStore((s) => s.addHighlight);
+	const removeHighlight = useReaderStore((s) => s.removeHighlight);
+	const addAnnotation = useReaderStore((s) => s.addAnnotation);
+	const removeAnnotation = useReaderStore((s) => s.removeAnnotation);
+
+	return {
+		highlights,
+		addHighlight,
+		removeHighlight,
+		addAnnotation,
+		removeAnnotation,
+	};
+}

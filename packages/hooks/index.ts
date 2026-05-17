@@ -1,3 +1,4 @@
-export * from "./use-bookmarks";
-export * from "./use-highlights";
-export * from "./use-feeds";
+export { useFeeds } from "./use-feeds";
+export { useBookmarks } from "./use-bookmarks";
+export { useHighlights } from "./use-highlights";
+
