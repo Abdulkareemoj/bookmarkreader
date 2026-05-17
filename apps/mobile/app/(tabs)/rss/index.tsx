@@ -1,7 +1,13 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { BookMarked, Check, Filter, Rss, X } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { AddFeedModal } from "@/components/add-feed-modal";
 import { RssArticleCardMobile } from "@/components/rss-article-card-mobile";
@@ -23,7 +29,9 @@ export default function RssScreen() {
 		refreshFeed,
 	} = useFeeds();
 
-	const [sortBy, setSortBy] = useState<"Latest" | "Oldest" | "Unread" | "Liked" | "Source">("Latest");
+	const [sortBy, setSortBy] = useState<
+		"Latest" | "Oldest" | "Unread" | "Liked" | "Source"
+	>("Latest");
 	const [showBottomSheet, setShowBottomSheet] = useState(false);
 	const [refreshing, setRefreshing] = useState(false);
 
@@ -41,7 +49,10 @@ export default function RssScreen() {
 				try {
 					await refreshFeed(feed.id);
 				} catch (error) {
-					console.error(`Failed to refresh feed ${feed.title || feed.id}:`, error);
+					console.error(
+						`Failed to refresh feed ${feed.title || feed.id}:`,
+						error,
+					);
 					// Continue with other feeds even if this one fails
 				}
 			});
@@ -66,17 +77,19 @@ export default function RssScreen() {
 	// Sort articles based on selected option
 	const sortedArticles = useMemo(() => {
 		const sorted = [...articles];
-		
+
 		switch (sortBy) {
 			case "Latest":
 				return sorted.sort(
 					(a, b) =>
-						new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime(),
+						new Date(b.pubDate || 0).getTime() -
+						new Date(a.pubDate || 0).getTime(),
 				);
 			case "Oldest":
 				return sorted.sort(
 					(a, b) =>
-						new Date(a.pubDate || 0).getTime() - new Date(b.pubDate || 0).getTime(),
+						new Date(a.pubDate || 0).getTime() -
+						new Date(b.pubDate || 0).getTime(),
 				);
 			case "Unread":
 				return sorted.sort((a, b) => {
@@ -84,7 +97,10 @@ export default function RssScreen() {
 					if (a.read !== b.read) {
 						return a.read ? 1 : -1;
 					}
-					return new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime();
+					return (
+						new Date(b.pubDate || 0).getTime() -
+						new Date(a.pubDate || 0).getTime()
+					);
 				});
 			case "Liked":
 				return sorted.sort((a, b) => {
@@ -92,7 +108,10 @@ export default function RssScreen() {
 					if (a.liked !== b.liked) {
 						return b.liked ? 1 : -1;
 					}
-					return new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime();
+					return (
+						new Date(b.pubDate || 0).getTime() -
+						new Date(a.pubDate || 0).getTime()
+					);
 				});
 			case "Source":
 				return sorted.sort((a, b) => {
@@ -100,12 +119,15 @@ export default function RssScreen() {
 					const feedB = feeds.find((f) => f.id === b.feedId);
 					const titleA = feedA?.title || "Unknown Feed";
 					const titleB = feedB?.title || "Unknown Feed";
-					
+
 					// Sort by feed title first, then by date
 					if (titleA !== titleB) {
 						return titleA.localeCompare(titleB);
 					}
-					return new Date(b.pubDate || 0).getTime() - new Date(a.pubDate || 0).getTime();
+					return (
+						new Date(b.pubDate || 0).getTime() -
+						new Date(a.pubDate || 0).getTime()
+					);
 				});
 			default:
 				return sorted;
@@ -116,38 +138,41 @@ export default function RssScreen() {
 		return feeds.find((f) => f.id === feedId)?.title || "Unknown Feed";
 	};
 
-	const handleArticlePress = useCallback((articleId: string) => {
-		router.push(`/rss/${articleId}` as any);
-	}, [router]);
+	const handleArticlePress = useCallback(
+		(articleId: string) => {
+			router.push(`/rss/${articleId}` as any);
+		},
+		[router],
+	);
 
 	return (
 		<View className="flex-1 bg-background pt-4">
 			{/* Header with Filter Button */}
 			<View className="flex-row items-center justify-between px-4 pb-3">
-  <Text className="font-medium text-foreground">
-    {sortedArticles.length} articles
-  </Text>
-  <View className="flex-row items-center gap-2">
-    <Pressable
-      onPress={() => router.push("/rss/sources" as any)}
-      className="flex-row items-center gap-2 rounded-xl bg-secondary px-3 py-2 active:opacity-80"
-    >
-      <BookMarked size={16} className="text-secondary-foreground" />
-      <Text className="text-secondary-foreground text-sm font-medium">
-        Sources
-      </Text>
-    </Pressable>
-    <Pressable
-      onPress={() => setShowBottomSheet(true)}
-      className="flex-row items-center gap-2 rounded-xl bg-secondary px-3 py-2 active:opacity-80"
-    >
-      <Filter size={16} className="text-secondary-foreground" />
-      <Text className="text-secondary-foreground text-sm font-medium">
-        {sortBy}
-      </Text>
-    </Pressable>
-  </View>
-</View>
+				<Text className="font-medium text-foreground">
+					{sortedArticles.length} articles
+				</Text>
+				<View className="flex-row items-center gap-2">
+					<Pressable
+						onPress={() => router.push("/rss/sources")}
+						className="flex-row items-center gap-2 rounded-xl bg-secondary px-3 py-2 active:opacity-80"
+					>
+						<BookMarked size={16} className="text-secondary-foreground" />
+						<Text className="font-medium text-secondary-foreground text-sm">
+							Sources
+						</Text>
+					</Pressable>
+					<Pressable
+						onPress={() => setShowBottomSheet(true)}
+						className="flex-row items-center gap-2 rounded-xl bg-secondary px-3 py-2 active:opacity-80"
+					>
+						<Filter size={16} className="text-secondary-foreground" />
+						<Text className="font-medium text-secondary-foreground text-sm">
+							{sortBy}
+						</Text>
+					</Pressable>
+				</View>
+			</View>
 			{sortedArticles.length > 0 ? (
 				<FlatList
 					data={sortedArticles}
@@ -186,7 +211,7 @@ export default function RssScreen() {
 							onPress={() => setShowBottomSheet(true)}
 							className="rounded-xl bg-primary px-4 py-3 active:opacity-70"
 						>
-							<Text className="text-primary-foreground text-center font-medium">
+							<Text className="text-center font-medium text-primary-foreground">
 								Add Feed
 							</Text>
 						</Pressable>
@@ -201,11 +226,15 @@ export default function RssScreen() {
 				enablePanDownToClose
 				onChange={handleSheetChanges}
 				backgroundStyle={{ backgroundColor: "hsl(var(--background))" }}
-				handleIndicatorStyle={{ backgroundColor: "hsl(var(--muted-foreground))" }}
+				handleIndicatorStyle={{
+					backgroundColor: "hsl(var(--muted-foreground))",
+				}}
 			>
 				<BottomSheetView className="flex-1 px-5 pb-6">
 					<View className="mb-5 flex-row items-center justify-between">
-						<Text className="font-semibold text-foreground text-xl">RSS Controls</Text>
+						<Text className="font-semibold text-foreground text-xl">
+							RSS Controls
+						</Text>
 						<Pressable
 							onPress={() => setShowBottomSheet(false)}
 							className="rounded-full bg-accent p-2 active:opacity-80"
@@ -215,7 +244,9 @@ export default function RssScreen() {
 					</View>
 
 					<View className="mb-6 gap-2">
-						<Text className="mb-1 font-medium text-foreground">Sort Articles</Text>
+						<Text className="mb-1 font-medium text-foreground">
+							Sort Articles
+						</Text>
 						{[
 							{ key: "newest", label: "Newest First" },
 							{ key: "oldest", label: "Oldest First" },
@@ -235,7 +266,9 @@ export default function RssScreen() {
 										: "border-border bg-muted/40"
 								}`}
 							>
-								<Text className="font-medium text-foreground">{option.label}</Text>
+								<Text className="font-medium text-foreground">
+									{option.label}
+								</Text>
 								{sortBy === option.key ? (
 									<Icon as={Check} size={18} className="text-primary" />
 								) : null}
@@ -244,7 +277,9 @@ export default function RssScreen() {
 					</View>
 
 					<View>
-						<Text className="mb-3 font-medium text-foreground">Add New Feed</Text>
+						<Text className="mb-3 font-medium text-foreground">
+							Add New Feed
+						</Text>
 						<AddFeedModal
 							onAddFeed={(data) => {
 								console.log("[RssPage] Adding feed:", data);

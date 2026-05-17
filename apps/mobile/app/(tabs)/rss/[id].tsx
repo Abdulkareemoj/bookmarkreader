@@ -1,49 +1,249 @@
-
-
-import React from "react";
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Bookmark, ExternalLink, Heart, Share2 } from "lucide-react-native";
-import { Linking, Pressable, ScrollView, Share, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+	ArrowLeft,
+	Bookmark,
+	ExternalLink,
+	Heart,
+	Share2,
+} from "lucide-react-native";
+import React, { useMemo } from "react";
+import {
+	Linking,
+	Pressable,
+	Share,
+	useWindowDimensions,
+	View,
+} from "react-native";
 import Animated, {
 	interpolate,
 	useAnimatedStyle,
 	useSharedValue,
 	withTiming,
 } from "react-native-reanimated";
-import { Button } from "@/components/ui/button";
+import RenderHtml, {
+	HTMLContentModel,
+	HTMLElementModel,
+	defaultHTMLElementModels,
+} from "react-native-render-html";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useFeeds } from "@/hooks/use-feeds";
 
+// ─── HTML rendering config ────────────────────────────────────────────────────
+
+// Colours pulled from your CSS vars at runtime — pass these in as props
+// so the component re-renders correctly when theme changes.
+function useHtmlStyles() {
+	// These map to your Tailwind/NativeWind theme tokens.
+	// Adjust hex values to match your actual theme.
+	return {
+		baseStyle: {
+			color: "hsl(var(--foreground))",
+		},
+		tagsStyles: {
+			body: {
+				color: "hsl(var(--foreground))",
+				fontSize: 17,
+				lineHeight: 28,
+			},
+			p: {
+				marginTop: 0,
+				marginBottom: 20,
+				fontSize: 17,
+				lineHeight: 28,
+				color: "hsl(var(--foreground))",
+			},
+			h1: {
+				fontSize: 26,
+				fontWeight: "700" as const,
+				marginBottom: 12,
+				marginTop: 24,
+				color: "hsl(var(--foreground))",
+			},
+			h2: {
+				fontSize: 22,
+				fontWeight: "700" as const,
+				marginBottom: 10,
+				marginTop: 20,
+				color: "hsl(var(--foreground))",
+			},
+			h3: {
+				fontSize: 19,
+				fontWeight: "600" as const,
+				marginBottom: 8,
+				marginTop: 16,
+				color: "hsl(var(--foreground))",
+			},
+			a: {
+				color: "hsl(var(--primary))",
+				textDecorationLine: "underline" as const,
+			},
+			blockquote: {
+				borderLeftWidth: 3,
+				borderLeftColor: "hsl(var(--primary))",
+				paddingLeft: 12,
+				marginLeft: 0,
+				marginTop: 16,
+				marginBottom: 16,
+				opacity: 0.8,
+			},
+			ul: {
+				marginBottom: 16,
+				paddingLeft: 4,
+			},
+			ol: {
+				marginBottom: 16,
+				paddingLeft: 4,
+			},
+			li: {
+				fontSize: 17,
+				lineHeight: 28,
+				marginBottom: 4,
+				color: "hsl(var(--foreground))",
+			},
+			code: {
+				fontFamily: "monospace",
+				fontSize: 14,
+				backgroundColor: "hsl(var(--muted))",
+				paddingHorizontal: 4,
+				paddingVertical: 2,
+				borderRadius: 4,
+				color: "hsl(var(--foreground))",
+			},
+			pre: {
+				backgroundColor: "hsl(var(--muted))",
+				padding: 12,
+				borderRadius: 8,
+				marginBottom: 16,
+				overflow: "hidden" as const,
+			},
+			img: {
+				borderRadius: 8,
+				marginBottom: 16,
+			},
+			figure: {
+				margin: 0,
+				marginBottom: 16,
+			},
+			figcaption: {
+				fontSize: 13,
+				color: "hsl(var(--muted-foreground))",
+				textAlign: "center" as const,
+				marginTop: 4,
+			},
+			hr: {
+				backgroundColor: "hsl(var(--border))",
+				height: 1,
+				marginTop: 24,
+				marginBottom: 24,
+			},
+			strong: {
+				fontWeight: "700" as const,
+				color: "hsl(var(--foreground))",
+			},
+			em: {
+				fontStyle: "italic" as const,
+			},
+		},
+		classesStyles: {} as Record<string, object>,
+	};
+}
+
+// Strip just the wrapping boilerplate some feeds add, keep the body HTML
+function cleanHtml(html: string): string {
+	return (
+		html
+			// Remove script/style tags entirely
+			.replace(/<script[\s\S]*?<\/script>/gi, "")
+			.replace(/<style[\s\S]*?<\/style>/gi, "")
+			// Normalise self-closing tags that RenderHtml can choke on
+			.replace(/<br>/gi, "<br/>")
+			.replace(/<hr>/gi, "<hr/>")
+			.trim()
+	);
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function ArticleScreen() {
 	const router = useRouter();
 	const scrollY = useSharedValue(0);
+	const { width } = useWindowDimensions();
 	const { id } = useLocalSearchParams<{ id: string }>();
-	const { articles, feeds, toggleArticleLike, toggleArticleSave, toggleArticleRead } = useFeeds();
+	const {
+		articles,
+		feeds,
+		toggleArticleLike,
+		toggleArticleSave,
+		toggleArticleRead,
+	} = useFeeds();
 
 	const article = articles.find((a) => a.id === id);
-	console.log("article content:", article.content?.slice(0, 100));
-console.log("article snippet:", article.contentSnippet?.slice(0, 100));
 	const feed = feeds.find((f) => f.id === article?.feedId);
+	const htmlStyles = useHtmlStyles();
 
 	if (!article) {
 		return (
 			<SafeAreaView className="flex-1 bg-background">
 				<View className="flex-1 items-center justify-center p-4">
-					<Text className="text-muted-foreground">Article not found</Text>
+					<Text className="text-lg text-muted-foreground">
+						Article not found
+					</Text>
 				</View>
 			</SafeAreaView>
 		);
 	}
 
-	// Mark as read when opened
+	// Mark as read on open
 	React.useEffect(() => {
-		if (!article.read) {
-			toggleArticleRead(article.id);
-		}
-	}, [article.id, article.read, toggleArticleRead]);
+		if (!article.read) toggleArticleRead(article.id);
+	}, [article.id]);
+
+	// Prefer full content, fall back to snippet
+	// rss-parser gives: item.content (full HTML), item.contentSnippet (plain text)
+	const hasFullHtml = Boolean(
+		article.content &&
+			article.content.length > (article.contentSnippet?.length ?? 0),
+	);
+
+	const htmlSource = useMemo(() => {
+		const raw = article.content || article.contentSnippet || "";
+		// If it's plain text (contentSnippet), wrap in paragraphs so RenderHtml
+		// gives it proper spacing
+		const isPlainText = !/<[a-z][\s\S]*>/i.test(raw);
+		const html = isPlainText
+			? raw
+					.split(/\n\n+/)
+					.map((p) => `<p>${p.replace(/\n/g, " ").trim()}</p>`)
+					.join("")
+			: cleanHtml(raw);
+
+		return { html };
+	}, [article.content, article.contentSnippet]);
+
+	const readTime = useMemo(() => {
+		const text = (article.content || article.contentSnippet || "")
+			.replace(/<[^>]*>/g, " ")
+			.split(/\s+/)
+			.filter(Boolean).length;
+		return Math.max(1, Math.ceil(text / 220));
+	}, [article.content, article.contentSnippet]);
+
+	const date = article.pubDate
+		? new Date(article.pubDate).toLocaleDateString(undefined, {
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			})
+		: "";
+
+	const compactTitle =
+		article.title.length > 42
+			? `${article.title.slice(0, 42).trimEnd()}…`
+			: article.title;
 
 	const handleOpenSource = () => {
 		if (article.link) {
@@ -56,7 +256,7 @@ console.log("article snippet:", article.contentSnippet?.slice(0, 100));
 		if (!article.link) return;
 		await Haptics.selectionAsync();
 		await Share.share({
-			message: `${article.title}\n${article.link || ""}`,
+			message: `${article.title}\n${article.link}`,
 			url: article.link,
 			title: article.title,
 		});
@@ -72,62 +272,23 @@ console.log("article snippet:", article.contentSnippet?.slice(0, 100));
 		toggleArticleSave(article.id);
 	};
 
-	const rawContent = article.content || article.contentSnippet || "No content available.";
-const normalizedContent = rawContent
-  .replace(/<[^>]*>/g, " ")
-  .replace(/&nbsp;/gi, " ")
-  .replace(/&amp;/gi, "&")
-  .replace(/&quot;/gi, '"')
-  .replace(/&#39;/gi, "'")
-  .replace(/\s+/g, " ")
-  .trim();
-const sentences = normalizedContent.split(/([.!?])\s+(?=[A-Z0-9])/);
-const rejoined: string[] = [];
-for (let i = 0; i < sentences.length; i++) {
-  if (sentences[i].length === 1 && /[.!?]/.test(sentences[i])) {
-    if (rejoined.length > 0) rejoined[rejoined.length - 1] += sentences[i];
-  } else {
-    rejoined.push(sentences[i]);
-  }
-}
-const paragraphs: string[] = rejoined.reduce((chunks: string[], sentence: string) => {
-  const cleaned = sentence.trim();
-  if (!cleaned) return chunks;
-  const last = chunks[chunks.length - 1];
-  if (!last || last.length > 300) {
-    chunks.push(cleaned);
-  } else {
-    chunks[chunks.length - 1] = `${last} ${cleaned}`;
-  }
-  return chunks;
-}, []);
-	const articleDomain = article.link
-		? article.link.replace(/^https?:\/\//, "").split("/")[0]
-		: feed?.title || "RSS Feed";
+	// ── Animated header ─────────────────────────────────────────────────────────
 
-	const compactTitle = article.title.length > 42
-		? `${article.title.slice(0, 42).trimEnd()}...`
-		: article.title;
+	const headerAnimatedStyle = useAnimatedStyle(() => ({
+		borderBottomColor: `rgba(228,228,231,${interpolate(scrollY.value, [0, 48], [0, 1])})`,
+	}));
 
-	const headerAnimatedStyle = useAnimatedStyle(() => {
-		const borderOpacity = interpolate(scrollY.value, [0, 48], [0, 1]);
-		return {
-			borderBottomColor: `rgba(228, 228, 231, ${borderOpacity})`,
-		};
-	});
-
-	const compactTitleStyle = useAnimatedStyle(() => {
-		const opacity = interpolate(scrollY.value, [0, 36, 84], [0, 0, 1]);
-		const translateY = interpolate(scrollY.value, [0, 84], [8, 0]);
-		return { opacity, transform: [{ translateY }] };
-	});
+	const compactTitleStyle = useAnimatedStyle(() => ({
+		opacity: interpolate(scrollY.value, [0, 36, 84], [0, 0, 1]),
+		transform: [{ translateY: interpolate(scrollY.value, [0, 84], [8, 0]) }],
+	}));
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
-			{/* Header */}
+			{/* Sticky header */}
 			<Animated.View
 				style={headerAnimatedStyle}
-				className="flex-row items-center justify-between border-b bg-background/95 px-4 py-3"
+				className="flex-row items-center justify-between border-border border-b bg-background/95 px-4 py-3"
 			>
 				<Pressable
 					onPress={() => router.back()}
@@ -135,11 +296,16 @@ const paragraphs: string[] = rejoined.reduce((chunks: string[], sentence: string
 				>
 					<ArrowLeft size={20} className="text-foreground" />
 				</Pressable>
+
 				<Animated.View className="mx-3 flex-1" style={compactTitleStyle}>
-					<Text className="text-center font-semibold text-foreground text-sm" numberOfLines={1}>
+					<Text
+						className="text-center font-semibold text-foreground text-sm"
+						numberOfLines={1}
+					>
 						{compactTitle}
 					</Text>
 				</Animated.View>
+
 				<View className="flex-row gap-2">
 					<Pressable
 						onPress={handleToggleLike}
@@ -147,7 +313,9 @@ const paragraphs: string[] = rejoined.reduce((chunks: string[], sentence: string
 					>
 						<Heart
 							size={20}
-							className={article.liked ? "text-red-500" : "text-muted-foreground"}
+							className={
+								article.liked ? "text-red-500" : "text-muted-foreground"
+							}
 							fill={article.liked ? "#ef4444" : "none"}
 						/>
 					</Pressable>
@@ -157,7 +325,9 @@ const paragraphs: string[] = rejoined.reduce((chunks: string[], sentence: string
 					>
 						<Bookmark
 							size={20}
-							className={article.saved ? "text-blue-500" : "text-muted-foreground"}
+							className={
+								article.saved ? "text-blue-500" : "text-muted-foreground"
+							}
 							fill={article.saved ? "#3b82f6" : "none"}
 						/>
 					</Pressable>
@@ -178,66 +348,86 @@ const paragraphs: string[] = rejoined.reduce((chunks: string[], sentence: string
 				</View>
 			</Animated.View>
 
-			{/* Content */}
+			{/* Scrollable body */}
 			<Animated.ScrollView
 				className="flex-1"
-				contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 18, paddingBottom: 28 }}
+				contentContainerStyle={{ paddingBottom: 48 }}
 				showsVerticalScrollIndicator={false}
 				scrollEventThrottle={16}
-				onScroll={(event) => {
-					const next = event.nativeEvent.contentOffset.y;
-					scrollY.value = withTiming(next, { duration: 70 });
+				onScroll={(e) => {
+					scrollY.value = withTiming(e.nativeEvent.contentOffset.y, {
+						duration: 70,
+					});
 				}}
 			>
-				<View className="mb-5">
-					<Text className="mb-2 text-muted-foreground text-xs uppercase tracking-[1.5px]">
-						{articleDomain}
-					</Text>
-					<Text className="text-3xl font-bold leading-10 text-foreground">
-						{article.title}
-					</Text>
-				</View>
-
-				<View className="mb-6 flex-row items-center justify-between border-border border-b pb-4">
-					<View>
-						<Text className="font-medium text-foreground text-sm">
-							{feed?.title || "Unknown Feed"}
-						</Text>
-						<Text className="mt-1 text-muted-foreground text-xs">
-							{new Date(article.pubDate || 0).toLocaleDateString()}
-						</Text>
-					</View>
-					<View className="rounded-full bg-primary/10 px-3 py-1">
-						<Text className="font-medium text-primary text-xs">
-							{Math.max(1, Math.ceil(normalizedContent.split(" ").length / 220))} min read
-						</Text>
-					</View>
-				</View>
-
-				<View className="gap-5">
-					{paragraphs.length > 0 ? (
-						paragraphs.map((paragraph: string, idx: number) => (
-							<Text key={`${idx}-${paragraph.slice(0, 16)}`} className="text-[17px] leading-8 text-foreground">
-								{paragraph}
-							</Text>
-						))
-					) : (
-						<Text className="text-[17px] leading-8 text-foreground">
-							{normalizedContent}
+				{/* Article meta header */}
+				<View className="px-5 pt-6 pb-4">
+					{feed?.title && (
+						<Text className="mb-2 text-xs font-semibold text-primary uppercase tracking-widest">
+							{feed.title}
 						</Text>
 					)}
+					<Text className="font-bold text-[28px] text-foreground leading-[1.25] mb-4">
+						{article.title}
+					</Text>
+					<View className="flex-row items-center gap-3 pb-4 border-b border-border">
+						<View className="rounded-full bg-muted px-3 py-1">
+							<Text className="text-xs font-medium text-muted-foreground">
+								{readTime} min read
+							</Text>
+						</View>
+						{date ? (
+							<Text className="text-xs text-muted-foreground">{date}</Text>
+						) : null}
+					</View>
 				</View>
 
-				<View className="mt-8 border-border border-t pt-5">
-					<Button
+				{/* Hero image */}
+				{article.imageUrl ? (
+					<View className="mx-5 mb-6 overflow-hidden rounded-2xl">
+						<Image
+							source={{ uri: article.imageUrl }}
+							className="h-52 w-full"
+							contentFit="cover"
+						/>
+					</View>
+				) : null}
+
+				{/* HTML body — rendered as native components */}
+				<View style={{ paddingHorizontal: 20 }}>
+					<RenderHtml
+						contentWidth={width - 40}
+						source={htmlSource}
+						tagsStyles={htmlStyles.tagsStyles}
+						baseStyle={htmlStyles.baseStyle}
+						enableExperimentalMarginCollapsing
+						renderersProps={{
+							img: {
+								enableExperimentalPercentWidth: true,
+							},
+							a: {
+								onPress: (_e: any, href: string) => {
+									Linking.openURL(href);
+								},
+							},
+						}}
+						// Ignore tags that cause layout issues in native
+						ignoredDomTags={["script", "style", "iframe", "form", "input"]}
+					/>
+				</View>
+
+				{/* Open original CTA */}
+				<View className="mx-5 mt-8 pt-6 border-t border-border">
+					<Pressable
 						onPress={handleOpenSource}
 						disabled={!article.link}
-						variant="outline"
-						className="rounded-xl"
+						className="flex-row items-center justify-center gap-2 rounded-xl border border-border bg-card py-3.5 active:opacity-70 disabled:opacity-40"
 					>
-						<Icon as={ExternalLink} size={16} className="text-foreground" />
-						<Text>Open Original Article</Text>
-					</Button>
+						<ExternalLink size={16} className="text-foreground" />
+						<Text className="font-medium text-foreground">
+							Open Original Article
+						</Text>
+					</Pressable>
 				</View>
 			</Animated.ScrollView>
 		</SafeAreaView>
