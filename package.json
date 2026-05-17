@@ -19,6 +19,8 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"turbo": "^2.5.4"},
+		"turbo": "^2.5.4",
+		"drizzle-orm": "0.45.1"
+	},
 	"packageManager": "pnpm@10.2.1"
 }
