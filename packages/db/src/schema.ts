@@ -1,5 +1,5 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // --- Schema Version (for migrations) ---
 
@@ -15,10 +15,11 @@ export const bookmarks = sqliteTable("bookmarks", {
 	url: text("url").notNull(),
 	description: text("description"),
 	favicon: text("favicon"),
+	image: text("image"),
 	tags: text("tags", { mode: "json" }).$type<string[]>().default([]).notNull(),
 	dateAdded: text("date_added").default(sql`CURRENT_TIMESTAMP`).notNull(),
 	favorite: integer("favorite", { mode: "boolean" }).default(false).notNull(),
-	collectionId: text("collection_id").default("inbox").notNull(), 
+	collectionId: text("collection_id").default("inbox").notNull(),
 	liked: integer("liked", { mode: "boolean" }).default(false).notNull(),
 	saved: integer("saved", { mode: "boolean" }).default(true).notNull(), // Bookmarks are'saved'
 	lastUpdatedAt: text("last_updated_at")
@@ -51,6 +52,9 @@ export const articles = sqliteTable("articles", {
 	link: text("link").unique().notNull(),
 	contentSnippet: text("content_snippet"),
 	content: text("content"),
+	fullContent: text("full_content"),
+	imageUrl: text("image_url"),
+	imageData: text("image_data"),
 	pubDate: text("pub_date"),
 	read: integer("read", { mode: "boolean" }).default(false).notNull(),
 	liked: integer("liked", { mode: "boolean" }).default(false).notNull(),
@@ -58,9 +62,10 @@ export const articles = sqliteTable("articles", {
 	lastUpdatedAt: text("last_updated_at")
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
+	readAt: text("read_at"),
 });
 
-// Export Types for Drizzle, but you could probably tell, no? 
+// Export Types for Drizzle, but you could probably tell, no?
 
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type NewBookmark = typeof bookmarks.$inferInsert;
