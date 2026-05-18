@@ -12,6 +12,7 @@ import BottomNav from "@/components/bottom-nav";
 import { StoreProvider } from "@/components/store-provider";
 import Toolbar from "@/components/toolbar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/integrations/theme-provider";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
@@ -62,8 +63,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						<SidebarProvider>
 							<AppSidebar />
 							<SidebarInset>
-								<Toolbar />
-								{children} <BottomNav />
+								<TooltipProvider>
+									<Toolbar />
+									{children}
+									<BottomNav />
+								</TooltipProvider>
 							</SidebarInset>
 						</SidebarProvider>
 					</StoreProvider>
