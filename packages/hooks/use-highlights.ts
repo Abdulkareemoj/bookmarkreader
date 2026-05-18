@@ -1,5 +1,3 @@
-// @packages/hooks/src/use-highlights.ts
-
 import { useReaderStore } from "@packages/store";
 import { useMemo } from "react";
 

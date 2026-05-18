@@ -1,7 +1,7 @@
 
 
-import { extract as extractFeed } from "@extractus/feed-extractor";
-import { extract as extractArticle } from "@extractus/article-parser";
+import { extract as extractFeed, extractFromJson, extractFromXml } from "@extractus/feed-extractor";
+import { extract as extractArticle } from "@extractus/article-extractor";
 import type { DB } from "@packages/db/src/index";
 import type { NewArticle, NewBookmark, NewFeed } from "@packages/db/src/schema";
 import { articles, bookmarks, feeds } from "@packages/db/src/schema";
@@ -231,7 +231,7 @@ export interface IRssAgent {
 	markArticleRead(id: string, read: boolean, readAt?: string): Promise<void>;
 	toggleArticleLike(id: string): Promise<void>;
 	toggleArticleSave(id: string): Promise<void>;
-	updateArticleContent(id: string, fullContent: string): Promise<void>;
+	updateArticleContent(id: string, fullContent: string, imageUrl?: string | null): Promise<void>;
 }
 
 export const createRssAgent = (db: DB): IRssAgent => {
@@ -246,11 +246,17 @@ export const createRssAgent = (db: DB): IRssAgent => {
 			let siteUrl = data.siteUrl;
 
 			try {
-				const res = await fetchWithProxy(data.feedUrl);
-				const text = await res.text();
-				const feedData = await extractFeed(data.feedUrl, {}, text);
+				// const res = await fetchWithProxy(data.feedUrl);
+				// const text = await res.text();
+				// const feedData = await extractFeed(data.feedUrl, {}, text);
 
-				// Use extracted title if caller didn't provide a real one
+const res = await fetchWithProxy(data.feedUrl);
+const text = await res.text();
+const feedData = text.trimStart().startsWith("{")
+  ? extractFromJson(text)
+  : extractFromXml(text);
+  
+  // Use extracted title if caller didn't provide a real one
 				if (!title || title === "New Feed" || title === "Untitled Feed") {
 					title = feedData?.title ?? title ?? data.feedUrl;
 				}
@@ -297,16 +303,35 @@ export const createRssAgent = (db: DB): IRssAgent => {
 			if (!feed) throw new Error(`Feed ${id} not found.`);
 
 			// Fetch raw feed text via proxy
-			const res = await fetchWithProxy(feed.feedUrl, {
-				headers: {
-					Accept:
-						"application/rss+xml, application/atom+xml, application/json, application/xml, text/xml;q=0.9, */*;q=0.8",
-				},
-			});
-			const rawText = await res.text();
+		const res = await fetchWithProxy(feed.feedUrl, {
+  headers: {
+    Accept: "application/rss+xml, application/atom+xml, application/json, application/xml, text/xml;q=0.9, */*;q=0.8",
+  },
+});
+const rawText = await res.text();
+// Detect JSON Feed vs XML
+let feedData: FeedData;
+if (rawText.trimStart().startsWith("{")) {
+  const { extractFromJson } = await import("@extractus/feed-extractor");
+  feedData = extractFromJson(rawText, {
+    getExtraEntryFields: (entry) => ({
+      content: (entry as any).content_html ?? (entry as any).content_text ?? "",
+      enclosures: (entry as any).attachments ?? [],
+    }),
+  });
+} else {
+  feedData = extractFromXml(rawText, {
+    getExtraEntryFields: (entry) => ({
+      content: (entry as any)["content:encoded"] ?? (entry as any).content ?? (entry as any).description ?? "",
+      enclosures: (entry as any).enclosure ? [(entry as any).enclosure] : [],
+      "media:content": (entry as any)["media:content"],
+      "media:thumbnail": (entry as any)["media:thumbnail"],
+    }),
+  });
+}
 
 			// Use @extractus/feed-extractor — handles RSS 2.0, Atom, JSON Feed
-			const feedData = await extractFeed(feed.feedUrl, {}, rawText);
+			// const feedData = await extractFeed(feed.feedUrl, {}, rawText);
 
 			if (!feedData?.entries?.length) {
 				console.log("[refreshFeed] No entries found for feed:", id);
@@ -478,12 +503,15 @@ export const createRssAgent = (db: DB): IRssAgent => {
 					.where(eq(articles.id, id));
 		},
 
-		updateArticleContent: async (id, fullContent) => {
-			await q
-				.update(articles)
-				.set({ fullContent, lastUpdatedAt: new Date().toISOString() })
-				.where(eq(articles.id, id));
-		},
+updateArticleContent: async (id, fullContent, imageUrl) => {
+  await q.update(articles)
+    .set({
+      fullContent,
+      ...(imageUrl ? { imageUrl } : {}),
+      lastUpdatedAt: new Date().toISOString(),
+    })
+    .where(eq(articles.id, id));
+},
 	};
 };
 
@@ -516,24 +544,36 @@ export function needsFullContent(article: {
  * Uses @extractus/article-parser which strips nav/ads/footer automatically.
  */
 export async function extractArticleContent(
-	url: string,
+  url: string,
 ): Promise<ExtractedContent | null> {
-	try {
-		const res = await fetchWithProxy(url);
-		const html = await res.text();
-		const result = await extractArticle(url, {}, html);
-		if (!result?.content) return null;
-		return {
-			content: result.content,
-			title: result.title ?? undefined,
-			author: result.author ?? undefined,
-			image: result.image ?? undefined,
-			description: result.description ?? undefined,
-		};
-	} catch (err) {
-		console.warn("[extractArticleContent] Failed:", url, err);
-		return null;
-	}
+  try {
+    // Pre-fetch via our proxy
+    const res = await fetchWithProxy(url);
+    const html = await res.text();
+
+    // Swap global fetch so article-parser can't make its own CORS-blocked request
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = () => Promise.resolve(new Response(html, { status: 200 }));
+
+    let result;
+    try {
+      result = await extractArticle(url, {}, html as any);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    if (!result?.content) return null;
+    return {
+      content: result.content,
+      title: result.title ?? undefined,
+      author: result.author ?? undefined,
+      image: result.image ?? undefined,
+      description: result.description ?? undefined,
+    };
+  } catch (err) {
+    console.warn("[extractArticleContent] Failed:", url, err);
+    return null;
+  }
 }
 
 // ─── Re-exports ───────────────────────────────────────────────────────────────
