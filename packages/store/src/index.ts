@@ -257,28 +257,26 @@ export const createReaderStore = (
 
 	// ── Full content extraction ───────────────────────────────────────────────────
 
-	fetchArticleContent: async (id) => {
-		const article = get().articles.find((a) => a.id === id);
-		if (!article || !needsFullContent(article) || !article.link) return;
+fetchArticleContent: async (id) => {
+  const article = get().articles.find((a) => a.id === id);
+  if (!article || !needsFullContent(article) || !article.link) return;
 
-		const extracted = await extractArticleContent(article.link);
-		if (!extracted?.content) return;
+  const extracted = await extractArticleContent(article.link);
+  if (!extracted?.content) return;
 
-		await get().rssAgent.updateArticleContent(id, extracted.content);
+  const imageUrl = article.imageUrl ?? extracted.image ?? null;
 
-		set((s) => ({
-			articles: s.articles.map((a) =>
-				a.id === id
-					? {
-							...a,
-							fullContent: extracted.content,
-							// Backfill image if we got one and didn't have one
-							imageUrl: a.imageUrl ?? extracted.image ?? null,
-						}
-					: a,
-			),
-		}));
-	},
+  // Persist both fullContent and imageUrl to DB
+  await get().rssAgent.updateArticleContent(id, extracted.content, imageUrl);
+
+  set((s) => ({
+    articles: s.articles.map((a) =>
+      a.id === id
+        ? { ...a, fullContent: extracted.content, imageUrl }
+        : a,
+    ),
+  }));
+},
 });
 
 // ─── Store singleton ──────────────────────────────────────────────────────────
