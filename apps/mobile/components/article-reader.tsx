@@ -1,4 +1,5 @@
 import { Highlighter, MessageCircle } from "lucide-react-native";
+import React from "react";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 

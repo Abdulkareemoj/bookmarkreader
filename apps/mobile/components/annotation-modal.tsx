@@ -1,4 +1,5 @@
 import { Check, X } from "lucide-react-native";
+import React from "react";
 import { useState } from "react";
 import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 
