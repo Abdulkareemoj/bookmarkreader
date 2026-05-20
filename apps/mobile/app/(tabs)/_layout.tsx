@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CollectionsBottomSheet } from "@/components/collections-bottom-sheet";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
+import React from "react";
 
 export default function TabsLayout() {
 	const [showSearchInput, setShowSearchInput] = useState(false);

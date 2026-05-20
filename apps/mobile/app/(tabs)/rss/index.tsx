@@ -33,6 +33,7 @@ export default function RssScreen() {
 		"Latest" | "Oldest" | "Unread" | "Liked" | "Source"
 	>("Latest");
 	const [showBottomSheet, setShowBottomSheet] = useState(false);
+	const [showAddFeedModal, setShowAddFeedModal] = useState(false);
 	const [refreshing, setRefreshing] = useState(false);
 
 	const handleSheetChanges = useCallback((index: number) => {
@@ -208,7 +209,7 @@ export default function RssScreen() {
 					</Text>
 					<View className="p-4">
 						<Pressable
-							onPress={() => setShowBottomSheet(true)}
+							onPress={() => setShowAddFeedModal(true)}
 							className="rounded-xl bg-primary px-4 py-3 active:opacity-70"
 						>
 							<Text className="text-center font-medium text-primary-foreground">
@@ -280,19 +281,32 @@ export default function RssScreen() {
 						<Text className="mb-3 font-medium text-foreground">
 							Add New Feed
 						</Text>
-						<AddFeedModal
-							onAddFeed={(data) => {
-								console.log("[RssPage] Adding feed:", data);
-								addFeed({
-									feedUrl: data.feedUrl,
-									title: data.title || "New Feed",
-								});
+						<Pressable
+							onPress={() => {
 								setShowBottomSheet(false);
+								setShowAddFeedModal(true);
 							}}
-						/>
+							className="rounded-xl bg-primary px-4 py-3 active:opacity-70"
+						>
+							<Text className="text-center font-medium text-primary-foreground">
+								Add Feed
+							</Text>
+						</Pressable>
 					</View>
 				</BottomSheetView>
 			</BottomSheet>
+
+			<AddFeedModal
+				open={showAddFeedModal}
+				onOpenChange={setShowAddFeedModal}
+				onAddFeed={(data) => {
+					console.log("[RssPage] Adding feed:", data);
+					addFeed({
+						feedUrl: data.feedUrl,
+						title: data.title || "New Feed",
+					});
+				}}
+			/>
 		</View>
 	);
 }

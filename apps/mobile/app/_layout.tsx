@@ -10,6 +10,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useUniwind } from "uniwind";
 import { appInit, getInitStatus } from "@/lib/mobile-init";
 import { NAV_THEME } from "@/lib/theme";
+import React from "react";
 
 export {
 	// Catch any errors thrown by the Layout component.
@@ -74,10 +75,10 @@ export default function RootLayout() {
 						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 						<Stack.Screen name="search" options={{ headerShown: false }} />
 					
-					</Stack>
-				</StoreProvider>
-				<PortalHost />
+					</Stack>	<PortalHost />
 				<PortalHost name="modal-host" />
+				</StoreProvider>
+			
 			</ThemeProvider>
 		</GestureHandlerRootView>
 	);
