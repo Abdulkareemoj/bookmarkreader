@@ -11,6 +11,7 @@
 	},
 	"dependencies": {
 		"@gorhom/bottom-sheet": "^5.2.14",
+		"@packages/agents": "workspace:*",
 		"@packages/db": "workspace:*",
 		"@packages/hooks": "workspace:*",
 		"@packages/store": "workspace:*",
@@ -55,6 +56,7 @@
 		"expo-status-bar": "~55.0.6",
 		"expo-system-ui": "~55.0.18",
 		"expo-updates": "~55.0.22",
+		"fast-xml-parser": "^5.8.0",
 		"lucide-react-native": "^1.16.0",
 		"react": "19.2.0",
 		"react-dom": "19.2.0",
