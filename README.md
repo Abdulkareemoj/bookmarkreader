@@ -1,173 +1,200 @@
-# BookmarkReader: Cross-Platform Bookmark & RSS Manager
+# BookmarkReader
 
-## 🎯 Overview
+<div align="center">
 
-A personal cross-platform bookmark and RSS reader app built for desktop (Tauri + React), web, and mobile (Expo + React Native).
-The app helps users organize, tag, and read bookmarked links and RSS feeds offline.
-Syncing and user accounts ill be added later.
+A personal cross-platform bookmark and RSS reader app built for desktop, web, and mobile.
 
-## 📊 Current Development Status
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18+-61DAFB)](https://reactjs.org/)
+[![Expo](https://img.shields.io/badge/Expo-51-000080)](https://expo.dev/)
 
-**Stage:** Early Phase 1 - Core Functionality & Cross-Platform Polish
-**Readiness:** ~65% complete for basic functionality
+</div>
 
-- ✅ Project architecture and monorepo setup
-- ✅ Database schema and basic Drizzle ORM setup
-- ✅ Agent framework with CRUD operations
-- ✅ UI components for web/desktop and mobile
-- ✅ Cross-platform build configurations
-- 🔄 Agent implementations (metadata fetching, RSS parsing)
-- 🔄 Database abstraction for mobile
-- 🔄 UI consistency verification
-- ❌ Testing suite
-- ❌ Error handling & logging
-- ❌ CI/CD pipeline
-- ❌ Production deployments
+## Features
 
-### 🧩 Core Goals
+- 📚 **Bookmark Management** - Organize bookmarks with tags, descriptions, and favicons
+- 📰 **RSS Reader** - Subscribe to RSS feeds and read articles offline
+- 🎨 **Cross-Platform UI** - Consistent design across web, desktop, and mobile
+- 💾 **Local-First** - All data stored locally with SQLite/AsyncStorage
+- � **Dark Mode** - Built-in dark theme support
+- 🔍 **Search & Filter** - Quickly find bookmarks and articles
+- 📱 **Mobile Optimized** - Native-feeling mobile experience with Expo
 
-- Manage and organize bookmarks with metadata (title, description, tags, favicon, etc.)
-- Read and manage RSS feeds directly within the app
-- Local-first data storage (SQLite / AsyncStorage)
-- Consistent design system across platforms
-- Offline-ready with future sync support
+## Tech Stack
 
-### 🏗️ Architecture Overview
+### Frontend
 
-Monorepo (Turborepo)
+- **Web/Desktop**: React 19 + Vite + TailwindCSS + Tanstack Start
+- **Mobile**: React Native (Expo) + UniWind
+- **Desktop Shell**: Tauri
+
+### Backend
+
+- **Database**: SQLite (Drizzle ORM) / AsyncStorage (mobile)
+- **State Management**: Zustand
+- **RSS Parsing**: Extractus (browser-compatible)
+- **Build Tool**: Turborepo
+
+### Development
+
+- **Language**: TypeScript
+- **Linting**: Biome
+- **Package Manager**: pnpm
+- **Testing**:
+
+## Project Structure
+
+```
+bookmark-tool/
+├── apps/
+│   ├── web/          # Web application (React + shadcn/ui)
+│   ├── desktop/      # Desktop application (Tauri + React)
+│   ├── mobile/       # Mobile application (Expo + React Native)
+│   └── website/      # Website (React + shadcn/ui)
+├── packages/
+│   ├── db/           # Database schema and migrations (Drizzle)
+│   ├── store/        # Zustand state management
+│   ├── hooks/        # Shared React hooks
+│   ├── utils/        # Shared utilities (RSS parsing, metadata fetching)
+│   └── agents/       # Shared agent implementations (bookmark, RSS)
+└── package.json      # Root package.json
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm 8+
+- (For desktop) Rust and Cargo
+- (For mobile) Expo CLI
+
+### Installation
 
 ```bash
-apps/
-  web/        → React + shadcn/ui (Tailwind)
-  desktop/    → Tauri + React (reuses web UI)
-  mobile/     → React Native (Expo)
-packages/
-  db/         → Drizzle ORM schema + migrations
-  utils/      →  logic (bookmark parsers, feed fetchers)
-hooks/
-store/      → Zustand state management
-  api/        → Future sync and server API helpers
+# Clone the repository
+git clone https://github.com/yourusername/bookmark-tool.git
+cd bookmark-tool
+
+# Install dependencies
+pnpm install
+
+# Run development servers
+pnpm dev
 ```
 
-| Layer                      | Tools                                                     |
-| -------------------------- | --------------------------------------------------------- |
-| **Frontend (Web/Desktop)** | React + Vite + TailwindCSS + shadcn/ui                    |
-| **Frontend (Mobile)**      | React Native (Expo) + Uniwind                             |
-| **App Shell**              | Tauri (for desktop app bundling)                          |
-| **ORM / Data Layer**       | Drizzle ORM (SQLite / AsyncStorage)                       |
-| **State Management**       | Zustand                                                   |
-| **RSS Parsing**            | rss-parser or custom fetcher using DOMParser              |
-| **Local Storage**          | SQLite (Drizzle) for desktop/web, AsyncStorage for mobile |
-| **Build & Tooling**        | Turborepo + TypeScript + ESlint + Prettier                |
+### Platform-Specific Setup
 
-### 🧠 Core Modules & Responsibilities
+#### Web
 
-1. Bookmark
-
-- Handles creation, organization, and metadata management for bookmarks.
-- Responsibilities
-- Add/edit/delete bookmarks
-- Group by tags or collections
-- Auto-fetch title, favicon, description from URL
-- Local caching and search filtering
-- Handle favorites and read-later lists
-
-#### Core Types
-
-```typescript
-type Bookmark = {
-  id: string;
-  title: string;
-  url: string;
-  description?: string;
-  favicon?: string;
-  tags?: string[];
-  dateAdded: string;
-  favorite?: boolean;
-};
+```bash
+cd apps/web
+pnpm dev
 ```
 
-2. RSS Reader
+#### Desktop
 
-- Manages feed subscriptions, parsing, and article reading.
-- Responsibilities
-- Add/edit/remove RSS feeds
-- Fetch and parse feed XML into articles
-- Track read/unread states
-- Cache feed data locally
-- Refresh feeds periodically
-
-#### Core Types
-
-```typescript
-type Feed = {
-  id: string;
-  title: string;
-  feedUrl: string;
-  siteUrl?: string;
-  lastFetched?: string;
-  unreadCount?: number;
-};
-
-type Article = {
-  id: string;
-  feedId: string;
-  title: string;
-  link: string;
-  contentSnippet?: string;
-  content?: string;
-  pubDate?: string;
-  read?: boolean;
-};
+```bash
+cd apps/desktop
+pnpm tauri dev
 ```
 
-3. UI
+#### Mobile
 
-- Defines the shared design principles and reusable components.
-- Responsibilities
-- Maintain consistent theme (light/dark)
-- Define typography, spacing, and color tokens
-- Provide shared UI elements:
-- Buttons, Cards, Tabs, Modals, Inputs
-- Bookmark List + Feed List layouts
-- Empty States and Skeleton Loaders
+```bash
+cd apps/mobile
+pnpm start
+# Or use Expo Go app
+```
 
-Web: Built with shadcn/ui + Tailwind
-Mobile: Built with Uniwind reusing component patterns.
+## Usage
 
-4. Storage
+### Adding Bookmarks
 
-- Handles persistence and data migration.
-- Responsibilities
-- Manage SQLite connections via Drizzle
-- Migrate schema on version updates
-- Abstract AsyncStorage or SQLite (for mobile)
-- Provide CRUD methods to BookmarkAgent and RssAgent
+1. Navigate to the Bookmarks section
+2. Click "Add Bookmark"
+3. Enter the URL
+4. The app will automatically fetch title, description, and favicon
 
-5. Sync Agent (Future)
+### Managing RSS Feeds
 
-- Will handle user accounts, syncing, and backups (e.g. Supabase, remote API).
-- Responsibilities
-- User authentication
-- Cloud backup and restore
-- Conflict resolution
-- Cross-device syncing
+1. Navigate to the RSS section
+2. Click "Add Feed"
+3. Enter the RSS feed URL
+4. Articles will be fetched and cached locally
 
-6. Utility Agent
+### Reading Articles
 
-- Provides cross-platform helpers and services.
-- Responsibilities
-- RSS XML parsing
-- Bookmark URL metadata extraction (via Open Graph tags)
-- Date formatting
-- Error handling and logging
-- Network helpers and caching
+- Click on any article to open the reader view
+- Articles are marked as read automatically
+- Use the action buttons to like, save, or share
 
-### 🧩 Future Enhancements
+## Development
 
-- Browser extension for quick bookmark saving
-- Full-text search (using SQLite FTS)
-- Notifications for new RSS posts
-- Custom article reader view (distraction-free)
-- AI summarization or tag suggestions
-- User authentication & cloud sync
+### Running Tests
+
+```bash
+pnpm test
+```
+
+### Building for Production
+
+```bash
+# Build all apps
+pnpm build
+
+# Build specific app
+pnpm --filter @apps/web build
+pnpm --filter @apps/desktop build
+pnpm --filter @apps/mobile build
+```
+
+### Code Style
+
+This project uses ESLint and Prettier for code formatting:
+
+```bash
+# Lint code
+pnpm lint
+
+# Format code
+pnpm format
+```
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow the existing code style
+- Write tests for new features
+- Update documentation as needed
+- Ensure cross-platform compatibility
+
+## Roadmap
+
+- [ ] Some form of User authentication and cloud sync
+- [ ] Browser extension for quick bookmarking
+- [ ] Full-text search with SQLite FTS
+- [ ] Push notifications for new RSS articles
+- [ ] AI-powered summarization
+- [ ] Import/Export bookmarks (OPML, HTML)
+- [ ] Collections and folders
+- [ ] Advanced filtering and sorting
+<!--
+
+## License
+
+## This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. -->
+
+<div align="center">
+  <sub>Built with ❤️ by the open-source community</sub>
+</div>
