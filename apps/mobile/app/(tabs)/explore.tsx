@@ -6,6 +6,7 @@ import { DashboardCardMobile } from "@/components/dashboard-card-mobile";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useReaderStore } from "@/lib/store";
+import React from "react";
 
 const suggestedFeeds = [
 	{

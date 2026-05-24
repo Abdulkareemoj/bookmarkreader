@@ -23,6 +23,7 @@ import { EditFeedModal } from "@/components/edit-feed-modal";
 import { Text } from "@/components/ui/text";
 import { useFeeds } from "@/hooks/use-feeds";
 import type { Feed } from "@packages/store";
+import React from "react";
 
 export default function SourcesScreen() {
   const router = useRouter();

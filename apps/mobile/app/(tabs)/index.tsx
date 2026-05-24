@@ -260,7 +260,7 @@ export default function Home() {
 											<Image
 												source={{ uri: article.imageUrl }}
 												className="h-32 w-full"
-												resizeMode="cover"
+												contentFit="cover"
 											/>
 										) : (
 											<View className="h-32 w-full items-center justify-center bg-muted/50">
@@ -350,7 +350,7 @@ export default function Home() {
 											<Image
 												source={{ uri: article.imageUrl }}
 												className="h-32 w-full"
-												resizeMode="cover"
+												contentFit="cover"
 											/>
 										) : (
 											<View className="h-32 w-full items-center justify-center bg-muted/50">
@@ -493,7 +493,7 @@ export default function Home() {
 											<Image
 												source={{ uri: article.imageUrl }}
 												className="h-32 w-full"
-												resizeMode="cover"
+												contentFit="cover"
 											/>
 										) : (
 											<View className="h-32 w-full items-center justify-center bg-muted/50">
@@ -587,7 +587,7 @@ export default function Home() {
 													<Image
 														source={{ uri: article.imageUrl }}
 														className="h-32 w-full"
-														resizeMode="cover"
+														contentFit="cover"
 													/>
 												) : (
 													<View className="h-32 w-full items-center justify-center bg-muted">

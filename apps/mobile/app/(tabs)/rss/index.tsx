@@ -141,7 +141,7 @@ export default function RssScreen() {
 
 	const handleArticlePress = useCallback(
 		(articleId: string) => {
-			router.push(`/rss/${articleId}` as any);
+			router.push(`/rss/${articleId}`);
 		},
 		[router],
 	);
