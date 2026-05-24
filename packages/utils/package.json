@@ -5,11 +5,13 @@
 	"main": "./src/index.ts",
 	"types": "./src/index.ts",
 	"dependencies": {
-		"@extractus/feed-extractor": "^7.2.1",
 		"@extractus/article-extractor": "^8.1.0",
+		"@extractus/feed-extractor": "^7.2.1",
 		"@packages/db": "workspace:^",
 		"@packages/store": "workspace:^",
-		"drizzle-orm": "^0.45.2"
+		"@packages/agents": "workspace:^",
+		"drizzle-orm": "^0.45.2",
+		"fast-xml-parser": "^5.8.0"
 	},
 	"devDependencies": {
 		"typescript": "^6.0.3"
