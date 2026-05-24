@@ -4,7 +4,8 @@
 	"main": "src/index.ts",
 	"license": "MIT",
 	"peerDependencies": {
-		"@packages/utils": "workspace:^",
+  "@packages/agents": "workspace:^",
+  "@packages/utils": "workspace:^",
 		"zustand": "^5.0.8"
 	}
 }
