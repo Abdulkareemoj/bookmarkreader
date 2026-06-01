@@ -1,21 +1,23 @@
 import type { Bookmark } from "@packages/store";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useRouterState } from "@tanstack/react-router";
 import {
 	Bookmark as BookmarkIcon,
 	Copy,
+	ExternalLink,
 	Heart,
-	Link as LinkIcon,
+	MoreHorizontal,
+	Pencil,
 	Trash2,
 } from "lucide-react";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ConfirmationDialog } from "../confirmation-dialog";
 
@@ -24,6 +26,8 @@ interface BookmarkListViewProps {
 	onLike: (id: string) => void;
 	onSave: (id: string) => void;
 	onDelete: (id: string) => void;
+	onEdit: (id: string) => void;
+	onMove: (id: string, collectionId: string) => void;
 }
 
 function BookmarkListItem({
@@ -31,11 +35,15 @@ function BookmarkListItem({
 	onLike,
 	onSave,
 	onDelete,
+	onEdit,
+	onMove,
 }: {
 	bookmark: Bookmark;
 	onLike: (id: string) => void;
 	onSave: (id: string) => void;
 	onDelete: (id: string) => void;
+	onEdit: (id: string) => void;
+	onMove: (id: string, collectionId: string) => void;
 }) {
 	const handleCopyUrl = () => {
 		if (bookmark.url) {
@@ -43,117 +51,139 @@ function BookmarkListItem({
 		}
 	};
 
+	const handleOpenUrl = () => {
+		window.open(bookmark.url, "_blank", "noopener,noreferrer");
+	};
+
 	return (
-		<ContextMenu>
-			<ContextMenuTrigger asChild>
-				<Link
-					key={bookmark.id}
-					to="/bookmarks/$id"
-					params={{ id: bookmark.id }}
-					className="group flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-muted/50"
-				>
-					{bookmark.image && (
-						<img
-							src={bookmark.image}
-							alt={bookmark.title}
-							className="mr-3 size-12 shrink-0 rounded object-cover"
-							onError={(e) => {
-								e.currentTarget.style.display = "none";
-							}}
-						/>
-					)}
-					<div className="flex min-w-0 flex-col gap-1">
-						<span className="truncate font-medium">{bookmark.title}</span>
-						<div className="flex items-center gap-2 text-muted-foreground text-sm">
-							<LinkIcon data-icon="inline-start" className="shrink-0" />
-							<span className="truncate text-xs">
-								{bookmark.url ? new URL(bookmark.url).hostname : "No URL"}
-							</span>
+		<div className="group flex items-center gap-4 rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50">
+			<div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+				{bookmark.favicon ? (
+					<img
+						src={bookmark.favicon}
+						alt={bookmark.title}
+						width={24}
+						height={24}
+						className="size-6"
+						onError={(e) => {
+							e.currentTarget.style.display = "none";
+						}}
+					/>
+				) : (
+					<ExternalLink className="size-4 text-muted-foreground" />
+				)}
+			</div>
+
+			<div className="min-w-0 flex-1">
+				<div className="flex items-center gap-2">
+					<h3 className="truncate font-medium">{bookmark.title}</h3>
+					{bookmark.tags && bookmark.tags.length > 0 && (
+						<div className="hidden items-center gap-1 sm:flex">
+							{bookmark.tags.slice(0, 2).map((tag) => (
+								<span
+									key={tag}
+									className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+								>
+									{tag}
+								</span>
+							))}
+							{bookmark.tags.length > 2 && (
+								<span className="text-[10px] text-muted-foreground">
+									+{bookmark.tags.length - 2}
+								</span>
+							)}
 						</div>
-					</div>
-					<div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+					)}
+				</div>
+				<p className="truncate text-sm text-muted-foreground">
+					{bookmark.url ?? "No URL"}
+				</p>
+			</div>
+
+			<div className="flex items-center gap-1">
+				<Button
+					variant="ghost"
+					size="icon-xs"
+					onClick={(e) => {
+						e.stopPropagation();
+						onLike(bookmark.id);
+					}}
+					title={bookmark.liked ? "Unlike" : "Like"}
+				>
+					<Heart
+						className={cn(
+							"size-4",
+							bookmark.liked && "fill-red-500 text-red-500",
+						)}
+					/>
+				</Button>
+				<Button
+					variant="ghost"
+					size="icon-xs"
+					onClick={(e) => {
+						e.stopPropagation();
+						handleOpenUrl();
+					}}
+					title="Open in new tab"
+				>
+					<ExternalLink className="size-4" />
+				</Button>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
 						<Button
 							variant="ghost"
-							size="icon"
-							className="size-8"
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								onLike(bookmark.id);
-							}}
-							title={bookmark.liked ? "Unlike" : "Like"}
+							size="icon-xs"
+							onClick={(e) => e.stopPropagation()}
 						>
-							<Heart
-								data-icon="inline-start"
-								className={cn(
-									"shrink-0",
-									bookmark.liked && "fill-current text-red-500",
-								)}
-							/>
+							<MoreHorizontal className="size-4" />
 						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="size-8"
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								onSave(bookmark.id);
-							}}
-							title={bookmark.saved ? "Remove from saved" : "Save"}
-						>
-							<BookmarkIcon
-								data-icon="inline-start"
-								className={cn("shrink-0", bookmark.saved && "fill-current")}
-							/>
-						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onClick={handleCopyUrl}>
+							<Copy className="size-4" />
+							Copy URL
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleOpenUrl}>
+							<ExternalLink className="size-4" />
+							Open in new tab
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => onEdit(bookmark.id)}>
+							<Pencil className="size-4" />
+							Edit
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => onMove(bookmark.id, "inbox")}>
+							<BookmarkIcon className="size-4" />
+							Move to Inbox
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
 						<ConfirmationDialog
 							title="Confirm Deletion"
-							description={`Are you sure you want to delete the bookmark: "${bookmark.title}"? This action cannot be undone.`}
+							description={`Are you sure you want to delete the bookmark: "${bookmark.title}"?`}
 							onConfirm={() => onDelete(bookmark.id)}
 							trigger={
-								<Button
-									variant="ghost"
-									size="icon"
-									className="size-8 hover:text-destructive"
-									onClick={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-									}}
-									title="Delete"
+								<DropdownMenuItem
+									className="text-destructive focus:text-destructive"
+									onSelect={(e) => e.preventDefault()}
 								>
-									<Trash2 data-icon="inline-start" />
-								</Button>
+									<Trash2 className="size-4" />
+									Delete
+								</DropdownMenuItem>
 							}
 						/>
-					</div>
-				</Link>
-			</ContextMenuTrigger>
-			<ContextMenuContent>
-				<ContextMenuItem onClick={handleCopyUrl}>
-					<Copy data-icon="inline-start" />
-					Copy URL
-				</ContextMenuItem>
-				<ContextMenuSeparator />
-				<ContextMenuItem
-					className="text-destructive focus:text-destructive"
-					onClick={() => onDelete(bookmark.id)}
-				>
-					<Trash2 data-icon="inline-start" />
-					Delete
-				</ContextMenuItem>
-			</ContextMenuContent>
-		</ContextMenu>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
+		</div>
 	);
 }
 
 export function BookmarkListView({
 	bookmarks,
 	onLike,
-	onSave,
 	onDelete,
 	onEdit,
 	onMove,
+	onSave: _onSave,
 }: BookmarkListViewProps) {
 	const search = useRouterState({
 		select: (s) => (s.location.search as any)?.q ?? "",
@@ -180,7 +210,6 @@ export function BookmarkListView({
 								key={bookmark.id}
 								bookmark={bookmark}
 								onLike={onLike}
-								onSave={onSave}
 								onDelete={onDelete}
 								onEdit={onEdit}
 								onMove={onMove}

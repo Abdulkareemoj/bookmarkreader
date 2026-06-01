@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Plus } from "lucide-react-native";
@@ -15,24 +15,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Text } from "@/components/ui/text";
 import { useCollectionsStore } from "@/lib/store";
+import type { Option } from "@/components/ui/multi-select";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { useTags } from "@/hooks/use-tags";
+import { fetchBookmarkMetadata } from "@/lib/metadata";
 
-// Define the form schema with Zod
 const bookmarkSchema = z.object({
-	url: z.string().url("Please enter a valid URL"),
+	url: z.url("Please enter a valid URL"),
 	title: z.string().min(1, "Title is required"),
-	collectionId: z.string().min(1, "Collection is required"),
 	tags: z.array(z.string()).default([]),
+	collections: z.array(z.string()).default(["inbox"]),
 });
 
 interface AddBookmarkModalProps {
@@ -41,19 +35,31 @@ interface AddBookmarkModalProps {
 		title: string;
 		collectionId: string;
 		tags: string[];
+		image?: string;
 	}) => void;
 }
 
 export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 	const [open, setOpen] = React.useState(false);
-	const { bookmarkCollections } = useCollectionsStore();
+	const [isLoading, setIsLoading] = React.useState(false);
+	const [fetchedImage, setFetchedImage] = React.useState<string | undefined>();
+	const { bookmarkCollections, addBookmarkCollection } = useCollectionsStore();
+	const { tagOptions } = useTags();
+
+	const collectionOptions = React.useMemo<Option[]>(
+		() =>
+			bookmarkCollections
+				.filter((c) => c.id !== "all")
+				.map((c) => ({ value: c.id, label: c.name })),
+		[bookmarkCollections],
+	);
 
 	const form = useForm({
 		defaultValues: {
 			url: "",
 			title: "",
-			collectionId: "inbox",
 			tags: [] as string[],
+			collections: ["inbox"] as string[],
 		},
 		validators: {
 			onChange: ({ value }) => {
@@ -66,37 +72,50 @@ export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 			},
 		},
 		onSubmit: async ({ value }) => {
-			console.log("[AddBookmarkModal] Submitting bookmark:", value);
-			
-			// Fetch metadata including image
-			try {
-				// Import the bookmark agent directly
-				const { createBookmarkAgent } = await import("@packages/utils");
-				const { initializeMobileAgents } = await import("@/lib/db");
-				
-				const agents = await initializeMobileAgents();
-				const bookmarkAgent = createBookmarkAgent(agents.bookmarkAgent.db);
-				const metadata = await bookmarkAgent.fetchMetadata(value.url);
-				
-				const bookmarkData = {
-					...value,
-					title: value.title || metadata.title,
-					image: metadata.image,
-					tags: value.tags || [],
-				};
-				
-				console.log("[AddBookmarkModal] Bookmark data with metadata:", bookmarkData);
-				onAddBookmark(bookmarkData);
-			} catch (error) {
-				console.error("[AddBookmarkModal] Failed to fetch metadata:", error);
-				// Fallback to original data without metadata
-				onAddBookmark(value);
-			}
-			
+			const collectionId =
+				value.collections.length > 0
+					? value.collections[value.collections.length - 1]
+					: "inbox";
+			onAddBookmark({
+				url: value.url,
+				title: value.title,
+				collectionId,
+				tags: value.tags,
+				image: fetchedImage,
+			});
+			setFetchedImage(undefined);
 			form.reset();
 			setOpen(false);
 		},
 	});
+
+	React.useEffect(() => {
+		const url = form.getFieldValue("url");
+		const title = form.getFieldValue("title");
+
+		const fetchMetadata = async () => {
+			const valid = bookmarkSchema.shape.url.safeParse(url).success;
+			if (!url || !valid) return;
+
+			setIsLoading(true);
+			try {
+				const metadata = await fetchBookmarkMetadata(url);
+				if (!title.trim() && metadata.title) {
+					form.setFieldValue("title", metadata.title);
+				}
+				if (metadata.image) {
+					setFetchedImage(metadata.image);
+				}
+			} catch {
+				// Silent fail
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		const timeoutId = setTimeout(fetchMetadata, 800);
+		return () => clearTimeout(timeoutId);
+	}, [form.getFieldValue("url"), form.getFieldValue("title"), form]);
 
 	return (
 		<Dialog
@@ -104,6 +123,7 @@ export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 			onOpenChange={(isOpen) => {
 				setOpen(isOpen);
 				if (!isOpen) {
+					setFetchedImage(undefined);
 					form.reset();
 				}
 			}}
@@ -128,14 +148,21 @@ export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 						children={(field) => (
 							<View className="gap-2">
 								<Label nativeID="url-label">URL</Label>
-								<Input
-									placeholder="https://example.com"
-									value={field.state.value}
-									onChangeText={field.handleChange}
-									onBlur={field.handleBlur}
-									autoCapitalize="none"
-									keyboardType="url"
-								/>
+								<View className="relative">
+									<Input
+										placeholder="https://example.com"
+										value={field.state.value}
+										onChangeText={field.handleChange}
+										onBlur={field.handleBlur}
+										autoCapitalize="none"
+										keyboardType="url"
+									/>
+									{isLoading && (
+										<View className="absolute right-3 top-3">
+											<ActivityIndicator size="small" />
+										</View>
+									)}
+								</View>
 								{field.state.meta.errors && (
 									<Text className="text-destructive text-xs">
 										{field.state.meta.errors.join(", ")}
@@ -166,42 +193,30 @@ export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 					/>
 
 					<form.Field
-						name="collectionId"
+						name="collections"
 						children={(field) => (
 							<View className="gap-2">
-								<Label nativeID="collection-label">Collection</Label>
-								<Select
-									value={{
-										value: field.state.value,
-										label:
-											bookmarkCollections.find(
-												(c: { id: string; name: string }) =>
-													c.id === field.state.value,
-											)?.name || field.state.value,
+								<Label nativeID="collections-label">Collection</Label>
+								<MultiSelect
+									value={collectionOptions.filter((c) =>
+										field.state.value.includes(c.value),
+									)}
+									options={collectionOptions}
+									onChange={(options) => {
+										field.handleChange(options.map((o) => o.value));
 									}}
-									onValueChange={(val) => {
-										if (val) {
-											field.handleChange(val.value);
-										}
+									placeholder="Select a collection"
+									hidePlaceholderWhenSelected
+									maxSelected={1}
+									creatable
+									onSearchSync={(val) => {
+										if (!val.trim()) return collectionOptions;
+										const lower = val.toLowerCase();
+										return collectionOptions.filter((c) =>
+											c.label.toLowerCase().includes(lower),
+										);
 									}}
-								>
-									<SelectTrigger className="w-full">
-										<SelectValue placeholder="Select a collection" />
-									</SelectTrigger>
-									<SelectContent portalHost="modal-host">
-										<SelectGroup>
-											{bookmarkCollections.map((collection: { id: string; name: string }) => (
-												<SelectItem
-													key={collection.id}
-													label={collection.name}
-													value={collection.id}
-												>
-													{collection.name}
-												</SelectItem>
-											))}
-										</SelectGroup>
-									</SelectContent>
-								</Select>
+								/>
 							</View>
 						)}
 					/>
@@ -212,23 +227,23 @@ export function AddBookmarkModal({ onAddBookmark }: AddBookmarkModalProps) {
 							<View className="gap-2">
 								<Label nativeID="tags-label">Tags</Label>
 								<MultiSelect
-									value={Array.isArray(field.state.value) ? field.state.value.map((tag: string) => ({
+									value={field.state.value.map((tag: string) => ({
 										value: tag,
 										label: tag,
-									})) : []}
-									options={[
-										{ value: "development", label: "Development" },
-										{ value: "design", label: "Design" },
-										{ value: "productivity", label: "Productivity" },
-										{ value: "news", label: "News" },
-										{ value: "tutorial", label: "Tutorial" },
-										{ value: "reference", label: "Reference" },
-									]}
+									}))}
+									options={tagOptions}
 									onChange={(options) => {
 										field.handleChange(options.map((opt) => opt.value));
 									}}
 									creatable
 									placeholder="Select tags"
+									onSearchSync={(val) => {
+										if (!val.trim()) return tagOptions;
+										const lower = val.toLowerCase();
+										return tagOptions.filter((t) =>
+											t.label.toLowerCase().includes(lower),
+										);
+									}}
 								/>
 								{field.state.meta.errors && (
 									<Text className="text-destructive text-xs">

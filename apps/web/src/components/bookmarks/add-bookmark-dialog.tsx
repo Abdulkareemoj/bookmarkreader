@@ -19,16 +19,7 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import MultipleSelector from "@/components/ui/multi-select";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import MultipleSelector, { type Option } from "@/components/ui/multi-select";
 import { Spinner } from "@/components/ui/spinner";
 import { useTags } from "@/hooks/use-tags";
 import { useCollectionsStore } from "@/lib/collections-store";
@@ -84,7 +75,10 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 		},
 		onSubmit: async ({ value }) => {
 			onAddBookmark({
-				...value,
+				url: value.url,
+				title: value.title,
+				tags: value.tags ?? [],
+				collectionId: value.collectionId,
 				image: fetchedImage,
 			});
 			form.reset();
@@ -275,27 +269,36 @@ export function AddBookmarkDialog({ onAddBookmark }: AddBookmarkDialogProps) {
 						<form.Field
 							name="collectionId"
 							children={(field) => {
+								const collectionOptions: Option[] = bookmarkCollections
+									.filter((c) => c.id !== "all")
+									.map((c) => ({ value: c.id, label: c.name }));
+
+								const selectedOption = collectionOptions.find(
+									(c) => c.value === field.state.value,
+								);
+
 								return (
 									<Field>
 										<FieldLabel>Collection</FieldLabel>
-										<Select
-											value={field.state.value}
-											onValueChange={field.handleChange}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select a collection" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectGroup>
-													<SelectLabel>Collections</SelectLabel>
-													{bookmarkCollections.map((c) => (
-														<SelectItem key={c.id} value={c.id}>
-															{c.name}
-														</SelectItem>
-													))}
-												</SelectGroup>
-											</SelectContent>
-										</Select>
+										<MultipleSelector
+											value={selectedOption ? [selectedOption] : []}
+											options={collectionOptions}
+											onChange={(options) => {
+												field.handleChange(
+													options.length > 0
+														? options[options.length - 1].value
+														: "inbox",
+												);
+											}}
+											creatable
+											maxSelected={1}
+											placeholder="Select a collection"
+											hideClearAllButton
+											hidePlaceholderWhenSelected
+											emptyIndicator={
+												<p className="text-center text-sm">No results found</p>
+											}
+										/>
 									</Field>
 								);
 							}}

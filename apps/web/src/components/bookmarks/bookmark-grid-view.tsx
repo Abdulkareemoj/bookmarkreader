@@ -47,12 +47,11 @@ export function BookmarkGridView({
 								id={bookmark.id}
 								title={bookmark.title}
 								url={bookmark.url || ""}
+								description={bookmark.description}
+								tags={bookmark.tags}
 								favicon={bookmark.favicon}
-								image={bookmark.image}
 								liked={bookmark.liked}
-								saved={bookmark.saved}
 								onLike={onLike}
-								onSave={onSave}
 								onDelete={onDelete}
 								onEdit={onEdit}
 								onMove={onMove}

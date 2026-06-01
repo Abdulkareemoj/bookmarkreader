@@ -14,60 +14,65 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Text } from "@/components/ui/text";
-import { useCollectionsStore } from "@/lib/store";
+import type { Option } from "@/components/ui/multi-select";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { useTags } from "@/hooks/use-tags";
+import { useCollectionsStore, useReaderStore } from "@/lib/store";
 
 const editBookmarkSchema = z.object({
-	url: z.url("Please enter a valid URL"),
+	url: z.string().url("Please enter a valid URL"),
 	title: z.string().min(1, "Title is required"),
 	tags: z.array(z.string()).default([]),
-	collectionId: z.string().default("inbox"),
+	collections: z.array(z.string()).default(["inbox"]),
 });
 
 interface EditBookmarkModalProps {
 	bookmark: Bookmark | null;
 	isOpen: boolean;
 	onClose: () => void;
-	onUpdate: (data: Partial<Bookmark>) => void;
 }
 
 export function EditBookmarkModal({
 	bookmark,
 	isOpen,
 	onClose,
-	onUpdate,
 }: EditBookmarkModalProps) {
-	const { bookmarkCollections } = useCollectionsStore();
+	const { updateBookmark } = useReaderStore((s) => s);
+	const { bookmarkCollections, addBookmarkCollection } = useCollectionsStore();
+	const { tagOptions } = useTags();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+	const collectionOptions = React.useMemo<Option[]>(
+		() =>
+			bookmarkCollections
+				.filter((c) => c.id !== "all")
+				.map((c) => ({ value: c.id, label: c.name })),
+		[bookmarkCollections],
+	);
 
 	const form = useForm({
 		defaultValues: {
 			url: bookmark?.url || "",
 			title: bookmark?.title || "",
 			tags: bookmark?.tags || [],
-			collectionId: bookmark?.collectionId || "inbox",
+			collections: [bookmark?.collectionId || "inbox"],
 		},
 		onSubmit: async ({ value }) => {
 			if (!bookmark) return;
 
 			setIsSubmitting(true);
 			try {
-				// Update the bookmark via the store
-				onUpdate({
+				const collectionId =
+					value.collections.length > 0
+						? value.collections[value.collections.length - 1]
+						: "inbox";
+				await updateBookmark(bookmark.id, {
 					url: value.url,
 					title: value.title,
 					tags: value.tags,
-					collectionId: value.collectionId,
+					collectionId,
 				});
-
 				onClose();
 			} catch (error) {
 				console.error("Failed to update bookmark:", error);
@@ -77,26 +82,28 @@ export function EditBookmarkModal({
 		},
 	});
 
-	// Update form when bookmark changes
 	React.useEffect(() => {
-		if (bookmark) {
-			form.setFieldValue("url", bookmark.url);
-			form.setFieldValue("title", bookmark.title);
+		if (bookmark && isOpen) {
+			form.setFieldValue("url", bookmark.url || "");
+			form.setFieldValue("title", bookmark.title || "");
 			form.setFieldValue("tags", bookmark.tags || []);
-			form.setFieldValue("collectionId", bookmark.collectionId || "inbox");
+			form.setFieldValue(
+				"collections",
+				bookmark.collectionId ? [bookmark.collectionId] : ["inbox"],
+			);
 		}
-	}, [bookmark, form]);
+	}, [bookmark, isOpen, form]);
 
 	if (!bookmark) return null;
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-	<DialogContent className="sm:max-w-106.25">
+			<DialogContent className="sm:max-w-106.25">
 				<DialogHeader>
 					<DialogTitle>Edit Bookmark</DialogTitle>
 					<DialogDescription>Update your bookmark details</DialogDescription>
 				</DialogHeader>
-	<View className="gap-4 py-4">
+				<View className="gap-4 py-4">
 					<form.Field
 						name="url"
 						validators={{
@@ -115,7 +122,7 @@ export function EditBookmarkModal({
 								/>
 								{field.state.meta.errors.length > 0 && (
 									<Text className="mt-1 text-red-500 text-xs">
-										{field.state.meta.errors[0]}
+										{String(field.state.meta.errors[0])}
 									</Text>
 								)}
 							</View>
@@ -140,7 +147,7 @@ export function EditBookmarkModal({
 								/>
 								{field.state.meta.errors.length > 0 && (
 									<Text className="mt-1 text-red-500 text-xs">
-										{field.state.meta.errors[0]}
+										{String(field.state.meta.errors[0])}
 									</Text>
 								)}
 							</View>
@@ -151,38 +158,53 @@ export function EditBookmarkModal({
 						{(field) => (
 							<View>
 								<Label htmlFor="tags">Tags</Label>
-								<Text className="text-muted-foreground">
-									Tags: {field.state.value.join(", ")}
-								</Text>
-								<Text className="text-muted-foreground text-xs">
-									(Tag editing coming soon)
-								</Text>
+								<MultiSelect
+									value={field.state.value.map((tag: string) => ({
+										value: tag,
+										label: tag,
+									}))}
+									options={tagOptions}
+									onChange={(options) => {
+										field.handleChange(options.map((opt) => opt.value));
+									}}
+									creatable
+									placeholder="Select tags"
+									onSearchSync={(val) => {
+										if (!val.trim()) return tagOptions;
+										const lower = val.toLowerCase();
+										return tagOptions.filter((t) =>
+											t.label.toLowerCase().includes(lower),
+										);
+									}}
+								/>
 							</View>
 						)}
 					</form.Field>
 
-					<form.Field name="collectionId">
+					<form.Field name="collections">
 						{(field) => (
 							<View>
-								<Label htmlFor="collection">Collection</Label>
-								<Select
-									value={field.state.value}
-									onValueChange={(value) => field.handleChange(value)}
-									disabled={isSubmitting}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select collection" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectGroup>
-											{bookmarkCollections.map((collection) => (
-												<SelectItem label={collection.name} key={collection.id} value={collection.id}>
-													{collection.name}
-												</SelectItem>
-											))}
-										</SelectGroup>
-									</SelectContent>
-								</Select>
+								<Label htmlFor="collections">Collection</Label>
+								<MultiSelect
+									value={collectionOptions.filter((c) =>
+										field.state.value.includes(c.value),
+									)}
+									options={collectionOptions}
+									onChange={(options) => {
+										field.handleChange(options.map((o) => o.value));
+									}}
+									placeholder="Select a collection"
+									hidePlaceholderWhenSelected
+									maxSelected={1}
+									creatable
+									onSearchSync={(val) => {
+										if (!val.trim()) return collectionOptions;
+										const lower = val.toLowerCase();
+										return collectionOptions.filter((c) =>
+											c.label.toLowerCase().includes(lower),
+										);
+									}}
+								/>
 							</View>
 						)}
 					</form.Field>

@@ -1,10 +1,13 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { router } from "expo-router";
 import {
+	Archive,
 	Bookmark,
 	ChevronRight,
 	Heart,
 	Home,
 	Inbox,
+	Star,
 	X,
 } from "lucide-react-native";
 import React, { useCallback, useMemo, useRef } from "react";
@@ -31,13 +34,10 @@ export function CollectionsBottomSheet({
 	const { addBookmark } = useBookmarks();
 	const bottomSheetRef = useRef<BottomSheet>(null);
 
-	// Snap points
 	const snapPoints = useMemo(() => ["60%", "80%"], []);
 
-	// Handle sheet changes
 	const handleSheetChanges = useCallback(
 		(index: number) => {
-			console.log("Bottom sheet index changed:", index);
 			if (index === -1) {
 				onClose();
 			}
@@ -45,18 +45,20 @@ export function CollectionsBottomSheet({
 		[onClose],
 	);
 
-	// Show/hide sheet based on isOpen prop
 	React.useEffect(() => {
-		console.log("Bottom sheet isOpen changed:", isOpen);
-		if (isOpen && bottomSheetRef.current) {
-			// Use a small delay to ensure the sheet is mounted
-			setTimeout(() => {
-				bottomSheetRef.current?.snapToIndex(0);
-			}, 100);
-		} else if (!isOpen && bottomSheetRef.current) {
-			bottomSheetRef.current.close();
+		const ref = bottomSheetRef.current;
+		if (!ref) return;
+		if (isOpen) {
+			ref.snapToIndex(0);
+		} else {
+			ref.close();
 		}
 	}, [isOpen]);
+
+	const navigateTo = (href: "/bookmarks/favorites" | "/bookmarks/archive") => {
+		onClose();
+		router.navigate(href);
+	};
 
 	const getCollectionIcon = (id: string) => {
 		switch (id) {
@@ -73,7 +75,11 @@ export function CollectionsBottomSheet({
 		}
 	};
 
-	// Combine default and user collections
+	const navItems = [
+		{ id: "favorites", name: "Favorites", icon: Star, href: "/bookmarks/favorites" as const },
+		{ id: "archive", name: "Archive", icon: Archive, href: "/bookmarks/archive" as const },
+	];
+
 	const collections = [
 		{ id: "all", name: "All Bookmarks" },
 		{ id: "liked", name: "Liked" },
@@ -102,12 +108,10 @@ export function CollectionsBottomSheet({
 			}}
 		>
 			<BottomSheetView className="flex-1">
-				{/* Drag Handle Indicator */}
 				<View className="flex-row justify-center py-2">
 					<View className="h-1 w-12 rounded-full bg-muted-foreground/30" />
 				</View>
 
-				{/* Header */}
 				<View className="flex-row items-center justify-between border-border border-b px-6 py-4">
 					<Text className="font-bold text-foreground text-xl">Collections</Text>
 					<TouchableOpacity
@@ -118,10 +122,28 @@ export function CollectionsBottomSheet({
 					</TouchableOpacity>
 				</View>
 
-				{/* Collections List */}
 				<ScrollView className="flex-1 px-4 py-4">
 					<Text className="mb-4 px-2 font-bold text-[10px] text-muted-foreground uppercase tracking-widest">
-						Bookmark Collections
+						Views
+					</Text>
+					{navItems.map((item) => {
+						const Icon = item.icon;
+						return (
+							<TouchableOpacity
+								key={item.id}
+								onPress={() => navigateTo(item.href)}
+								className="mb-2 flex-row items-center rounded-xl px-4 py-3 active:bg-accent"
+							>
+								<Icon size={20} className="text-muted-foreground" />
+								<Text className="ml-3 font-semibold text-foreground">
+									{item.name}
+								</Text>
+							</TouchableOpacity>
+						);
+					})}
+
+					<Text className="mb-4 mt-6 px-2 font-bold text-[10px] text-muted-foreground uppercase tracking-widest">
+						Filters
 					</Text>
 					{collections.map((collection) => {
 						const Icon = getCollectionIcon(collection.id);
@@ -156,21 +178,19 @@ export function CollectionsBottomSheet({
 							</TouchableOpacity>
 						);
 					})}
-{/* Add Bookmark Section */}
-						<View className="mt-6">
-							<Text className="font-medium text-foreground mb-3">Add New Bookmark</Text>
-							<AddBookmarkModal
-								onAddBookmark={(data) => {
-									console.log("[CollectionsBottomSheet] Adding bookmark:", data);
-									addBookmark({
-										...data,
-										tags: [],
-									});
-									onClose(); // Close the bottom sheet after adding
-								}}
-							/>
-						</View>
-		
+
+					<View className="mt-6">
+						<Text className="font-medium text-foreground mb-3">Add New Bookmark</Text>
+						<AddBookmarkModal
+							onAddBookmark={(data) => {
+								addBookmark({
+									...data,
+									tags: [],
+								});
+								onClose();
+							}}
+						/>
+					</View>
 				</ScrollView>
 			</BottomSheetView>
 		</BottomSheet>

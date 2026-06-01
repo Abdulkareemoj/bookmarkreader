@@ -1,20 +1,20 @@
 import {
-	Bookmark,
+	Bookmark as BookmarkIcon,
 	Copy,
-	Edit,
+	ExternalLink,
 	Heart,
-	Link as LinkIcon,
+	MoreHorizontal,
+	Pencil,
 	Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ConfirmationDialog } from "../confirmation-dialog";
 
@@ -22,12 +22,11 @@ interface BookmarkGridCardProps {
 	id: string;
 	title: string;
 	url?: string;
+	description?: string;
+	tags?: string[];
 	favicon?: string;
-	image?: string;
 	liked: boolean;
-	saved: boolean;
 	onLike: (id: string) => void;
-	onSave: (id: string) => void;
 	onEdit: (id: string) => void;
 	onMove: (id: string, collectionId: string) => void;
 	onDelete: (id: string) => void;
@@ -38,12 +37,11 @@ export function BookmarkGridCard({
 	id,
 	title,
 	url,
+	description,
+	tags,
 	favicon,
-	image,
 	liked,
-	saved,
 	onLike,
-	onSave,
 	onDelete,
 	onEdit,
 	onMove,
@@ -55,128 +53,130 @@ export function BookmarkGridCard({
 		}
 	};
 
+	const handleOpenUrl = () => {
+		if (url) {
+			window.open(url, "_blank", "noopener,noreferrer");
+		}
+	};
+
 	return (
-		<ContextMenu>
-			<ContextMenuTrigger asChild>
-				<article
-					onClick={onClick}
-					className="group relative cursor-pointer rounded-lg border border-border bg-card transition-colors hover:bg-card/80"
+		<div className="group relative flex flex-col overflow-hidden rounded-xl border bg-card transition-colors hover:bg-accent/30">
+			{/* Actions Overlay */}
+			<div className="absolute top-3 right-3 z-10 flex items-center gap-1">
+				<Button
+					variant="secondary"
+					size="icon-xs"
+					className="bg-background/80 backdrop-blur-sm"
+					onClick={(e) => {
+						e.stopPropagation();
+						onLike(id);
+					}}
+					title={liked ? "Unlike" : "Like"}
 				>
-					{/* Image Section */}
-					{image ? (
-						<div className="relative h-32 w-full overflow-hidden rounded-t-lg bg-muted">
+					<Heart
+						className={cn("size-4", liked && "fill-red-500 text-red-500")}
+					/>
+				</Button>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							variant="secondary"
+							size="icon-xs"
+							className="bg-background/80 backdrop-blur-sm"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<MoreHorizontal className="size-4" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onClick={handleCopyUrl}>
+							<Copy className="size-4" />
+							Copy URL
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleOpenUrl}>
+							<ExternalLink className="size-4" />
+							Open in new tab
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => onEdit(id)}>
+							<Pencil className="size-4" />
+							Edit
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => onMove(id, "inbox")}>
+							<BookmarkIcon className="size-4" />
+							Move to Inbox
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<ConfirmationDialog
+							title="Confirm Deletion"
+							description={`Are you sure you want to delete the bookmark: "${title}"?`}
+							onConfirm={() => onDelete(id)}
+							trigger={
+								<DropdownMenuItem
+									className="text-destructive focus:text-destructive"
+									onSelect={(e) => e.preventDefault()}
+								>
+									<Trash2 className="size-4" />
+									Delete
+								</DropdownMenuItem>
+							}
+						/>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
+
+			<button
+				type="button"
+				className="w-full cursor-pointer text-left"
+				onClick={onClick}
+			>
+				{/* Hero Area - Favicon centered on gradient */}
+				<div className="flex h-32 items-center justify-center bg-linear-to-br from-muted/50 to-muted">
+					{favicon ? (
+						<div className="flex size-12 items-center justify-center rounded-xl bg-background shadow-sm">
 							<img
-								src={image}
+								src={favicon}
 								alt={title}
-								className="h-full w-full object-cover"
+								width={32}
+								height={32}
+								className="size-8"
 								onError={(e) => {
-									// Hide image if it fails to load
 									e.currentTarget.style.display = "none";
 								}}
 							/>
 						</div>
-					) : null}
-
-					<CardHeader className="p-4">
-						<CardTitle className="line-clamp-2 text-lg">{title}</CardTitle>
-					</CardHeader>
-					<CardContent className="p-4 pt-0">
-						<div className="flex items-center gap-2 text-muted-foreground text-sm">
-							{favicon ? (
-								<img
-									src={favicon}
-									alt="Favicon"
-									className="size-4 shrink-0"
-									onError={(e) => {
-										// Hide favicon if it fails to load
-										e.currentTarget.style.display = "none";
-									}}
-								/>
-							) : (
-								<LinkIcon data-icon="inline-start" className="shrink-0" />
-							)}
-							<span className="truncate">{url ?? "No URL available"}</span>
+					) : (
+						<div className="flex size-12 items-center justify-center rounded-xl bg-background shadow-sm">
+							<ExternalLink className="size-6 text-muted-foreground" />
 						</div>
-					</CardContent>
+					)}
+				</div>
 
-					{/* Actions Overlay */}
-					<div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-						<Button
-							variant="ghost"
-							size="icon"
-							className="size-8"
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								onLike(id);
-							}}
-							title={liked ? "Unlike" : "Like"}
-						>
-							<Heart
-								data-icon="inline-start"
-								className={cn(liked && "fill-current text-red-500")}
-							/>
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="size-8"
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								onSave(id);
-							}}
-							title={saved ? "Remove from saved" : "Save"}
-						>
-							<Bookmark
-								data-icon="inline-start"
-								className={cn(saved && "fill-current")}
-							/>
-						</Button>
-						<ConfirmationDialog
-							title="Confirm Deletion"
-							description={`Are you sure you want to delete the bookmark: "${title}"? This action cannot be undone.`}
-							onConfirm={() => onDelete(id)}
-							trigger={
-								<Button
-									variant="ghost"
-									size="icon"
-									className="size-8 hover:text-destructive"
-									onClick={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-									}}
-									title="Delete"
+				<div className="space-y-2 p-4">
+					<h3 className="line-clamp-1 font-medium">{title}</h3>
+					{description && (
+						<p className="line-clamp-2 text-sm text-muted-foreground">
+							{description}
+						</p>
+					)}
+					{tags && tags.length > 0 && (
+						<div className="flex flex-wrap gap-1 pt-1">
+							{tags.slice(0, 3).map((tag) => (
+								<span
+									key={tag}
+									className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
 								>
-									<Trash2 data-icon="inline-start" />
-								</Button>
-							}
-						/>
-					</div>
-				</article>
-			</ContextMenuTrigger>
-			<ContextMenuContent>
-				<ContextMenuItem onClick={() => onEdit(id)}>
-					<Edit data-icon="inline-start" />
-					Edit
-				</ContextMenuItem>
-				<ContextMenuItem onClick={() => onMove(id, "inbox")}>
-					<Bookmark data-icon="inline-start" />
-					Move to Inbox
-				</ContextMenuItem>
-				<ContextMenuItem onClick={handleCopyUrl}>
-					<Copy data-icon="inline-start" />
-					Copy URL
-				</ContextMenuItem>
-				<ContextMenuSeparator />
-				<ContextMenuItem
-					className="text-destructive focus:text-destructive"
-					onClick={() => onDelete(id)}
-				>
-					<Trash2 data-icon="inline-start" />
-					Delete
-				</ContextMenuItem>
-			</ContextMenuContent>
-		</ContextMenu>
+									{tag}
+								</span>
+							))}
+							{tags.length > 3 && (
+								<span className="py-0.5 text-[10px] text-muted-foreground">
+									+{tags.length - 3} more
+								</span>
+							)}
+						</div>
+					)}
+				</div>
+			</button>
+		</div>
 	);
 }

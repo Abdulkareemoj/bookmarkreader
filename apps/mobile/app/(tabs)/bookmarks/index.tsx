@@ -19,8 +19,14 @@ export default function Bookmarks() {
 	const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-	const { bookmarks, toggleLike, toggleSave, removeBookmark, addBookmark } =
-		useBookmarks(collectionId as string);
+	const {
+		bookmarks,
+		toggleLike,
+		toggleSave,
+		removeBookmark,
+		addBookmark,
+		updateBookmark,
+	} = useBookmarks(collectionId as string);
 
 	const search =
 		(Array.isArray(searchQuery)
@@ -50,13 +56,7 @@ export default function Bookmarks() {
 		setEditingBookmark(bookmark);
 	};
 
-	const handleUpdate = (data: Partial<Bookmark>) => {
-		// This will be handled by the store through the modal
-		console.log("Bookmark updated:", data);
-	};
-
 	const handleCollectionChange = (id: string) => {
-		// Navigate to the selected collection
 		router.setParams({ collectionId: id });
 	};
 
@@ -64,7 +64,13 @@ export default function Bookmarks() {
 		({ item }: { item: Bookmark }) => (
 			<View className={viewMode === "grid" ? "flex-1" : ""}>
 				<BookmarkCard
-					{...item}
+					id={item.id}
+					title={item.title}
+					url={item.url}
+					favicon={item.favicon ?? undefined}
+					tags={item.tags}
+					liked={item.liked}
+					saved={item.saved}
 					onLike={() => toggleLike(item.id)}
 					onSave={() => toggleSave(item.id)}
 					onDelete={() => removeBookmark(item.id)}
@@ -87,7 +93,6 @@ export default function Bookmarks() {
 
 	return (
 		<View className="flex-1 bg-background">
-			{/* View Mode Toggle */}
 			<View className="flex-row items-center justify-between px-4 pt-3 pb-2">
 				<Pressable
 					onPress={() => setIsSidebarOpen(true)}
@@ -147,10 +152,11 @@ export default function Bookmarks() {
 					<View className="p-4">
 						<AddBookmarkModal
 							onAddBookmark={(data) => {
-								console.log("[BookmarksPage] Adding bookmark:", data);
 								addBookmark({
-									...data,
-									tags: [],
+									url: data.url,
+									title: data.title,
+									collectionId: data.collectionId,
+									tags: data.tags ?? [],
 								});
 							}}
 						/>
@@ -158,15 +164,12 @@ export default function Bookmarks() {
 				</View>
 			)}
 
-			{/* Edit Bookmark Modal */}
 			<EditBookmarkModal
 				bookmark={editingBookmark}
 				isOpen={!!editingBookmark}
 				onClose={() => setEditingBookmark(null)}
-				onUpdate={handleUpdate}
 			/>
 
-			{/* Collections Bottom Sheet */}
 			<CollectionsBottomSheet
 				isOpen={isSidebarOpen}
 				onClose={() => setIsSidebarOpen(false)}
