@@ -1,5 +1,5 @@
 import { useCollectionsStore } from "@packages/store";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Bookmark, Compass, Plus, Rss } from "lucide-react";
 import { DashboardCard } from "@/components/dashboard-card";
 import ArticleCard from "@/components/rss/article-card";
@@ -11,6 +11,7 @@ export const Route = createFileRoute("/")({
 });
 
 function DashboardComponent() {
+	const navigate = useNavigate();
 	const bookmarks = useReaderStore((state) => state.bookmarks);
 	const articles = useReaderStore((state) => state.articles);
 	const feeds = useReaderStore((state) => state.feeds);
@@ -264,6 +265,17 @@ function DashboardComponent() {
 										saved={article.saved}
 										imageUrl={article.imageUrl || undefined}
 										imageData={article.imageData}
+										feedFavicon={
+											feed?.siteUrl
+												? `https://www.google.com/s2/favicons?domain=${new URL(feed.siteUrl).hostname}&sz=64`
+												: undefined
+										}
+										onClick={() =>
+											navigate({
+												to: "/rss/article/$id",
+												params: { id: article.id },
+											})
+										}
 									/>
 								);
 							})}
@@ -298,6 +310,17 @@ function DashboardComponent() {
 										saved={article.saved}
 										imageUrl={article.imageUrl || undefined}
 										imageData={article.imageData}
+										feedFavicon={
+											feed?.siteUrl
+												? `https://www.google.com/s2/favicons?domain=${new URL(feed.siteUrl).hostname}&sz=64`
+												: undefined
+										}
+										onClick={() =>
+											navigate({
+												to: "/rss/article/$id",
+												params: { id: article.id },
+											})
+										}
 									/>
 								);
 							})}
@@ -412,6 +435,17 @@ function DashboardComponent() {
 														liked={article.liked}
 														saved={article.saved}
 														imageUrl={article.imageUrl || undefined}
+														feedFavicon={
+															feed.siteUrl
+																? `https://www.google.com/s2/favicons?domain=${new URL(feed.siteUrl).hostname}&sz=64`
+																: undefined
+														}
+														onClick={() =>
+															navigate({
+																to: "/rss/article/$id",
+																params: { id: article.id },
+															})
+														}
 													/>
 												))}
 											</div>

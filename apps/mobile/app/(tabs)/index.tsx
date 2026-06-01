@@ -1,6 +1,6 @@
 import { useCollectionsStore } from "@packages/store";
 import { Image } from "expo-image";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import {
 	Bookmark,
 	Clock,
@@ -244,18 +244,12 @@ export default function Home() {
 						>
 							{dailyHighlights.map((article) => {
 								const feed = feeds.find((f) => f.id === article.feedId);
-								console.log(
-									"[Home] Article imageUrl:",
-									article.imageUrl,
-									"Article:",
-									article.title,
-								);
 								return (
-									<View
+									<Pressable
 										key={article.id}
+										onPress={() => router.push(`/(tabs)/rss/${article.id}`)}
 										className="w-72 overflow-hidden rounded-lg border border-border bg-card"
 									>
-										{/* Image */}
 										{article.imageUrl ? (
 											<Image
 												source={{ uri: article.imageUrl }}
@@ -305,7 +299,21 @@ export default function Home() {
 											{/* Footer */}
 											<View className="flex-row items-center justify-between">
 												<View className="flex-row items-center gap-2">
-													<View className="h-5 w-5 rounded-full bg-primary/20" />
+													{feed?.siteUrl ? (
+														<Image
+															source={{
+																uri: `https://www.google.com/s2/favicons?domain=${new URL(feed.siteUrl).hostname}&sz=64`,
+															}}
+															className="h-5 w-5 rounded-full"
+															contentFit="cover"
+														/>
+													) : (
+														<View className="h-5 w-5 items-center justify-center rounded-full bg-primary/20">
+															<Text className="font-medium text-[8px] text-primary">
+																{(feed?.title || "U").charAt(0).toUpperCase()}
+															</Text>
+														</View>
+													)}
 													<View>
 														<Text className="font-medium text-foreground text-xs">
 															{feed?.title || "Unknown"}
@@ -319,7 +327,7 @@ export default function Home() {
 												</View>
 											</View>
 										</View>
-									</View>
+									</Pressable>
 								);
 							})}
 						</ScrollView>
@@ -341,8 +349,9 @@ export default function Home() {
 							{trendingArticles.map((article) => {
 								const feed = feeds.find((f) => f.id === article.feedId);
 								return (
-									<View
+									<Pressable
 										key={article.id}
+										onPress={() => router.push(`/(tabs)/rss/${article.id}`)}
 										className="w-72 overflow-hidden rounded-lg border border-border bg-card"
 									>
 										{/* Image */}
@@ -395,7 +404,21 @@ export default function Home() {
 											{/* Footer */}
 											<View className="flex-row items-center justify-between">
 												<View className="flex-row items-center gap-2">
-													<View className="h-5 w-5 rounded-full bg-primary/20" />
+													{feed?.siteUrl ? (
+														<Image
+															source={{
+																uri: `https://www.google.com/s2/favicons?domain=${new URL(feed.siteUrl).hostname}&sz=64`,
+															}}
+															className="h-5 w-5 rounded-full"
+															contentFit="cover"
+														/>
+													) : (
+														<View className="h-5 w-5 items-center justify-center rounded-full bg-primary/20">
+															<Text className="font-medium text-[8px] text-primary">
+																{(feed?.title || "U").charAt(0).toUpperCase()}
+															</Text>
+														</View>
+													)}
 													<View>
 														<Text className="font-medium text-foreground text-xs">
 															{feed?.title || "Unknown"}
@@ -409,7 +432,7 @@ export default function Home() {
 												</View>
 											</View>
 										</View>
-									</View>
+									</Pressable>
 								);
 							})}
 						</ScrollView>
@@ -484,8 +507,9 @@ export default function Home() {
 							{pinnedItems.map((article) => {
 								const feed = feeds.find((f) => f.id === article.feedId);
 								return (
-									<View
+									<Pressable
 										key={article.id}
+										onPress={() => router.push(`/(tabs)/rss/${article.id}`)}
 										className="w-72 overflow-hidden rounded-lg border border-border bg-card"
 									>
 										{/* Image */}
@@ -538,7 +562,21 @@ export default function Home() {
 											{/* Footer */}
 											<View className="flex-row items-center justify-between">
 												<View className="flex-row items-center gap-2">
-													<View className="h-5 w-5 rounded-full bg-primary/20" />
+													{feed?.siteUrl ? (
+														<Image
+															source={{
+																uri: `https://www.google.com/s2/favicons?domain=${new URL(feed.siteUrl).hostname}&sz=64`,
+															}}
+															className="h-5 w-5 rounded-full"
+															contentFit="cover"
+														/>
+													) : (
+														<View className="h-5 w-5 items-center justify-center rounded-full bg-primary/20">
+															<Text className="font-medium text-[8px] text-primary">
+																{(feed?.title || "U").charAt(0).toUpperCase()}
+															</Text>
+														</View>
+													)}
 													<View>
 														<Text className="font-medium text-foreground text-xs">
 															{feed?.title || "Unknown"}
@@ -552,7 +590,7 @@ export default function Home() {
 												</View>
 											</View>
 										</View>
-									</View>
+									</Pressable>
 								);
 							})}
 						</ScrollView>
@@ -578,8 +616,9 @@ export default function Home() {
 										contentContainerStyle={{ gap: 12 }}
 									>
 										{feedArticles.map((article) => (
-											<View
+											<Pressable
 												key={article.id}
+												onPress={() => router.push(`/(tabs)/rss/${article.id}`)}
 												className="w-72 overflow-hidden rounded-lg border border-border bg-card"
 											>
 												{/* Image */}
@@ -634,7 +673,7 @@ export default function Home() {
 															: ""}
 													</Text>
 												</View>
-											</View>
+											</Pressable>
 										))}
 									</ScrollView>
 								</View>
