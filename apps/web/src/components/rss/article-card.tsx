@@ -1,5 +1,5 @@
 import { Bookmark, Heart, Rss, Share2 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ interface ArticleCardProps {
 	date: string;
 	imageUrl?: string;
 	imageData?: string;
+	feedFavicon?: string;
 	liked?: boolean;
 	saved?: boolean;
 	onLike?: () => void;
@@ -31,6 +32,7 @@ export default function ArticleCard({
 	date,
 	imageUrl,
 	imageData,
+	feedFavicon,
 	liked = false,
 	saved = false,
 	onLike,
@@ -87,7 +89,10 @@ export default function ArticleCard({
 				<div className="flex items-center justify-between px-4 pt-2 pb-4">
 					<div className="flex items-center gap-2">
 						<Avatar className="size-6">
-							<AvatarFallback className="bg-primary/20 text-xs" />
+							<AvatarImage src={feedFavicon} />
+							<AvatarFallback className="bg-primary/20 text-xs">
+								{author.charAt(0).toUpperCase()}
+							</AvatarFallback>
 						</Avatar>
 						<div className="text-xs">
 							<p className="font-medium text-foreground">{author}</p>

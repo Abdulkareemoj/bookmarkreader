@@ -14,6 +14,8 @@ import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RssIndexRouteImport } from './routes/rss/index'
 import { Route as BookmarksIndexRouteImport } from './routes/bookmarks/index'
+import { Route as BookmarksFavoritesRouteImport } from './routes/bookmarks/favorites'
+import { Route as BookmarksArchiveRouteImport } from './routes/bookmarks/archive'
 import { Route as BookmarksIdRouteImport } from './routes/bookmarks/$id'
 import { Route as RssArticleIdRouteImport } from './routes/rss/article.$id'
 
@@ -42,6 +44,16 @@ const BookmarksIndexRoute = BookmarksIndexRouteImport.update({
   path: '/bookmarks/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookmarksFavoritesRoute = BookmarksFavoritesRouteImport.update({
+  id: '/bookmarks/favorites',
+  path: '/bookmarks/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookmarksArchiveRoute = BookmarksArchiveRouteImport.update({
+  id: '/bookmarks/archive',
+  path: '/bookmarks/archive',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookmarksIdRoute = BookmarksIdRouteImport.update({
   id: '/bookmarks/$id',
   path: '/bookmarks/$id',
@@ -58,6 +70,8 @@ export interface FileRoutesByFullPath {
   '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
+  '/bookmarks/archive': typeof BookmarksArchiveRoute
+  '/bookmarks/favorites': typeof BookmarksFavoritesRoute
   '/bookmarks/': typeof BookmarksIndexRoute
   '/rss/': typeof RssIndexRoute
   '/rss/article/$id': typeof RssArticleIdRoute
@@ -67,6 +81,8 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
+  '/bookmarks/archive': typeof BookmarksArchiveRoute
+  '/bookmarks/favorites': typeof BookmarksFavoritesRoute
   '/bookmarks': typeof BookmarksIndexRoute
   '/rss': typeof RssIndexRoute
   '/rss/article/$id': typeof RssArticleIdRoute
@@ -77,6 +93,8 @@ export interface FileRoutesById {
   '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
+  '/bookmarks/archive': typeof BookmarksArchiveRoute
+  '/bookmarks/favorites': typeof BookmarksFavoritesRoute
   '/bookmarks/': typeof BookmarksIndexRoute
   '/rss/': typeof RssIndexRoute
   '/rss/article/$id': typeof RssArticleIdRoute
@@ -88,6 +106,8 @@ export interface FileRouteTypes {
     | '/explore'
     | '/settings'
     | '/bookmarks/$id'
+    | '/bookmarks/archive'
+    | '/bookmarks/favorites'
     | '/bookmarks/'
     | '/rss/'
     | '/rss/article/$id'
@@ -97,6 +117,8 @@ export interface FileRouteTypes {
     | '/explore'
     | '/settings'
     | '/bookmarks/$id'
+    | '/bookmarks/archive'
+    | '/bookmarks/favorites'
     | '/bookmarks'
     | '/rss'
     | '/rss/article/$id'
@@ -106,6 +128,8 @@ export interface FileRouteTypes {
     | '/explore'
     | '/settings'
     | '/bookmarks/$id'
+    | '/bookmarks/archive'
+    | '/bookmarks/favorites'
     | '/bookmarks/'
     | '/rss/'
     | '/rss/article/$id'
@@ -116,6 +140,8 @@ export interface RootRouteChildren {
   ExploreRoute: typeof ExploreRoute
   SettingsRoute: typeof SettingsRoute
   BookmarksIdRoute: typeof BookmarksIdRoute
+  BookmarksArchiveRoute: typeof BookmarksArchiveRoute
+  BookmarksFavoritesRoute: typeof BookmarksFavoritesRoute
   BookmarksIndexRoute: typeof BookmarksIndexRoute
   RssIndexRoute: typeof RssIndexRoute
   RssArticleIdRoute: typeof RssArticleIdRoute
@@ -158,6 +184,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookmarksIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bookmarks/favorites': {
+      id: '/bookmarks/favorites'
+      path: '/bookmarks/favorites'
+      fullPath: '/bookmarks/favorites'
+      preLoaderRoute: typeof BookmarksFavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookmarks/archive': {
+      id: '/bookmarks/archive'
+      path: '/bookmarks/archive'
+      fullPath: '/bookmarks/archive'
+      preLoaderRoute: typeof BookmarksArchiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bookmarks/$id': {
       id: '/bookmarks/$id'
       path: '/bookmarks/$id'
@@ -180,6 +220,8 @@ const rootRouteChildren: RootRouteChildren = {
   ExploreRoute: ExploreRoute,
   SettingsRoute: SettingsRoute,
   BookmarksIdRoute: BookmarksIdRoute,
+  BookmarksArchiveRoute: BookmarksArchiveRoute,
+  BookmarksFavoritesRoute: BookmarksFavoritesRoute,
   BookmarksIndexRoute: BookmarksIndexRoute,
   RssIndexRoute: RssIndexRoute,
   RssArticleIdRoute: RssArticleIdRoute,
