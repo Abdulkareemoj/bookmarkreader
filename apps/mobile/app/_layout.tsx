@@ -1,6 +1,6 @@
 import "@/global.css";
 
-import { ThemeProvider } from "@react-navigation/native";
+import { ThemeProvider } from "expo-router";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -12,10 +12,6 @@ import { appInit, getInitStatus } from "@/lib/mobile-init";
 import { NAV_THEME } from "@/lib/theme";
 import React from "react";
 
-export {
-	// Catch any errors thrown by the Layout component.
-	ErrorBoundary,
-} from "expo-router";
 
 // Custom component to provide initialized store via context
 function StoreProvider({ children }: { children: React.ReactNode }) {
@@ -74,11 +70,10 @@ export default function RootLayout() {
 					<Stack>
 						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 						<Stack.Screen name="search" options={{ headerShown: false }} />
-					
-					</Stack>	<PortalHost />
-				<PortalHost name="modal-host" />
+					</Stack>
+					<PortalHost />
+					<PortalHost name="modal-host" />
 				</StoreProvider>
-			
 			</ThemeProvider>
 		</GestureHandlerRootView>
 	);

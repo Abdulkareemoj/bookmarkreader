@@ -1,10 +1,5 @@
-import {
-	router,
-	Stack,
-	Tabs,
-	useFocusEffect,
-	useLocalSearchParams,
-} from "expo-router";
+import Tabs from "expo-router/tabs";
+import { router, useFocusEffect } from "expo-router";
 import {
 	Bookmark,
 	Compass,
@@ -16,7 +11,6 @@ import {
 import { useCallback, useState } from "react";
 import { Platform, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CollectionsBottomSheet } from "@/components/collections-bottom-sheet";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import React from "react";
@@ -24,12 +18,9 @@ import React from "react";
 export default function TabsLayout() {
 	const [showSearchInput, setShowSearchInput] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-	const { collectionId } = useLocalSearchParams();
 
 	useFocusEffect(
 		useCallback(() => {
-			// Reset search state when tab loses focus
 			return () => {
 				setShowSearchInput(false);
 				setSearchQuery("");
@@ -40,19 +31,8 @@ export default function TabsLayout() {
 
 	const { top } = useSafeAreaInsets();
 
-	const handleCollectionChange = (id: string) => {
-		router.setParams({ collectionId: id });
-	};
-
 	return (
-		<>
-			<CollectionsBottomSheet
-				isOpen={isSidebarOpen}
-				onClose={() => setIsSidebarOpen(false)}
-				activeTab={(collectionId as string) || "all"}
-				onTabChange={handleCollectionChange}
-			/>
-			<Tabs
+		<Tabs
 				screenOptions={{
 					headerShown: true,
 					tabBarStyle: {
@@ -156,7 +136,5 @@ export default function TabsLayout() {
 					}}
 				/>
 			</Tabs>
-		
-		</>
 	);
 }
