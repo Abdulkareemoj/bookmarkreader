@@ -92,13 +92,6 @@ export function parseFeedXml(xmlText: string, feedId: string): ParsedArticle[] {
   const rssItems = result?.rss?.channel?.item;
   if (rssItems) {
     const items = Array.isArray(rssItems) ? rssItems : [rssItems];
-    // Right after parsing, before the for loop:
-if (items.length > 0) {
-  console.log("[TC debug] keys:", Object.keys(items[0]).join(", "));
-  console.log("[TC debug] content length:", normalize(items[0]["content:encoded"])?.length ?? 0);
-  console.log("[TC debug] description length:", normalize(items[0].description)?.length ?? 0);
-  console.log("[TC debug] description start:", normalize(items[0].description)?.slice(0, 300));
-}
     for (const item of items) {
       const link = normalize(item.link) || normalize(item.guid) || normalize(item["guid"]);
       if (!link) continue;

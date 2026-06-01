@@ -2,7 +2,7 @@
 // Mobile uses apps/mobile/lib/rss.ts instead
 
 import {  extractFromXml, extractFromJson } from "@extractus/feed-extractor";
-import { extract as extractArticle } from "@extractus/article-parser";
+import { extract as extractArticle } from "@extractus/article-extractor";
 
 
 // Re-export everything from agents so existing imports keep working
