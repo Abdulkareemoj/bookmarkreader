@@ -3,9 +3,8 @@ import type { DB } from "@packages/db/src/index";
 import * as schema from "@packages/db/src/schema";
 import {
 	createBookmarkAgent,
-	createNoopRemoteApi,
 	createRssAgent,
-	createSyncAgent,
+	createHighlightAgent,
 } from "@packages/utils";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
@@ -15,7 +14,7 @@ const DB_PATH = "file:bookmark_tool.db";
 let initializedAgents: {
 	bookmarkAgent: ReturnType<typeof createBookmarkAgent>;
 	rssAgent: ReturnType<typeof createRssAgent>;
-	syncAgent: ReturnType<typeof createSyncAgent>;
+	highlightAgent: ReturnType<typeof createHighlightAgent>;
 } | null = null;
 
 //  initialize the Drizzle client and agents asynchronously for Tauri
@@ -35,18 +34,8 @@ export async function initializeTauriAgents() {
 	const genericDb = db as unknown as DB;
 	const bookmarkAgent = createBookmarkAgent(genericDb);
 	const rssAgent = createRssAgent(genericDb);
+	const highlightAgent = createHighlightAgent(genericDb);
 
-	const localBookmarksWithDb = { ...bookmarkAgent, db: genericDb };
-	const localRssWithDb = { ...rssAgent, db: genericDb };
-
-	const remoteApi = createNoopRemoteApi();
-
-	const syncAgent = createSyncAgent(
-		localBookmarksWithDb,
-		localRssWithDb,
-		remoteApi,
-	);
-
-	initializedAgents = { bookmarkAgent, rssAgent, syncAgent };
+	initializedAgents = { bookmarkAgent, rssAgent, highlightAgent };
 	return initializedAgents;
 }
