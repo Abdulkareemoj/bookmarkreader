@@ -622,20 +622,7 @@ export default function Home() {
 												className="w-72 overflow-hidden rounded-lg border border-border bg-card"
 											>
 												{/* Image */}
-												{article.imageUrl ? (
-													<Image
-														source={{ uri: article.imageUrl }}
-														className="h-32 w-full"
-														contentFit="cover"
-													/>
-												) : (
-													<View className="h-32 w-full items-center justify-center bg-muted">
-														<ImageIcon
-															size={24}
-															className="text-muted-foreground/50"
-														/>
-													</View>
-												)}
+												
 
 												<View className="p-3">
 													{/* Category and read time */}
@@ -667,11 +654,35 @@ export default function Home() {
 													</Text>
 
 													{/* Footer */}
-													<Text className="text-muted-foreground text-xs">
-														{article.pubDate
-															? new Date(article.pubDate).toLocaleDateString()
-															: ""}
-													</Text>
+																							<View className="flex-row items-center justify-between">
+												<View className="flex-row items-center gap-2">
+													{feed?.siteUrl ? (
+														<Image
+															source={{
+																uri: `https://www.google.com/s2/favicons?domain=${new URL(feed.siteUrl).hostname}&sz=64`,
+															}}
+															className="h-5 w-5 rounded-full"
+															contentFit="cover"
+														/>
+													) : (
+														<View className="h-5 w-5 items-center justify-center rounded-full bg-primary/20">
+															<Text className="font-medium text-[8px] text-primary">
+																{(feed?.title || "U").charAt(0).toUpperCase()}
+															</Text>
+														</View>
+													)}
+													<View>
+														<Text className="font-medium text-foreground text-xs">
+															{feed?.title || "Unknown"}
+														</Text>
+														<Text className="text-muted-foreground text-xs">
+															{article.pubDate
+																? new Date(article.pubDate).toLocaleDateString()
+																: ""}
+														</Text>
+													</View>
+												</View>
+											</View>
 												</View>
 											</Pressable>
 										))}

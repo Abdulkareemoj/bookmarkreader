@@ -27,7 +27,8 @@ import RenderHtml from "react-native-render-html";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { useFeeds } from "@/hooks/use-feeds";
-
+import { useColorScheme } from "react-native";
+import { THEME } from "@/lib/theme";
 // ─── HTML helpers ─────────────────────────────────────────────────────────────
 
 function cleanHtml(html: string): string {
@@ -39,34 +40,38 @@ function cleanHtml(html: string): string {
     .trim();
 }
 
-// ─── Tag styles ───────────────────────────────────────────────────────────────
-
-const tagsStyles: Record<string, object> = {
-  p:          { fontSize: 17, lineHeight: 28, marginBottom: 20, color: "hsl(var(--foreground))" },
-  h1:         { fontSize: 26, fontWeight: "700", marginBottom: 12, marginTop: 24, color: "hsl(var(--foreground))" },
-  h2:         { fontSize: 22, fontWeight: "700", marginBottom: 10, marginTop: 20, color: "hsl(var(--foreground))" },
-  h3:         { fontSize: 19, fontWeight: "600", marginBottom: 8,  marginTop: 16, color: "hsl(var(--foreground))" },
-  a:          { color: "hsl(var(--primary))", textDecorationLine: "underline" },
-  blockquote: { borderLeftWidth: 3, borderLeftColor: "hsl(var(--primary))", paddingLeft: 12, marginLeft: 0, marginVertical: 16, opacity: 0.8 },
-  ul:         { marginBottom: 16 },
-  ol:         { marginBottom: 16 },
-  li:         { fontSize: 17, lineHeight: 28, marginBottom: 4, color: "hsl(var(--foreground))" },
-  code:       { fontFamily: "monospace", fontSize: 14, backgroundColor: "hsl(var(--muted))", borderRadius: 4 },
-  pre:        { backgroundColor: "hsl(var(--muted))", padding: 12, borderRadius: 8, marginBottom: 16 },
-  img:        { borderRadius: 8, marginBottom: 16 },
-  figcaption: { fontSize: 13, color: "hsl(var(--muted-foreground))", textAlign: "center", marginTop: 4 },
-  strong:     { fontWeight: "700", color: "hsl(var(--foreground))" },
-  em:         { fontStyle: "italic" },
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ArticleScreen() {
+  
   const router = useRouter();
   const scrollY = useSharedValue(0);
   const { width } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
+  
+// ─── Tag styles ───────────────────────────────────────────────────────────────
 
+const colorScheme = useColorScheme();
+const theme = colorScheme === "dark" ? THEME.dark : THEME.light;
+
+const tagsStyles: Record<string, object> = {
+  p:          { fontSize: 17, lineHeight: 28, marginBottom: 20, color: theme.foreground },
+  h1:         { fontSize: 26, fontWeight: "700", marginBottom: 12, marginTop: 24, color: theme.foreground },
+  h2:         { fontSize: 22, fontWeight: "700", marginBottom: 10, marginTop: 20, color: theme.foreground },
+  h3:         { fontSize: 19, fontWeight: "600", marginBottom: 8, marginTop: 16, color: theme.foreground },
+  a:          { color: theme.primary, textDecorationLine: "underline" },
+  blockquote: { borderLeftWidth: 3, borderLeftColor: theme.primary, paddingLeft: 12, marginLeft: 0, marginVertical: 16, opacity: 0.8 },
+  ul:         { marginBottom: 16 },
+  ol:         { marginBottom: 16 },
+  li:         { fontSize: 17, lineHeight: 28, marginBottom: 4, color: theme.foreground },
+  code:       { fontFamily: "monospace", fontSize: 14, backgroundColor: theme.muted, borderRadius: 4 },
+  pre:        { backgroundColor: theme.muted, padding: 12, borderRadius: 8, marginBottom: 16 },
+  img:        { borderRadius: 8, marginBottom: 16 },
+  figcaption: { fontSize: 13, color: theme.mutedForeground, textAlign: "center", marginTop: 4 },
+  strong:     { fontWeight: "700", color: theme.foreground },
+  em:         { fontStyle: "italic" },
+};
   // All hooks must be inside the component
   const {
     articles,
@@ -78,6 +83,8 @@ export default function ArticleScreen() {
   } = useFeeds();
 
   const article = articles.find((a) => a.id === id);
+  console.log("[ArticleScreen] found article:", !!article, "id:", id);
+console.log("[ArticleScreen] articles count:", articles.length);
   const feed = feeds.find((f) => f.id === article?.feedId);
 
   // Mark as read + fetch full content on mount
@@ -95,7 +102,10 @@ export default function ArticleScreen() {
       : cleanHtml(raw);
     return { html };
   }, [(article as any)?.fullContent, article?.content, article?.contentSnippet]);
-
+console.log("[ArticleScreen] article:", article?.id);
+console.log("[ArticleScreen] content:", article?.content?.slice(0, 50));
+console.log("[ArticleScreen] fullContent:", (article as any)?.fullContent?.slice(0, 50));
+console.log("[ArticleScreen] htmlSource:", htmlSource.html?.slice(0, 50));
   const readTime = useMemo(() => {
     const raw = (article as any)?.fullContent || article?.content || article?.contentSnippet || "";
     const text = raw.replace(/<[^>]*>/g, " ").split(/\s+/).filter(Boolean).length;
@@ -143,6 +153,7 @@ export default function ArticleScreen() {
   };
 
   return (
+    
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
       <Animated.View
@@ -216,24 +227,29 @@ export default function ArticleScreen() {
         ) : null}
 
         {/* Content */}
-        <View style={{ paddingHorizontal: 20 }}>
-          {htmlSource.html ? (
-            <RenderHtml
-              contentWidth={width - 40}
-              source={htmlSource}
-              tagsStyles={tagsStyles}
-              baseStyle={{ color: "hsl(var(--foreground))" }}
-              enableExperimentalMarginCollapsing
-              renderersProps={{
-                img: { enableExperimentalPercentWidth: true },
-                a: { onPress: (_e: any, href: string) => Linking.openURL(href) },
-              }}
-              ignoredDomTags={["script", "style", "iframe", "form", "input"]}
-            />
-          ) : (
-            <ActivityIndicator className="mt-8" />
-          )}
-        </View>
+<View style={{ paddingHorizontal: 20 }}>
+  {htmlSource.html ? (
+   <RenderHtml
+  contentWidth={width - 40}
+  source={htmlSource}
+  tagsStyles={tagsStyles}
+  baseStyle={{ color: theme.foreground, fontSize: 17, lineHeight: 28 }}
+  enableExperimentalMarginCollapsing
+  renderersProps={{
+    img: { enableExperimentalPercentWidth: true },
+    a: { onPress: (_e: any, href: string) => Linking.openURL(href) },
+  }}
+  ignoredDomTags={[
+    "script", "style", "iframe", "form", "input",
+    "button", "select", "textarea", "nav", "header", "footer",
+  ]}
+/>
+  ) : (
+    <Text className="text-foreground text-[17px] leading-8">
+      {article.contentSnippet?.replace(/<[^>]*>/g, "") || "Loading content..."}
+    </Text>
+  )}
+</View>
 
         <View className="mx-5 mt-8 pt-6 border-t border-border">
           <Pressable

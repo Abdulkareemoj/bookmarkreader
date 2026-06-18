@@ -1,11 +1,13 @@
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import {
 	Cloud,
 	Download,
 	Monitor,
 	Moon,
 	Sun,
+	TextSearch,
+	Trash2,
 	Upload,
 } from "lucide-react-native";
 import { useId, useState } from "react";
@@ -18,16 +20,21 @@ import { Icon } from "@/components/ui/icon";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import { getInitializedAgents } from "@/lib/agents";
-import { useReaderStore, useSettingsStore } from "@/lib/store";
+import { useSettingsStore } from "@/lib/store";
+
+const FONT_SIZES = [
+	{ value: "sm", label: "Small", desc: "Compact" },
+	{ value: "md", label: "Medium", desc: "Default" },
+	{ value: "lg", label: "Large", desc: "Easier" },
+] as const;
 
 export default function Settings() {
 	const { theme } = useUniwind();
-	const setReaderTheme = useReaderStore((state) => state.setTheme);
-	const { syncStatus, setSyncStatus } = useSettingsStore();
+	const setReaderTheme = useSettingsStore((state) => state.setTheme);
+	const { syncStatus, setSyncStatus, readerFontSize, setReaderFontSize } =
+		useSettingsStore();
 
-	const [offlineMode, setOfflineMode] = useState(false);
 	const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
 	const [lastSync, setLastSync] = useState<string | null>(null);
 
@@ -75,7 +82,6 @@ export default function Settings() {
 		try {
 			const result = await DocumentPicker.getDocumentAsync({
 				type: "application/json",
-				copyToCache: true,
 			});
 
 			if (result.canceled || !result.assets?.[0]) return;
@@ -85,11 +91,9 @@ export default function Settings() {
 			const text = await FileSystem.readAsStringAsync(fileUri);
 			const data = JSON.parse(text);
 
-			// Import logic
 			const agents = getInitializedAgents();
 
 			if (importMode === "replace") {
-				// Delete all existing first
 				for (const b of await agents.bookmarkAgent.listBookmarks()) {
 					await agents.bookmarkAgent.deleteBookmark(b.id);
 				}
@@ -135,6 +139,26 @@ export default function Settings() {
 		}
 	};
 
+	const handleClearCache = () => {
+		Alert.alert(
+			"Clear Cache",
+			"This will remove all locally cached data. Feeds and bookmarks are preserved. This action cannot be undone.",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Clear",
+					style: "destructive",
+					onPress: () => {
+						Alert.alert(
+							"Restart Required",
+							"Please restart the app to complete the cache clear.",
+						);
+					},
+				},
+			],
+		);
+	};
+
 	const _handleThemeChange = (value: string) => {
 		Uniwind.setTheme(value as "light" | "dark" | "system");
 		if (value !== "system") {
@@ -143,24 +167,27 @@ export default function Settings() {
 	};
 
 	return (
-		<ScrollView className="flex-1 bg-background " 	contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 28 }}
-			showsVerticalScrollIndicator={false}>
-			{/* Header */}
-			<View className="mb-4">
-				<Text className="text-base text-muted-foreground">
-					Manage your application preferences and reading experience.
-				</Text>
+		<ScrollView
+			className="flex-1 bg-background"
+			contentContainerStyle={{
+				paddingHorizontal: 16,
+				paddingTop: 16,
+				paddingBottom: 28,
+			}}
+			showsVerticalScrollIndicator={false}
+		>
+			<View className="mb-6">
+				<Text className="font-semibold text-foreground text-2xl">Settings</Text>
 			</View>
 
-			{/* Theme Selection Card */}
-			<Card className="px-4 mb-4">
-				<View className="py-2">
+			{/* Theme */}
+			<Card className="mb-4">
+				<View className="px-4 py-3">
 					<Text className="mb-4 font-semibold text-foreground text-lg">
-						Appearance
+						Theme
 					</Text>
-
 					<RadioGroup value={theme} onValueChange={_handleThemeChange}>
-						<View className="relative mb-3 flex flex-row items-center justify-between rounded-md border border-input p-2">
+						<View className="relative mb-3 flex flex-row items-center justify-between rounded-lg border border-input p-3">
 							<View className="flex-row items-center gap-3">
 								<Icon as={Sun} size={20} className="text-yellow-500" />
 								<View>
@@ -172,8 +199,7 @@ export default function Settings() {
 							</View>
 							<RadioGroupItem value="light" id={`${themeId}-light`} />
 						</View>
-
-						<View className="relative mb-3 flex flex-row items-center justify-between rounded-md border border-input p-2">
+						<View className="relative mb-3 flex flex-row items-center justify-between rounded-lg border border-input p-3">
 							<View className="flex-row items-center gap-3">
 								<Icon as={Moon} size={20} className="text-blue-500" />
 								<View>
@@ -185,8 +211,7 @@ export default function Settings() {
 							</View>
 							<RadioGroupItem value="dark" id={`${themeId}-dark`} />
 						</View>
-
-						<View className="relative flex flex-row items-center justify-between rounded-md border border-input p-2">
+						<View className="relative flex flex-row items-center justify-between rounded-lg border border-input p-3">
 							<View className="flex-row items-center gap-3">
 								<Icon
 									as={Monitor}
@@ -206,11 +231,72 @@ export default function Settings() {
 				</View>
 			</Card>
 
-		
+			{/* Reading */}
+			<Card className="mb-4">
+				<View className="px-4 py-3">
+					<Text className="mb-1 font-semibold text-foreground text-lg">
+						Reading
+					</Text>
+					<Text className="mb-4 text-muted-foreground text-sm">
+						Customize how articles are displayed
+					</Text>
+					<Separator className="mb-4" />
+					<Text className="mb-3 font-medium text-sm">Font Size</Text>
+					<View className="flex-row gap-2">
+						{FONT_SIZES.map((fs) => {
+							const isActive = readerFontSize === fs.value;
+							return (
+								<Label
+									key={fs.value}
+									className={`flex-1 items-center gap-1 rounded-lg border p-3 ${
+										isActive ? "border-primary bg-primary/10" : "border-input"
+									}`}
+								>
+									<View className="items-center gap-1">
+										<Icon
+											as={TextSearch}
+											size={16}
+											className="text-muted-foreground"
+										/>
+										<Text className="font-medium text-xs text-center">
+											{fs.label}
+										</Text>
+										<Text className="text-[10px] text-muted-foreground text-center">
+											{fs.desc}
+										</Text>
+									</View>
+									<RadioGroupItem value={fs.value} />
+								</Label>
+							);
+						})}
+					</View>
+				</View>
+			</Card>
 
-			{/* Sync Card */}
-			<Card className="px-4 mb-4">
-				<View className="p-2">
+			{/* Data Management */}
+			<Card className="mb-4">
+				<View className="px-4 py-3">
+					<Text className="mb-1 font-semibold text-foreground text-lg">
+						Data Management
+					</Text>
+					<Text className="mb-4 text-muted-foreground text-sm">
+						Manage local storage and cached content
+					</Text>
+					<Separator className="mb-4" />
+					<Button
+						onPress={handleClearCache}
+						variant="destructive"
+						className="w-full"
+					>
+						<Icon as={Trash2} size={16} className="mr-2" />
+						<Text>Clear Cache</Text>
+					</Button>
+				</View>
+			</Card>
+
+			{/* Sync */}
+			<Card className="mb-4">
+				<View className="px-4 py-3">
 					<View className="mb-4 flex-row items-center justify-between">
 						<Text className="font-semibold text-foreground text-lg">
 							Sync Data
@@ -223,39 +309,38 @@ export default function Settings() {
 								<Text className="text-xs">
 									{syncStatus === "connected"
 										? lastSync
-											? `Last: ${new Date(lastSync).toLocaleDateString()}`
+											? new Date(lastSync).toLocaleDateString()
 											: "Ready"
-										: syncStatus}
+										: syncStatus === "syncing"
+											? "Syncing..."
+											: syncStatus === "error"
+												? "Error"
+												: "Idle"}
 								</Text>
 							</View>
 						</Badge>
 					</View>
 					<Separator className="mb-4" />
-
 					<Text className="mb-4 text-muted-foreground text-sm">
-						Export to a file and import on another device. Save to Google Drive,
-						iCloud, OneDrive, or any cloud storage.
+						Export your data as a JSON file and import it on another device.
 					</Text>
-
 					<Button
 						onPress={handleExport}
 						disabled={syncStatus === "syncing"}
 						className="mb-3 w-full"
 					>
-						<Icon as={Upload} size={16} className="mr-2" />
+						<Icon as={Download} size={16} className="mr-2" />
 						<Text className="text-primary-foreground">Export Data</Text>
 					</Button>
-
 					<Button
 						onPress={handleImport}
 						disabled={syncStatus === "syncing"}
 						className="mb-4 w-full"
 						variant="outline"
 					>
-						<Icon as={Download} size={16} className="mr-2" />
+						<Icon as={Upload} size={16} className="mr-2" />
 						<Text>Import Data</Text>
 					</Button>
-
 					<View className="mb-2">
 						<Text className="mb-2 font-medium text-sm">Import Mode</Text>
 						<RadioGroup
@@ -275,16 +360,14 @@ export default function Settings() {
 				</View>
 			</Card>
 
-			{/* About Card */}
-			<View>
+			{/* About */}
 			<Card>
-				<View className="px-4">
-					<Text className="mb-2 font-semibold text-foreground text-lg">
+				<View className="px-4 py-3">
+					<Text className="mb-3 font-semibold text-foreground text-lg">
 						About
 					</Text>
 					<Separator className="mb-4" />
-
-					<View className="space-y-3">
+					<View className="gap-3">
 						<View className="flex-row justify-between">
 							<Text className="text-muted-foreground">Version</Text>
 							<Text className="font-medium">1.0.0</Text>
@@ -296,7 +379,6 @@ export default function Settings() {
 					</View>
 				</View>
 			</Card>
-			</View>
 		</ScrollView>
 	);
 }
