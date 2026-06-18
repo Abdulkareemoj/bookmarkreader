@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"ignoreDeprecations": "6.0",
 		"strict": true,
 		"esModuleInterop": true,
 		"jsx": "react-jsx",
@@ -12,7 +13,8 @@
 		"rootDirs": ["."],
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*", "../web/src/*"],
+			"@packages/*": ["../../packages/*"]
 		}
 	}
 }
