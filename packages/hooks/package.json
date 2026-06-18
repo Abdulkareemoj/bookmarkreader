@@ -6,6 +6,10 @@
   "private": true,
   "dependencies": {
     "@packages/store": "workspace:*",
+    "react": "^19.2.0",
     "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0"
   }
 }

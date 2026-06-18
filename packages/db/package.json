@@ -18,7 +18,7 @@
 	"dependencies": {
 		"@libsql/client": "^0.17.3",
 		"drizzle-orm": "^0.45.2",
-		"expo-sqlite": "^55.0.16"
+		"expo-sqlite": "^56.0.4"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.13",
