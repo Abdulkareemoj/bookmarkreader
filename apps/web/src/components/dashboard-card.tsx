@@ -3,6 +3,25 @@ import type { LucideIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+function PopNumber({ value }: { value: number }) {
+	const str = String(value);
+	return (
+		<span className="t-digit-group is-animating" key={value}>
+			{str.split("").map((ch, i) => (
+				<span
+					key={i}
+					className="t-digit"
+					data-stagger={
+						i === str.length - 2 ? "1" : i === str.length - 1 ? "2" : undefined
+					}
+				>
+					{ch}
+				</span>
+			))}
+		</span>
+	);
+}
+
 interface DashboardCardProps {
 	title: string;
 	value: number;
@@ -26,7 +45,9 @@ export function DashboardCard({
 					<Icon className={cn("text-muted-foreground", colorClass)} />
 				</CardHeader>
 				<CardContent>
-					<div className="font-bold text-2xl">{value}</div>
+					<div className="font-bold text-2xl">
+						<PopNumber value={value} />
+					</div>
 					<p className="text-muted-foreground text-xs">View all</p>
 				</CardContent>
 			</Card>

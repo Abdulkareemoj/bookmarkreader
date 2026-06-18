@@ -1,5 +1,4 @@
-import { useTheme } from "next-themes";
-import { Link, useMatchRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
 	SidebarGroup,
 	SidebarGroupLabel,

@@ -46,11 +46,13 @@ export default function Toolbar() {
 				{/* Right Section */}
 				<div className="flex items-center gap-2">
 					<Button variant="ghost" className="w-9 px-0" onClick={toggleTheme}>
-						{theme === "dark" ? (
-							<Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-						) : (
-							<Moon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-						)}
+						<div
+							className="t-icon-swap"
+							data-state={theme === "dark" ? "a" : "b"}
+						>
+							<Sun data-icon="a" className="t-icon h-[1.2rem] w-[1.2rem]" />
+							<Moon data-icon="b" className="t-icon h-[1.2rem] w-[1.2rem]" />
+						</div>
 						<span className="sr-only">Toggle theme</span>
 					</Button>
 					{/* <Button variant="outline" size="sm" title="Settings">

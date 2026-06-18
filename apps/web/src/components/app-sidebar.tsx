@@ -32,6 +32,7 @@ import {
 import { useFeeds } from "@/hooks/use-feeds";
 import { useCollectionsStore } from "@/lib/collections-store";
 import { useReaderStore } from "@/lib/store";
+import { ExploreSidebar } from "./explore-sidebar";
 
 const navSecondary = [
 	{
@@ -148,6 +149,10 @@ export function AppSidebar() {
 
 		if (matchRoute({ to: "/settings", fuzzy: true })) {
 			return <SettingsSidebar />;
+		}
+
+		if (matchRoute({ to: "/explore" })) {
+			return <ExploreSidebar />;
 		}
 
 		return (

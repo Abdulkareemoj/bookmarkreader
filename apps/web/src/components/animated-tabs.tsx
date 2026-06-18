@@ -35,49 +35,32 @@ export default function AnimatedTabs() {
 
 						return (
 							<Link to={value} key={value} className="flex-1">
-								<motion.div
-									layout
-									className={cn(
-										"flex h-8 items-center justify-center overflow-hidden rounded-md",
-									)}
-									initial={false}
-									animate={{
-										width: isActive ? "100%" : "auto",
-									}}
-									transition={{
-										type: "spring",
-										stiffness: 400,
-										damping: 25,
-									}}
-								>
-									<TabsTrigger value={value} asChild>
-										<motion.div
-											className="flex h-8 w-full items-center justify-center gap-2 px-3"
-											animate={{ filter: "blur(0px)" }}
-											exit={{ filter: "blur(2px)" }}
-											transition={{ duration: 0.25, ease: "easeOut" }}
-										>
-											<Icon data-icon="inline-start" className="shrink-0" />
-											<AnimatePresence initial={false}>
-												{isActive && (
-													<motion.span
-														className="whitespace-nowrap font-medium text-sm"
-														initial={{ opacity: 0, scaleX: 0.8 }}
-														animate={{ opacity: 1, scaleX: 1 }}
-														exit={{ opacity: 0, scaleX: 0.8 }}
-														transition={{
-															duration: 0.25,
-															ease: "easeOut",
-														}}
-														style={{ originX: 0 }}
-													>
-														{name}
-													</motion.span>
-												)}
-											</AnimatePresence>
-										</motion.div>
-									</TabsTrigger>
-								</motion.div>
+								<TabsTrigger value={value} asChild>
+									<div
+										className={cn(
+											"flex h-8 w-full items-center justify-center gap-2 rounded-md px-3 transition-colors",
+											isActive && "bg-background shadow-sm",
+										)}
+									>
+										<Icon data-icon="inline-start" className="shrink-0" />
+										<AnimatePresence initial={false}>
+											{isActive && (
+												<motion.span
+													className="whitespace-nowrap font-medium text-sm"
+													initial={{ opacity: 0, width: 0 }}
+													animate={{ opacity: 1, width: "auto" }}
+													exit={{ opacity: 0, width: 0 }}
+													transition={{
+														duration: 0.2,
+														ease: "easeOut",
+													}}
+												>
+													{name}
+												</motion.span>
+											)}
+										</AnimatePresence>
+									</div>
+								</TabsTrigger>
 							</Link>
 						);
 					})}

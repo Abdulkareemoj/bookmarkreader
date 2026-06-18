@@ -49,13 +49,19 @@ export function StoreProvider({ children }: StoreProviderProps) {
 							const { fetchAndParseFeed } = await import("@packages/utils");
 							const result = await fetchAndParseFeed(feed.feedUrl);
 
+							const toStr = (v: any): string => {
+								if (!v) return "";
+								if (typeof v === "string") return v;
+								if (typeof v.$ === "string") return v.$;
+								return String(v);
+							};
 							const parsed = result.entries.map((entry: any) => ({
 								feedId,
-								title: entry.title || "(untitled)",
-								link: entry.link || entry.id || "",
-								content: entry.content || entry.description || "",
-								contentSnippet: entry.description
-									?.replace(/<[^>]*>/g, "")
+								title: toStr(entry.title) || "(untitled)",
+								link: toStr(entry.link) || toStr(entry.id) || "",
+								content: toStr(entry.content) || toStr(entry.description) || "",
+								contentSnippet: toStr(entry.description)
+									.replace(/<[^>]*>/g, "")
 									.slice(0, 500),
 								imageUrl:
 									(typeof entry.image === "string"
