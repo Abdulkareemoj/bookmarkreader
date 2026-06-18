@@ -29,7 +29,7 @@ export function FeedSidebar({
 				{/* Add Feed Dialog */}
 				<AddFeedDialog />
 			</div>
-			<ScrollArea className="flex-1 px-4">
+			<ScrollArea className="flex-1 ">
 				<div className="flex flex-col gap-1">
 					{/* All Articles Link */}
 					<Button

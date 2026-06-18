@@ -12,17 +12,13 @@ import HighlightMenu from "@/components/rss/highlight-menu";
 import TagPill from "@/components/tag-pill";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useHighlights } from "@/hooks/use-highlights";
+import type { Highlight } from "@packages/store";
 import ArticleRenderer from "./article-renderer";
-
-interface Highlight {
-	id: string;
-	text: string;
-	color: string;
-	annotations: Array<{ id: string; text: string; timestamp: string }>;
-}
 
 interface ArticleDisplayProps {
 	id: string;
+	articleId?: string;
 	title: string;
 	subtitle: string;
 	category: string;
@@ -42,6 +38,7 @@ interface ArticleDisplayProps {
 
 export default function ArticleDisplay({
 	id,
+	articleId = id,
 	title,
 	subtitle,
 	category,
@@ -58,7 +55,13 @@ export default function ArticleDisplay({
 	onShare,
 	onComment,
 }: ArticleDisplayProps) {
-	const [highlights, setHighlights] = useState<Highlight[]>([]);
+	const {
+		highlights,
+		addHighlight,
+		removeHighlight,
+		addAnnotation,
+		removeAnnotation,
+	} = useHighlights(articleId);
 	const [selectedText, setSelectedText] = useState<string>("");
 	const [menuPosition, setMenuPosition] = useState<{
 		x: number;
@@ -84,13 +87,14 @@ export default function ArticleDisplay({
 
 	const handleHighlight = (color: string) => {
 		if (selectedText) {
-			const newHighlight: Highlight = {
-				id: Date.now().toString(),
+			const newHighlight = {
+				id: `hl-${Date.now()}`,
+				articleId,
 				text: selectedText,
 				color,
 				annotations: [],
 			};
-			setHighlights([...highlights, newHighlight]);
+			addHighlight(newHighlight);
 			setCurrentHighlightId(newHighlight.id);
 			setMenuPosition(null);
 			window.getSelection()?.removeAllRanges();
@@ -105,46 +109,27 @@ export default function ArticleDisplay({
 
 	const handleSaveAnnotation = (annotationText: string) => {
 		if (currentHighlightId) {
-			setHighlights(
-				highlights.map((h) =>
-					h.id === currentHighlightId
-						? {
-								...h,
-								annotations: [
-									...h.annotations,
-									{
-										id: Date.now().toString(),
-										text: annotationText,
-										timestamp: new Date().toLocaleString(),
-									},
-								],
-							}
-						: h,
-				),
-			);
+			addAnnotation(currentHighlightId, {
+				id: `ann-${Date.now()}`,
+				text: annotationText,
+				timestamp: new Date().toISOString(),
+			});
 			setAnnotationPanelOpen(false);
 		}
 	};
 
 	const handleDeleteAnnotation = (annotationId: string) => {
 		if (currentHighlightId) {
-			setHighlights(
-				highlights.map((h) =>
-					h.id === currentHighlightId
-						? {
-								...h,
-								annotations: h.annotations.filter((a) => a.id !== annotationId),
-							}
-						: h,
-				),
-			);
+			removeAnnotation(currentHighlightId, annotationId);
 		}
 	};
 
 	const handleDeleteHighlight = () => {
-		setHighlights(highlights.filter((h) => h.id !== currentHighlightId));
-		setMenuPosition(null);
-		setCurrentHighlightId(null);
+		if (currentHighlightId) {
+			removeHighlight(currentHighlightId);
+			setMenuPosition(null);
+			setCurrentHighlightId(null);
+		}
 	};
 
 	const currentHighlight = highlights.find((h) => h.id === currentHighlightId);
@@ -206,10 +191,13 @@ export default function ArticleDisplay({
 								title={liked ? "Unlike" : "Like"}
 								className="hover:text-red-500"
 							>
-								<Heart
-									data-icon="inline-start"
-									className={cn("fill-current", liked && "text-red-500")}
-								/>
+								<div className="t-icon-swap" data-state={liked ? "b" : "a"}>
+									<Heart data-icon="a" className="t-icon" />
+									<Heart
+										data-icon="b"
+										className="t-icon fill-current text-red-500"
+									/>
+								</div>
 							</Button>
 							<Button
 								variant="ghost"
@@ -217,10 +205,10 @@ export default function ArticleDisplay({
 								onClick={onSave}
 								title={saved ? "Remove from saved" : "Save for later"}
 							>
-								<Bookmark
-									data-icon="inline-start"
-									className={cn(saved && "fill-current")}
-								/>
+								<div className="t-icon-swap" data-state={saved ? "b" : "a"}>
+									<Bookmark data-icon="a" className="t-icon" />
+									<Bookmark data-icon="b" className="t-icon fill-current" />
+								</div>
 							</Button>
 							<Button
 								variant="ghost"
@@ -246,7 +234,7 @@ export default function ArticleDisplay({
 							Highlights ({highlights.length})
 						</p>
 						<div className="flex flex-col gap-2">
-							{highlights.map((highlight) => (
+							{highlights.map((highlight: Highlight) => (
 								<div
 									key={highlight.id}
 									className={cn("rounded-md border p-3", highlight.color)}
@@ -256,14 +244,20 @@ export default function ArticleDisplay({
 									</p>
 									{highlight.annotations.length > 0 && (
 										<div className="mt-2 flex flex-col gap-1">
-											{highlight.annotations.map((annotation) => (
-												<p
-													key={annotation.id}
-													className="text-muted-foreground text-xs"
-												>
-													💬 {annotation.text}
-												</p>
-											))}
+											{highlight.annotations.map(
+												(annotation: {
+													id: string;
+													text: string;
+													timestamp: string;
+												}) => (
+													<p
+														key={annotation.id}
+														className="text-muted-foreground text-xs"
+													>
+														💬 {annotation.text}
+													</p>
+												),
+											)}
 										</div>
 									)}
 								</div>

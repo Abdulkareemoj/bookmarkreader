@@ -2,8 +2,6 @@ import { Bookmark, Heart, Rss, Share2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
 interface ArticleCardProps {
 	id: string;
 	title: string;
@@ -111,10 +109,13 @@ export default function ArticleCard({
 								onLike?.();
 							}}
 						>
-							<Heart
-								data-icon="inline-start"
-								className={cn(liked && "fill-current text-red-500")}
-							/>
+							<div className="t-icon-swap" data-state={liked ? "b" : "a"}>
+								<Heart data-icon="a" className="t-icon" />
+								<Heart
+									data-icon="b"
+									className="t-icon fill-current text-red-500"
+								/>
+							</div>
 						</Button>
 						<Button
 							variant="ghost"
@@ -125,10 +126,10 @@ export default function ArticleCard({
 								onSave?.();
 							}}
 						>
-							<Bookmark
-								data-icon="inline-start"
-								className={cn(saved && "fill-current")}
-							/>
+							<div className="t-icon-swap" data-state={saved ? "b" : "a"}>
+								<Bookmark data-icon="a" className="t-icon" />
+								<Bookmark data-icon="b" className="t-icon fill-current" />
+							</div>
 						</Button>
 						<Button
 							variant="ghost"
