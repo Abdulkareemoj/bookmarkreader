@@ -156,9 +156,11 @@ function DashboardComponent() {
 	return (
 		<div className="p-4 md:p-8">
 			<div className="mb-8 flex items-center justify-between">
-				<div>
-					<h1 className="font-bold text-3xl text-foreground">Dashboard</h1>
-					<p className="text-muted-foreground">
+				<div className="t-stagger is-shown">
+					<h1 className="t-stagger-line t-stagger-line--1 font-bold text-3xl text-foreground">
+						Dashboard
+					</h1>
+					<p className="t-stagger-line t-stagger-line--2 text-muted-foreground">
 						A quick overview of your saved content and feeds.
 					</p>
 				</div>

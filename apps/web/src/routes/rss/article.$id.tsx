@@ -1,19 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-	ArrowLeft,
-	Bookmark,
-	Clock,
-	ExternalLink,
-	Heart,
-	MoreVertical,
-} from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { ArrowLeft, Bookmark, Clock, ExternalLink, Heart } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import HtmlParser from "react-html-parser";
+import AnnotationPanel from "@/components/annotation-panel";
+import HighlightMenu from "@/components/rss/highlight-menu";
 import { Button } from "@/components/ui/button";
-import { useReaderStore } from "@/lib/store";
+import { useReaderStore, useSettingsStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { useFeeds } from "@/hooks/use-feeds";
-
+import { useHighlights } from "@/hooks/use-highlights";
 
 export const Route = createFileRoute("/rss/article/$id")({
 	component: ArticleReaderComponent,
@@ -60,10 +55,102 @@ function ArticleReaderComponent() {
 	// Mark as read
 	const { fetchArticleContent } = useFeeds();
 
-useEffect(() => {
-  if (article && !article.read) void markArticleRead(id, true);
-  void fetchArticleContent(id);
-}, [id]);
+	useEffect(() => {
+		if (article && !article.read) void markArticleRead(id, true);
+		void fetchArticleContent(id);
+	}, [id]);
+
+	// Reader preferences
+	const readerFontSize = useSettingsStore((s) => s.readerFontSize);
+	const fontSizeClasses = {
+		sm: "[&_p]:text-[15px] [&_p]:leading-7 [&_ul_li]:text-[15px] [&_ul_li]:leading-7 [&_ol_li]:text-[15px] [&_ol_li]:leading-7",
+		md: "[&_p]:text-[17px] [&_p]:leading-8 [&_ul_li]:text-[17px] [&_ul_li]:leading-7 [&_ol_li]:text-[17px] [&_ol_li]:leading-7",
+		lg: "[&_p]:text-[19px] [&_p]:leading-9 [&_ul_li]:text-[19px] [&_ul_li]:leading-8 [&_ol_li]:text-[19px] [&_ol_li]:leading-8",
+	}[readerFontSize];
+
+	// Highlight state
+	const {
+		highlights,
+		addHighlight,
+		removeHighlight,
+		addAnnotation,
+		removeAnnotation,
+	} = useHighlights(id);
+	const [selectedText, setSelectedText] = useState("");
+	const [menuPosition, setMenuPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
+	const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
+	const [currentHighlightId, setCurrentHighlightId] = useState<string | null>(
+		null,
+	);
+
+	const handleTextSelection = useCallback(() => {
+		const selection = window.getSelection();
+		if (selection && selection.toString().length > 0) {
+			const range = selection.getRangeAt(0);
+			const rect = range.getBoundingClientRect();
+			setSelectedText(selection.toString());
+			setMenuPosition({
+				x: rect.left + rect.width / 2,
+				y: rect.top,
+			});
+		} else {
+			setMenuPosition(null);
+		}
+	}, []);
+
+	const handleHighlight = (color: string) => {
+		if (selectedText) {
+			const newHighlight = {
+				id: `hl-${Date.now()}`,
+				articleId: id,
+				text: selectedText,
+				color,
+				annotations: [],
+			};
+			addHighlight(newHighlight);
+			setCurrentHighlightId(newHighlight.id);
+			setMenuPosition(null);
+			window.getSelection()?.removeAllRanges();
+		}
+	};
+
+	const handleAnnotate = () => {
+		if (currentHighlightId) {
+			setAnnotationPanelOpen(true);
+		}
+	};
+
+	const handleSaveAnnotation = (annotationText: string) => {
+		if (currentHighlightId) {
+			addAnnotation(currentHighlightId, {
+				id: `ann-${Date.now()}`,
+				text: annotationText,
+				timestamp: new Date().toISOString(),
+			});
+			setAnnotationPanelOpen(false);
+		}
+	};
+
+	const handleDeleteAnnotation = (annotationId: string) => {
+		if (currentHighlightId) {
+			removeAnnotation(currentHighlightId, annotationId);
+		}
+	};
+
+	const handleDeleteHighlight = () => {
+		if (currentHighlightId) {
+			removeHighlight(currentHighlightId);
+			setMenuPosition(null);
+			setCurrentHighlightId(null);
+		}
+	};
+
+	const currentHighlight = highlights.find(
+		(h: any) => h.id === currentHighlightId,
+	);
 	if (!article) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
@@ -79,8 +166,8 @@ useEffect(() => {
 
 	const rawContent = article.content || article.contentSnippet || "";
 	const preparedHtml = useMemo(() => prepareContent(rawContent), [rawContent]);
-console.log("fullContent:", article.fullContent?.slice(0, 100));
-console.log("content:", article.content?.slice(0, 100));
+	console.log("fullContent:", article.fullContent?.slice(0, 100));
+	console.log("content:", article.content?.slice(0, 100));
 	const wordCount = rawContent
 		.replace(/<[^>]*>/g, " ")
 		.split(/\s+/)
@@ -205,11 +292,13 @@ console.log("content:", article.content?.slice(0, 100));
 
 					{/* Article body — rendered HTML */}
 					<div
+						onMouseUp={handleTextSelection}
 						className={cn(
 							// Base prose styles
 							"text-foreground",
-							// Paragraphs
-							"[&_p]:mb-5 [&_p]:text-[17px] [&_p]:leading-8 [&_p]:text-foreground",
+							// Paragraphs (dynamic font size)
+							"[&_p]:mb-5 [&_p]:text-foreground",
+							fontSizeClasses,
 							// Headings
 							"[&_h1]:mt-10 [&_h1]:mb-4 [&_h1]:font-bold [&_h1]:text-3xl [&_h1]:text-foreground",
 							"[&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:font-bold [&_h2]:text-2xl [&_h2]:text-foreground",
@@ -218,8 +307,8 @@ console.log("content:", article.content?.slice(0, 100));
 							// Links
 							"[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:opacity-80",
 							// Lists
-							"[&_ul]:mb-5 [&_ul]:ml-6 [&_ul]:list-disc [&_ul_li]:mb-1.5 [&_ul_li]:text-[17px] [&_ul_li]:leading-7",
-							"[&_ol]:mb-5 [&_ol]:ml-6 [&_ol]:list-decimal [&_ol_li]:mb-1.5 [&_ol_li]:text-[17px] [&_ol_li]:leading-7",
+							"[&_ul]:mb-5 [&_ul]:ml-6 [&_ul]:list-disc [&_ul_li]:mb-1.5",
+							"[&_ol]:mb-5 [&_ol]:ml-6 [&_ol]:list-decimal [&_ol_li]:mb-1.5",
 							// Blockquote
 							"[&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-5 [&_blockquote]:italic [&_blockquote]:text-muted-foreground",
 							// Code
@@ -260,6 +349,60 @@ console.log("content:", article.content?.slice(0, 100));
 							},
 						})}
 					</div>
+
+					{/* Highlights Summary */}
+					{highlights.length > 0 && (
+						<div className="mb-6 border-border border-t py-6">
+							<p className="mb-3 font-semibold text-muted-foreground text-sm">
+								Highlights ({highlights.length})
+							</p>
+							<div className="flex flex-col gap-2">
+								{highlights.map((h: any) => (
+									<div
+										key={h.id}
+										className={cn("rounded-md border p-3", h.color)}
+									>
+										<p className="text-foreground text-sm italic">"{h.text}"</p>
+										{h.annotations.length > 0 && (
+											<div className="mt-2 flex flex-col gap-1">
+												{h.annotations.map((a: any) => (
+													<p
+														key={a.id}
+														className="text-muted-foreground text-xs"
+													>
+														💬 {a.text}
+													</p>
+												))}
+											</div>
+										)}
+									</div>
+								))}
+							</div>
+						</div>
+					)}
+
+					<HighlightMenu
+						position={menuPosition}
+						onHighlight={handleHighlight}
+						onAnnotate={handleAnnotate}
+						onDelete={handleDeleteHighlight}
+					/>
+
+					<AnnotationPanel
+						isOpen={annotationPanelOpen}
+						onClose={() => setAnnotationPanelOpen(false)}
+						highlightedText={currentHighlight?.text || selectedText}
+						onSave={handleSaveAnnotation}
+						annotations={
+							currentHighlight?.annotations?.map((a: any) => ({
+								id: a.id,
+								text: a.text,
+								highlightedText: currentHighlight.text,
+								timestamp: a.timestamp,
+							})) || []
+						}
+						onDeleteAnnotation={handleDeleteAnnotation}
+					/>
 
 					{/* Footer CTA */}
 					{article.link && (

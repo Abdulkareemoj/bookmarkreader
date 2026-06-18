@@ -1,16 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cloud, Download, Monitor, Upload } from "lucide-react";
+import {
+	Cloud,
+	Download,
+	Monitor,
+	TextSearch,
+	Trash2,
+	Upload,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useReaderStore, useSettingsStore } from "@/lib/store";
+import { Separator } from "@/components/ui/separator";
+import { useSettingsStore } from "@/lib/store";
 import { exportSyncData, importSyncData } from "@/lib/sync";
 
 export const Route = createFileRoute("/settings")({
 	component: SettingsComponent,
 });
+
+const FONT_SIZES = [
+	{ value: "sm", label: "Small", desc: "Compact reading" },
+	{ value: "md", label: "Medium", desc: "Default size" },
+	{ value: "lg", label: "Large", desc: "Easier reading" },
+] as const;
 
 function ThemePreview({ mode }: { mode: "light" | "dark" | "system" }) {
 	const isDark = mode === "dark" || mode === "system";
@@ -18,11 +33,9 @@ function ThemePreview({ mode }: { mode: "light" | "dark" | "system" }) {
 		<div
 			className={`relative h-20 w-full overflow-hidden rounded-lg ${isDark ? "bg-[oklch(0.15_0.02_260)]" : "bg-[oklch(0.92_0.01_260)]"}`}
 		>
-			{/* Title bar */}
 			<div
 				className={`mx-3 mt-3 h-2 w-12 rounded-full ${isDark ? "bg-[oklch(0.35_0.015_260)]" : "bg-[oklch(0.78_0.01_260)]"}`}
 			/>
-			{/* Content lines */}
 			<div className="mx-3 mt-2 flex gap-2">
 				<div
 					className={`h-8 w-10 rounded ${isDark ? "bg-[oklch(0.25_0.02_250)]" : "bg-[oklch(0.82_0.02_250)]"}`}
@@ -41,10 +54,7 @@ function ThemePreview({ mode }: { mode: "light" | "dark" | "system" }) {
 			</div>
 			{mode === "system" && (
 				<div className="absolute inset-0 flex items-center justify-center">
-					<Monitor
-						data-icon="inline-start"
-						className="size-6 text-muted-foreground/50"
-					/>
+					<Monitor className="size-6 text-muted-foreground/50" />
 				</div>
 			)}
 		</div>
@@ -61,7 +71,7 @@ function SettingRow({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="flex items-center justify-between border-border border-b py-4 last:border-b-0">
+		<div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
 			<div className="flex flex-col gap-0.5">
 				<p className="font-medium text-sm">{label}</p>
 				{description && (
@@ -73,27 +83,11 @@ function SettingRow({
 	);
 }
 
-function SectionHeader({
-	title,
-	description,
-}: {
-	title: string;
-	description?: string;
-}) {
-	return (
-		<div className="mb-1 pt-6 first:pt-0">
-			<h2 className="font-semibold text-lg">{title}</h2>
-			{description && (
-				<p className="mt-0.5 text-muted-foreground text-sm">{description}</p>
-			)}
-		</div>
-	);
-}
-
 function SettingsComponent() {
 	const { theme, setTheme } = useTheme();
-	const setReaderTheme = useReaderStore((state) => state.setTheme);
-	const { syncStatus, setSyncStatus } = useSettingsStore();
+	const setReaderTheme = useSettingsStore((state) => state.setTheme);
+	const { syncStatus, setSyncStatus, readerFontSize, setReaderFontSize } =
+		useSettingsStore();
 
 	const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
 	const [lastSync, setLastSync] = useState<string | null>(null);
@@ -149,21 +143,29 @@ function SettingsComponent() {
 		}
 	};
 
+	const handleClearCache = () => {
+		if (typeof indexedDB !== "undefined") {
+			const req = indexedDB.deleteDatabase("bookmark_tool_web");
+			req.onsuccess = () => window.location.reload();
+			req.onerror = () => console.error("Failed to clear cache");
+		}
+	};
+
 	const themes = [
 		{
 			value: "system",
 			label: "System default",
-			desc: "Automatic based on device settings",
+			desc: "Follows device settings",
 		},
 		{
 			value: "light",
 			label: "Light mode",
-			desc: "Always use the light appearance",
+			desc: "Bright and clean",
 		},
 		{
 			value: "dark",
 			label: "Dark mode",
-			desc: "Always use the dark appearance",
+			desc: "Easy on the eyes",
 		},
 	] as const;
 
@@ -174,146 +176,219 @@ function SettingsComponent() {
 					Settings
 				</h1>
 				<p className="mt-1 text-muted-foreground">
-					Discover content and insights from your feeds
+					Manage your reading experience and data
 				</p>
 			</div>
-			<div className="mx-auto max-w-4xl px-6 py-10">
+			<div className="mx-auto max-w-4xl px-6 pb-20">
 				{/* Theme */}
-				<div id="theme">
-					<SectionHeader
-						title="Theme"
-						description="Automatic based on device settings"
-					/>
-					<div className="mt-3 grid grid-cols-3 gap-3">
-						{themes.map((t) => {
-							const isActive = theme === t.value;
-							return (
-								<RadioGroup value={theme} onValueChange={handleThemeChange}>
-									<div
-										key={t.value}
-										className={`cursor-pointer rounded-xl border p-2.5 text-left transition-all ${
+				<Card id="theme">
+					<CardHeader>
+						<CardTitle>Theme</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="grid grid-cols-3 gap-3">
+							{themes.map((t) => {
+								const isActive = theme === t.value;
+								return (
+									<div key={t.value}>
+										<RadioGroup value={theme} onValueChange={handleThemeChange}>
+											<Label
+												className={`block cursor-pointer rounded-xl border p-2.5 text-left transition-all ${
+													isActive
+														? "border-primary bg-primary/10"
+														: "border-border bg-card hover:bg-accent"
+												}`}
+											>
+												<ThemePreview mode={t.value} />
+												<div className="mt-2 flex items-center justify-between">
+													<div>
+														<p className="font-medium text-xs">{t.label}</p>
+														<p className="mt-0.5 text-[10px] text-muted-foreground">
+															{t.desc}
+														</p>
+													</div>
+													<RadioGroupItem value={t.value} />
+												</div>
+											</Label>
+										</RadioGroup>
+									</div>
+								);
+							})}
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Reading */}
+				<Card id="reading" className="mt-8">
+					<CardHeader>
+						<CardTitle>Reading</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="font-medium text-sm">Font Size</div>
+						<RadioGroup
+							value={readerFontSize}
+							onValueChange={(v) => setReaderFontSize(v as "sm" | "md" | "lg")}
+							className="mt-3 flex gap-2"
+						>
+							{FONT_SIZES.map((fs) => {
+								const isActive = readerFontSize === fs.value;
+								return (
+									<Label
+										key={fs.value}
+										className={`flex flex-1 cursor-pointer flex-col items-center gap-1 rounded-lg border p-3 text-center transition-all ${
 											isActive
 												? "border-primary bg-primary/10"
-												: "border-border bg-card hover:bg-accent"
+												: "border-border hover:bg-accent"
 										}`}
 									>
-										<Label className="block cursor-pointer" htmlFor={t.value}>
-											<ThemePreview mode={t.value} />
-											<div className="mt-2 flex items-center justify-between">
-												<div>
-													<p className="font-medium text-xs">{t.label}</p>
-													<p className="mt-0.5 text-[10px] text-muted-foreground">
-														{t.desc}
-													</p>
-												</div>
-												<RadioGroupItem value={t.value} id={t.value} />
-											</div>
-										</Label>
-									</div>
-								</RadioGroup>
-							);
-						})}
-					</div>
-				</div>
+										<TextSearch className="size-4 text-muted-foreground" />
+										<p className="font-medium text-xs">{fs.label}</p>
+										<p className="text-[10px] text-muted-foreground">
+											{fs.desc}
+										</p>
+										<RadioGroupItem value={fs.value} />
+									</Label>
+								);
+							})}
+						</RadioGroup>
+					</CardContent>
+				</Card>
+
+				{/* Data */}
+				<Card id="data" className="mt-8">
+					<CardHeader>
+						<CardTitle>Data Management</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<SettingRow
+							label="Clear Cache"
+							description="Remove all locally cached data. Feeds and bookmarks are preserved."
+						>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={handleClearCache}
+								className="gap-1.5"
+							>
+								<Trash2 className="size-3.5" />
+								Clear
+							</Button>
+						</SettingRow>
+					</CardContent>
+				</Card>
 
 				{/* Sync */}
-				<div id="sync" className="mt-6">
-					<SectionHeader title="Sync Data" />
-					<div className="mt-1 rounded-xl border border-border bg-card">
-						<div className="px-4">
-							<SettingRow
-								label="Status"
-								description={
+				<Card id="sync" className="mt-8">
+					<CardHeader>
+						<CardTitle>Sync Data</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<SettingRow
+							label="Status"
+							description={
+								syncStatus === "connected"
+									? lastSync
+										? `Last sync: ${new Date(lastSync).toLocaleDateString()}`
+										: "Ready"
+									: syncStatus === "error"
+										? "Last attempt failed"
+										: ""
+							}
+						>
+							<span
+								className={`inline-flex items-center gap-1.5 font-medium text-xs ${
 									syncStatus === "connected"
-										? lastSync
-											? `Last: ${new Date(lastSync).toLocaleDateString()}`
-											: "Ready"
-										: syncStatus
-								}
+										? "text-green-500"
+										: syncStatus === "error"
+											? "text-destructive"
+											: "text-muted-foreground"
+								}`}
 							>
-								<span
-									className={`inline-flex items-center gap-1.5 font-medium text-xs ${
-										syncStatus === "connected"
-											? "text-green-400"
-											: syncStatus === "error"
-												? "text-destructive"
-												: "text-muted-foreground"
-									}`}
-								>
-									<Cloud className="h-3.5 w-3.5" />
-									{syncStatus}
-								</span>
-							</SettingRow>
+								<Cloud className="size-3.5" />
+								{syncStatus === "connected"
+									? "Connected"
+									: syncStatus === "syncing"
+										? "Syncing..."
+										: syncStatus === "error"
+											? "Error"
+											: "Idle"}
+							</span>
+						</SettingRow>
 
-							<SettingRow
-								label="Export"
-								description="Download your data as JSON"
-							>
-								<Button
-									onClick={handleExport}
-									className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 font-medium text-secondary-foreground text-xs transition-colors hover:bg-accent"
-								>
-									<Download className="h-3.5 w-3.5" />
-									Export
-								</Button>
-							</SettingRow>
+						<Separator className="my-1" />
 
-							<SettingRow
-								label="Import"
-								description="Load data from a JSON file"
+						<SettingRow
+							label="Export"
+							description="Download all data as a JSON file"
+						>
+							<Button
+								onClick={handleExport}
+								variant="outline"
+								size="sm"
+								className="gap-1.5"
 							>
-								<Button
-									onClick={handleImport}
-									className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 font-medium text-secondary-foreground text-xs transition-colors hover:bg-accent"
-								>
-									<Upload className="h-3.5 w-3.5" />
-									Import
-								</Button>
-							</SettingRow>
+								<Download className="size-3.5" />
+								Export
+							</Button>
+						</SettingRow>
 
-							<SettingRow
-								label="Import Mode"
-								description="How to handle existing data"
+						<Separator className="my-1" />
+
+						<SettingRow label="Import" description="Load data from a JSON file">
+							<Button
+								onClick={handleImport}
+								variant="outline"
+								size="sm"
+								className="gap-1.5"
 							>
-								<RadioGroup
-									value={importMode}
-									onValueChange={(v) => setImportMode(v as "merge" | "replace")}
-									className="flex gap-3"
-								>
-									<div className="flex items-center gap-1.5">
-										<RadioGroupItem value="merge" id="merge" />
-										<Label htmlFor="merge" className="cursor-pointer text-xs">
-											Merge
-										</Label>
-									</div>
-									<div className="flex items-center gap-1.5">
-										<RadioGroupItem value="replace" id="replace" />
-										<Label htmlFor="replace" className="cursor-pointer text-xs">
-											Replace
-										</Label>
-									</div>
-								</RadioGroup>
-							</SettingRow>
-						</div>
-					</div>
-				</div>
+								<Upload className="size-3.5" />
+								Import
+							</Button>
+						</SettingRow>
+
+						<Separator className="my-1" />
+
+						<SettingRow
+							label="Import Mode"
+							description="Merge adds to existing data; Replace overwrites"
+						>
+							<RadioGroup
+								value={importMode}
+								onValueChange={(v) => setImportMode(v as "merge" | "replace")}
+								className="flex gap-3"
+							>
+								<div className="flex items-center gap-1.5">
+									<RadioGroupItem value="merge" id="merge" />
+									<Label htmlFor="merge" className="cursor-pointer text-xs">
+										Merge
+									</Label>
+								</div>
+								<div className="flex items-center gap-1.5">
+									<RadioGroupItem value="replace" id="replace" />
+									<Label htmlFor="replace" className="cursor-pointer text-xs">
+										Replace
+									</Label>
+								</div>
+							</RadioGroup>
+						</SettingRow>
+					</CardContent>
+				</Card>
 
 				{/* About */}
-				<div id="about" className="mt-6">
-					<SectionHeader title="About" />
-					<div className="mt-1 rounded-xl border border-border bg-card">
-						<div className="px-4">
-							<SettingRow label="Version">
-								<span className="text-muted-foreground text-xs">1.0.0</span>
-							</SettingRow>
-							<SettingRow label="Build">
-								<span className="text-muted-foreground text-xs">
-									2024.04.12
-								</span>
-							</SettingRow>
-						</div>
-					</div>
-				</div>
+				<Card id="about" className="mt-8">
+					<CardHeader>
+						<CardTitle>About</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<SettingRow label="Version">
+							<span className="text-muted-foreground text-xs">1.0.0</span>
+						</SettingRow>
+						<Separator className="my-1" />
+						<SettingRow label="Build">
+							<span className="text-muted-foreground text-xs">2024.04.12</span>
+						</SettingRow>
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);
