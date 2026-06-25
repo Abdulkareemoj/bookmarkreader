@@ -34,7 +34,7 @@ export function FeedSidebar({
 					{/* All Articles Link */}
 					<Button
 						variant={selectedFeedId === null ? "secondary" : "ghost"}
-						className="w-full justify-start"
+						className="w-full justify-start "
 						onClick={() => onSelectFeed(null)}
 					>
 						<Rss data-icon="inline-start" />

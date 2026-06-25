@@ -11,6 +11,8 @@ import {
 	createHighlightAgent,
 	type IAgents,
 } from "@packages/agents";
+import { createWebSyncAgent } from "@/lib/sync-agent";
+import { createWebAuthAgent } from "@/lib/auth-agent";
 import { drizzle } from "drizzle-orm/sql-js";
 import type { Database } from "sql.js";
 import initSqlJs from "sql.js";
@@ -138,6 +140,8 @@ let initializedAgents: {
 	bookmarkAgent: ReturnType<typeof createBookmarkAgent>;
 	rssAgent: ReturnType<typeof createRssAgent>;
 	highlightAgent: ReturnType<typeof createHighlightAgent>;
+	syncAgent: ReturnType<typeof createWebSyncAgent>;
+	authAgent: ReturnType<typeof createWebAuthAgent>;
 } | null = null;
 
 // Function to initialize the Drizzle client and agents asynchronously
@@ -179,8 +183,21 @@ export async function initializeWebAgents() {
 	const bookmarkAgent = createBookmarkAgent(genericDb);
 	const rssAgent = createRssAgent(genericDb);
 	const highlightAgent = createHighlightAgent(genericDb);
+	const authAgent = createWebAuthAgent();
+	const syncAgent = createWebSyncAgent(
+		authAgent,
+		bookmarkAgent,
+		rssAgent,
+		highlightAgent,
+	);
 
-	initializedAgents = { bookmarkAgent, rssAgent, highlightAgent };
+	initializedAgents = {
+		bookmarkAgent,
+		rssAgent,
+		highlightAgent,
+		syncAgent,
+		authAgent,
+	};
 	return initializedAgents;
 }
 

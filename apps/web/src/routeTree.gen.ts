@@ -17,6 +17,7 @@ import { Route as BookmarksIndexRouteImport } from './routes/bookmarks/index'
 import { Route as BookmarksFavoritesRouteImport } from './routes/bookmarks/favorites'
 import { Route as BookmarksArchiveRouteImport } from './routes/bookmarks/archive'
 import { Route as BookmarksIdRouteImport } from './routes/bookmarks/$id'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as RssArticleIdRouteImport } from './routes/rss/article.$id'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -59,6 +60,11 @@ const BookmarksIdRoute = BookmarksIdRouteImport.update({
   path: '/bookmarks/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RssArticleIdRoute = RssArticleIdRouteImport.update({
   id: '/rss/article/$id',
   path: '/rss/article/$id',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks/archive': typeof BookmarksArchiveRoute
   '/bookmarks/favorites': typeof BookmarksFavoritesRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks/archive': typeof BookmarksArchiveRoute
   '/bookmarks/favorites': typeof BookmarksFavoritesRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/explore': typeof ExploreRoute
   '/settings': typeof SettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookmarks/$id': typeof BookmarksIdRoute
   '/bookmarks/archive': typeof BookmarksArchiveRoute
   '/bookmarks/favorites': typeof BookmarksFavoritesRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/explore'
     | '/settings'
+    | '/auth/callback'
     | '/bookmarks/$id'
     | '/bookmarks/archive'
     | '/bookmarks/favorites'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/explore'
     | '/settings'
+    | '/auth/callback'
     | '/bookmarks/$id'
     | '/bookmarks/archive'
     | '/bookmarks/favorites'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/explore'
     | '/settings'
+    | '/auth/callback'
     | '/bookmarks/$id'
     | '/bookmarks/archive'
     | '/bookmarks/favorites'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ExploreRoute: typeof ExploreRoute
   SettingsRoute: typeof SettingsRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   BookmarksIdRoute: typeof BookmarksIdRoute
   BookmarksArchiveRoute: typeof BookmarksArchiveRoute
   BookmarksFavoritesRoute: typeof BookmarksFavoritesRoute
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookmarksIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rss/article/$id': {
       id: '/rss/article/$id'
       path: '/rss/article/$id'
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ExploreRoute: ExploreRoute,
   SettingsRoute: SettingsRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   BookmarksIdRoute: BookmarksIdRoute,
   BookmarksArchiveRoute: BookmarksArchiveRoute,
   BookmarksFavoritesRoute: BookmarksFavoritesRoute,

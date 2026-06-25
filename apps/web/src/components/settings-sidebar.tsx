@@ -40,7 +40,7 @@ export function SettingsSidebar(){
 						<SidebarMenuButton asChild>
 							<Link to={item.url}>
 								
-								<span>{item.name}</span>
+								<span className="font-semibold">{item.name}</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
