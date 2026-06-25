@@ -4,6 +4,9 @@ import type {
 	IBookmarkAgent,
 	IRssAgent,
 	IHighlightAgent,
+	ISyncAgent,
+	IAuthAgent,
+	SyncResult,
 } from "@packages/agents";
 
 // Types
@@ -28,6 +31,8 @@ export interface ReaderState {
 	bookmarkAgent: IBookmarkAgent;
 	rssAgent: IRssAgent;
 	highlightAgent: IHighlightAgent;
+	syncAgent: ISyncAgent;
+	authAgent: IAuthAgent;
 
 	highlights: Highlight[];
 	bookmarks: Bookmark[];
@@ -68,6 +73,7 @@ export interface ReaderState {
 	// - Web: implemented in store using @packages/utils extractArticleContent
 	// - Mobile: overridden in mobile-init.ts using apps/mobile/lib/rss.ts
 	fetchArticleContent: (id: string) => Promise<void>;
+	triggerSync: () => Promise<SyncResult>;
 }
 
 // Helpers
@@ -89,11 +95,15 @@ export const createReaderStore = (
 		bookmarkAgent: IBookmarkAgent;
 		rssAgent: IRssAgent;
 		highlightAgent: IHighlightAgent;
+		syncAgent: ISyncAgent;
+		authAgent: IAuthAgent;
 	},
 ): ReaderState => ({
 	bookmarkAgent: agents.bookmarkAgent,
 	rssAgent: agents.rssAgent,
 	highlightAgent: agents.highlightAgent,
+	syncAgent: agents.syncAgent,
+	authAgent: agents.authAgent,
 
 	highlights: [],
 	bookmarks: [],
@@ -296,6 +306,29 @@ export const createReaderStore = (
 			console.warn("[fetchArticleContent] Failed:", err);
 		}
 	},
+
+	triggerSync: async () => {
+		const { syncAgent } = get();
+		const result = await syncAgent.sync();
+		if (result.success) {
+			// Reload data after sync completes
+			const { bookmarkAgent, rssAgent, highlightAgent } = get();
+			const [bookmarks, feeds, articles, dbHighlights] = await Promise.all([
+				bookmarkAgent.listBookmarks(),
+				rssAgent.listFeeds(),
+				rssAgent.listArticles(),
+				highlightAgent.listHighlights(),
+			]);
+			const highlightsWithAnnotations = await Promise.all(
+				dbHighlights.map(async (h) => {
+					const anns = await highlightAgent.listAnnotations(h.id);
+					return { ...h, annotations: anns };
+				}),
+			);
+			set(() => ({ bookmarks, feeds, articles, highlights: highlightsWithAnnotations }));
+		}
+		return result;
+	},
 });
 
 // Store singleton
@@ -306,6 +339,8 @@ export function initializeReaderStore(agents: {
 	bookmarkAgent: IBookmarkAgent;
 	rssAgent: IRssAgent;
 	highlightAgent: IHighlightAgent;
+	syncAgent: ISyncAgent;
+	authAgent: IAuthAgent;
 }): UseBoundStore<StoreApi<ReaderState>> {
 	if (readerStore) return readerStore;
 	readerStore = create<ReaderState>()((set, get) =>
