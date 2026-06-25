@@ -12,6 +12,10 @@ async function bootstrap() {
   // Tauri-only modules into the web build.
   (window as any).__BOOKMARKREADER_AGENTS__ = agents;
 
+  // Auto-sync every 30s to app data directory sync.json
+  // User should symlink this file into their cloud storage for cross-device sync
+  agents.syncAgent.startAutoSync(30_000);
+
   const store = initializeReaderStore(agents);
   await store.getState().loadInitialData();
 
