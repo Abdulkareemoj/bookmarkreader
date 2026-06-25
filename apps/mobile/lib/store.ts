@@ -8,4 +8,5 @@ export {
   type Article,
   type Feed,
   type Highlight,
+  type AuthProvider,
 } from "@packages/store";

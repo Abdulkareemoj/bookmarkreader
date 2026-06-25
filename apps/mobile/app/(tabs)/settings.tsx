@@ -3,10 +3,10 @@ import * as FileSystem from "expo-file-system/legacy";
 import {
 	Cloud,
 	Download,
+	LogOut,
 	Monitor,
 	Moon,
 	Sun,
-	TextSearch,
 	Trash2,
 	Upload,
 } from "lucide-react-native";
@@ -19,6 +19,13 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { getInitializedAgents } from "@/lib/agents";
 import { useSettingsStore } from "@/lib/store";
@@ -38,7 +45,58 @@ export default function Settings() {
 	const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
 	const [lastSync, setLastSync] = useState<string | null>(null);
 
+	const {
+		isAuthenticated,
+		authProvider,
+		authEmail,
+		setAuth,
+		clearAuth,
+	} = useSettingsStore();
+
 	const themeId = useId();
+
+	const handleSignIn = async () => {
+		try {
+			const agents = getInitializedAgents();
+			const result = await agents.authAgent.signIn("gdrive");
+			if (result.success) {
+				const info = await agents.authAgent.getUserInfo();
+				setAuth({
+					isAuthenticated: true,
+					provider: "gdrive",
+					email: info?.email ?? null,
+				});
+				Alert.alert("Connected", "Google Drive connected successfully.");
+			} else {
+				Alert.alert("Connection Failed", result.error ?? "Unknown error");
+			}
+		} catch (e) {
+			Alert.alert("Error", `Failed to connect: ${(e as Error).message}`);
+		}
+	};
+
+	const handleSignOut = async () => {
+		Alert.alert(
+			"Disconnect Google Drive",
+			"Your sync data will remain in Drive. You can reconnect later.",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Disconnect",
+					style: "destructive",
+					onPress: async () => {
+						try {
+							const agents = getInitializedAgents();
+							await agents.authAgent.signOut();
+							clearAuth();
+						} catch {
+							clearAuth();
+						}
+					},
+				},
+			],
+		);
+	};
 
 	const handleExport = async () => {
 		setSyncStatus("syncing");
@@ -176,9 +234,7 @@ export default function Settings() {
 			}}
 			showsVerticalScrollIndicator={false}
 		>
-			<View className="mb-6">
-				<Text className="font-semibold text-foreground text-2xl">Settings</Text>
-			</View>
+			
 
 			{/* Theme */}
 			<Card className="mb-4">
@@ -242,34 +298,28 @@ export default function Settings() {
 					</Text>
 					<Separator className="mb-4" />
 					<Text className="mb-3 font-medium text-sm">Font Size</Text>
-					<View className="flex-row gap-2">
-						{FONT_SIZES.map((fs) => {
-							const isActive = readerFontSize === fs.value;
-							return (
-								<Label
-									key={fs.value}
-									className={`flex-1 items-center gap-1 rounded-lg border p-3 ${
-										isActive ? "border-primary bg-primary/10" : "border-input"
-									}`}
-								>
-									<View className="items-center gap-1">
-										<Icon
-											as={TextSearch}
-											size={16}
-											className="text-muted-foreground"
-										/>
-										<Text className="font-medium text-xs text-center">
-											{fs.label}
-										</Text>
-										<Text className="text-[10px] text-muted-foreground text-center">
-											{fs.desc}
-										</Text>
-									</View>
-									<RadioGroupItem value={fs.value} />
-								</Label>
-							);
-						})}
-					</View>
+					<Select
+						value={{
+							value: readerFontSize,
+							label:
+								FONT_SIZES.find((fs) => fs.value === readerFontSize)?.label ?? "",
+						}}
+						onValueChange={(option) => {
+							if (option)
+								setReaderFontSize(option.value as "sm" | "md" | "lg");
+						}}
+					>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder="Select font size" />
+						</SelectTrigger>
+						<SelectContent className="w-full">
+							{FONT_SIZES.map((fs) => (
+								<SelectItem key={fs.value} value={fs.value} label={fs.label}>
+									{fs.desc}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</View>
 			</Card>
 
@@ -291,6 +341,59 @@ export default function Settings() {
 						<Icon as={Trash2} size={16} className="mr-2" />
 						<Text>Clear Cache</Text>
 					</Button>
+				</View>
+			</Card>
+
+			{/* Cloud Storage */}
+			<Card className="mb-4">
+				<View className="px-4 py-3">
+					<View className="mb-4 flex-row items-center justify-between">
+						<Text className="font-semibold text-foreground text-lg">
+							Cloud Storage
+						</Text>
+						{isAuthenticated && (
+							<Badge variant="default">
+								<View className="flex-row items-center gap-1">
+									<Icon as={Cloud} size={12} />
+									<Text className="text-xs">Connected</Text>
+								</View>
+							</Badge>
+						)}
+					</View>
+					<Separator className="mb-4" />
+					{isAuthenticated ? (
+						<>
+							<View className="mb-3 flex-row items-center gap-3">
+								<Icon as={Cloud} size={24} className="text-primary" />
+								<View>
+									<Text className="font-medium">Google Drive</Text>
+									{authEmail && (
+										<Text className="text-muted-foreground text-sm">
+											{authEmail}
+										</Text>
+									)}
+								</View>
+							</View>
+							<Button
+								onPress={handleSignOut}
+								variant="outline"
+								className="w-full"
+							>
+								<Icon as={LogOut} size={16} className="mr-2" />
+								<Text>Disconnect</Text>
+							</Button>
+						</>
+					) : (
+						<>
+							<Text className="mb-4 text-muted-foreground text-sm">
+								Connect Google Drive to sync your data across devices.
+							</Text>
+							<Button onPress={handleSignIn} className="w-full">
+								<Icon as={Cloud} size={16} className="mr-2" />
+								<Text className="text-primary-foreground">Connect Google Drive</Text>
+							</Button>
+						</>
+					)}
 				</View>
 			</Card>
 

@@ -9,6 +9,9 @@ import {
 } from "@packages/agents";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { openDatabaseAsync } from "expo-sqlite";
+import { createMobileAuthAgent } from "./auth-agent";
+import { createMobileSyncAgent } from "./sync-agent";
+import { GOOGLE_OAUTH_CONFIG } from "./auth-config";
 
 const DB_NAME = "bookmark_tool.db";
 
@@ -26,8 +29,21 @@ export async function initializeMobileAgents(): Promise<IAgents> {
 	const bookmarkAgent = createBookmarkAgent(db);
 	const rssAgent = createRssAgent(db);
 	const highlightAgent = createHighlightAgent(db);
+	const authAgent = createMobileAuthAgent(GOOGLE_OAUTH_CONFIG.clientId);
+	const syncAgent = createMobileSyncAgent(
+		authAgent,
+		bookmarkAgent,
+		rssAgent,
+		highlightAgent,
+	);
 
-	initializedAgents = { bookmarkAgent, rssAgent, highlightAgent };
+	initializedAgents = {
+		bookmarkAgent,
+		rssAgent,
+		highlightAgent,
+		syncAgent,
+		authAgent,
+	};
 	return initializedAgents;
 }
 
