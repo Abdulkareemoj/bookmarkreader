@@ -1,0 +1,40 @@
+import * as dotenv from "dotenv";
+import * as path from "path";
+
+// Load root .env so EXPO_PUBLIC_* vars are available
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
+export default {
+	name: "minimal",
+	slug: "minimal",
+	version: "1.0.0",
+	orientation: "portrait",
+	icon: "./assets/images/icon.png",
+	scheme: "minimal",
+	userInterfaceStyle: "automatic",
+	splash: {
+		image: "./assets/images/splash.png",
+		resizeMode: "contain",
+		backgroundColor: "#ffffff",
+	},
+	assetBundlePatterns: ["**/*"],
+	ios: {
+		supportsTablet: true,
+	},
+	android: {
+		adaptiveIcon: {
+			foregroundImage: "./assets/images/adaptive-icon.png",
+			backgroundColor: "#ffffff",
+		},
+		package: "com.anonymous.minimal",
+	},
+	web: {
+		bundler: "metro",
+		output: "static",
+		favicon: "./assets/images/favicon.png",
+	},
+	plugins: ["expo-router", "expo-secure-store"],
+	experiments: {
+		typedRoutes: true,
+	},
+};

@@ -40,13 +40,12 @@ const KEYS = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function generateCodeVerifier(): string {
+async function generateCodeVerifier(): Promise<string> {
 	const chars =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+	const bytes = await Crypto.getRandomBytesAsync(64);
 	let result = "";
-	const array = new Uint8Array(64);
-	crypto.getRandomValues(array);
-	for (const byte of array) {
+	for (const byte of bytes) {
 		result += chars[byte % chars.length];
 	}
 	return result;
@@ -219,7 +218,7 @@ export function createMobileAuthAgent(clientId: string): IAuthAgent {
 			}
 
 			try {
-				const codeVerifier = generateCodeVerifier();
+				const codeVerifier = await generateCodeVerifier();
 				const codeChallenge = await generateCodeChallenge(codeVerifier);
 
 				const authUrl = `${GOOGLE_DISCOVERY.authorizationEndpoint}?${new URLSearchParams(
