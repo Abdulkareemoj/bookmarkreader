@@ -22,6 +22,10 @@ function getClientId(): string {
 	return import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID ?? "";
 }
 
+function getClientSecret(): string {
+	return import.meta.env.VITE_GOOGLE_WEB_SECRET_ID ?? "";
+}
+
 function getRedirectUri(): string {
 	return `${window.location.origin}/auth/callback`;
 }
@@ -31,31 +35,37 @@ function exchangeCodeForTokens(
 	codeVerifier: string,
 ): Promise<StoredTokens | null> {
 	const clientId = getClientId();
+	const clientSecret = getClientSecret();
 	const redirectUri = getRedirectUri();
+
+	const body = new URLSearchParams({
+		code,
+		client_id: clientId,
+		code_verifier: codeVerifier,
+		redirect_uri: redirectUri,
+		grant_type: "authorization_code",
+	});
+	if (clientSecret) body.append("client_secret", clientSecret);
 
 	return fetch("https://oauth2.googleapis.com/token", {
 		method: "POST",
 		headers: { "Content-Type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams({
-			code,
-			client_id: clientId,
-			code_verifier: codeVerifier,
-			redirect_uri: redirectUri,
-			grant_type: "authorization_code",
-		}),
-	})
-		.then((res) => (res.ok ? res.json() : null))
-		.then((data) =>
-			data
-				? {
-						accessToken: data.access_token,
-						refreshToken: data.refresh_token ?? null,
-						expiresAt: Date.now() + data.expires_in * 1000,
-						email: null,
-						name: null,
-					}
-				: null,
-		);
+		body,
+	}).then(async (res) => {
+		if (!res.ok) {
+			const text = await res.text();
+			console.error("[OAuth] Token exchange failed:", res.status, text);
+			return null;
+		}
+		const data = await res.json();
+		return {
+			accessToken: data.access_token,
+			refreshToken: data.refresh_token ?? null,
+			expiresAt: Date.now() + data.expires_in * 1000,
+			email: null,
+			name: null,
+		};
+	});
 }
 
 function AuthCallbackComponent() {

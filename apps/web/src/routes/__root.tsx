@@ -46,32 +46,63 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 	shellComponent: RootDocument,
 });
 
+function AppLayout({ children }: { children: React.ReactNode }) {
+	return (
+		<ThemeProvider
+			attribute="class"
+			defaultTheme="system"
+			enableSystem
+			disableTransitionOnChange
+		>
+			<StoreProvider>
+				<SidebarProvider>
+					<AppSidebar />
+					<SidebarInset>
+						<TooltipProvider>
+							<Toolbar />
+							{children}
+							<BottomNav />
+						</TooltipProvider>
+					</SidebarInset>
+				</SidebarProvider>
+			</StoreProvider>
+		</ThemeProvider>
+	);
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
+	const isDesktop =
+		typeof window !== "undefined" &&
+		(window as unknown as { __BOOKMARKREADER_AGENTS__?: unknown })
+			.__BOOKMARKREADER_AGENTS__;
+
+	if (isDesktop) {
+		return (
+			<>
+				<AppLayout>{children}</AppLayout>
+				<TanStackDevtools
+					config={{
+						position: "bottom-right",
+					}}
+					plugins={[
+						{
+							name: "Tanstack Router",
+							render: <TanStackRouterDevtoolsPanel />,
+						},
+						TanStackQueryDevtools,
+					]}
+				/>
+			</>
+		);
+	}
+
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>
 			<body>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="system"
-					enableSystem
-					disableTransitionOnChange
-				>
-					<StoreProvider>
-						<SidebarProvider>
-							<AppSidebar />
-							<SidebarInset>
-								<TooltipProvider>
-									<Toolbar />
-									{children}
-									<BottomNav />
-								</TooltipProvider>
-							</SidebarInset>
-						</SidebarProvider>
-					</StoreProvider>
-				</ThemeProvider>
+				<AppLayout>{children}</AppLayout>
 				<TanStackDevtools
 					config={{
 						position: "bottom-right",
