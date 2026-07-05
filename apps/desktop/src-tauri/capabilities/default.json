@@ -7,6 +7,18 @@
   ],
   "permissions": [
     "core:default",
-    "fs:default"
+    "fs:default",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "fs:allow-read",
+    "fs:allow-write",
+    "fs:allow-exists",
+    "fs:allow-mkdir",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$APPDATA/**" }
+      ]
+    }
   ]
 }

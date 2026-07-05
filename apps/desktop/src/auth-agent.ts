@@ -6,7 +6,7 @@ import type {
 } from "@packages/agents";
 import { invoke } from "@tauri-apps/api/core";
 import { appDataDir } from "@tauri-apps/api/path";
-import { writeTextFile, readTextFile } from "@tauri-apps/plugin-fs";
+import { writeTextFile, readTextFile, mkdir } from "@tauri-apps/plugin-fs";
 
 const SCOPES = ["https://www.googleapis.com/auth/drive.file"];
 
@@ -27,10 +27,20 @@ interface OAuthFlowResult {
 let cachedTokens: StoredTokens | null = null;
 let tokensPath: string | null = null;
 
+async function ensureDir(): Promise<void> {
+	const dir = await appDataDir();
+	try {
+		await mkdir(dir, { recursive: true });
+	} catch {
+		// dir may already exist
+	}
+}
+
 async function getTokensPath(): Promise<string> {
 	if (tokensPath) return tokensPath;
 	const dir = await appDataDir();
-	tokensPath = `${dir}oauth-tokens.json`;
+	await ensureDir();
+	tokensPath = `${dir}/oauth-tokens.json`;
 	return tokensPath;
 }
 
@@ -65,6 +75,13 @@ async function clearTokens(): Promise<void> {
 function getClientId(): string {
 	if (typeof import.meta !== "undefined" && import.meta.env?.VITE_GOOGLE_DESKTOP_CLIENT_ID) {
 		return import.meta.env.VITE_GOOGLE_DESKTOP_CLIENT_ID;
+	}
+	return "";
+}
+
+function getClientSecret(): string {
+	if (typeof import.meta !== "undefined" && import.meta.env?.VITE_GOOGLE_DESKTOP_SECRET_ID) {
+		return import.meta.env.VITE_GOOGLE_DESKTOP_SECRET_ID;
 	}
 	return "";
 }
@@ -164,6 +181,7 @@ export function createDesktopAuthAgent(): IAuthAgent {
 			try {
 				const result: OAuthFlowResult = await invoke("start_oauth_flow", {
 					clientId,
+					clientSecret: getClientSecret(),
 					scopes: SCOPES,
 				});
 
@@ -187,11 +205,12 @@ export function createDesktopAuthAgent(): IAuthAgent {
 					refreshToken: result.refresh_token ?? undefined,
 				};
 			} catch (e) {
+				const msg = e instanceof Error ? e.message : String(e);
 				return {
 					success: false,
 					provider,
 					accessToken: null,
-					error: `OAuth failed: ${(e as Error).message}`,
+					error: `OAuth failed: ${msg}`,
 				};
 			}
 		},

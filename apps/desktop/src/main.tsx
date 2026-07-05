@@ -1,3 +1,5 @@
+import "../../web/src/styles.css";
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
@@ -6,27 +8,22 @@ import { initializeTauriAgents } from "./db";
 import { initializeReaderStore } from "@packages/store";
 
 async function bootstrap() {
-  const agents = await initializeTauriAgents();
+	const agents = await initializeTauriAgents();
 
-  // Make agents available to shared web code (e.g. Settings page) without bundling
-  // Tauri-only modules into the web build.
-  (window as any).__BOOKMARKREADER_AGENTS__ = agents;
+	(window as any).__BOOKMARKREADER_AGENTS__ = agents;
 
-  // Auto-sync every 30s to app data directory sync.json
-  // User should symlink this file into their cloud storage for cross-device sync
-  agents.syncAgent.startAutoSync(30_000);
+	agents.syncAgent.startAutoSync(30_000);
 
-  const store = initializeReaderStore(agents);
-  await store.getState().loadInitialData();
+	const store = initializeReaderStore(agents);
+	await store.getState().loadInitialData();
 
-  // Get the configured router instance from the web app
-  const router = getRouter();
+	const router = getRouter();
 
-  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-    <React.StrictMode>
-      <RouterProvider router={router} />
-    </React.StrictMode>
-  );
+	ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+		<React.StrictMode>
+			<RouterProvider router={router} />
+		</React.StrictMode>,
+	);
 }
 
 bootstrap();
