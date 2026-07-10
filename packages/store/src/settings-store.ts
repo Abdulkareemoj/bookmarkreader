@@ -29,6 +29,9 @@ export interface SettingsState {
 	authProvider: AuthProvider;
 	authEmail: string | null;
 
+	// YouTube (optional YouTube Data API key for handle resolution)
+	youtubeApiKey: string;
+
 	// Actions
 	setTheme: (theme: SettingsState["theme"]) => void;
 	setReaderFontSize: (size: SettingsState["readerFontSize"]) => void;
@@ -52,12 +55,14 @@ export const createSettingsStore = (set: any): SettingsState => ({
 	isAuthenticated: false,
 	authProvider: "none",
 	authEmail: null,
+	youtubeApiKey: "",
 
 	setTheme: (theme) => set({ theme }),
 	setReaderFontSize: (readerFontSize) => set({ readerFontSize }),
 	setSyncProvider: (syncProvider) => set({ syncProvider }),
 	setSyncStatus: (syncStatus) => set({ syncStatus }),
 	setLastSyncedAt: (lastSyncedAt) => set({ lastSyncedAt }),
+	setYoutubeApiKey: (key: string) => set({ youtubeApiKey: key }),
 	setAuth: (auth) =>
 		set({
 			isAuthenticated: auth.isAuthenticated,
@@ -83,6 +88,7 @@ export const useSettingsStore = create<SettingsState>()(
 			isAuthenticated: s.isAuthenticated,
 			authProvider: s.authProvider,
 			authEmail: s.authEmail,
+			youtubeApiKey: s.youtubeApiKey,
 		}),
 	}),
 );

@@ -233,9 +233,87 @@ export const createReaderStore = (
 		}));
 	},
 
-	// Default refreshFeed — re-fetches data from DB after platform-specific override
-	// implements the actual network fetch + parsing + insertion
 	refreshFeed: async (id) => {
+		try {
+			const { rssAgent } = get();
+			const feedsList = await rssAgent.listFeeds();
+			const feed = feedsList.find((f: any) => f.id === id);
+			if (feed) {
+				const { fetchAndParseFeed } = await import("@packages/utils");
+				const result = await fetchAndParseFeed(feed.feedUrl);
+				console.log("[refreshFeed] result:", result.entries?.length, "entries");
+
+				const toStr = (v: any): string => {
+					if (!v) return "";
+					if (typeof v === "string") return v;
+					if (typeof v.$ === "string") return v.$;
+					return String(v);
+				};
+				const parsed = result.entries
+					.map((entry: any) => {
+						const mediaGroup = entry["media:group"];
+						const mediaThumb =
+							entry["media:thumbnail"] ?? mediaGroup?.["media:thumbnail"];
+						const mediaContent =
+							entry["media:content"] ?? mediaGroup?.["media:content"];
+						const attrUrl = (obj: any) =>
+							obj?.["$url"] ?? obj?.["@_url"] ?? obj?.url;
+						const str = (v: any) => toStr(v) || "";
+						return {
+						feedId: id,
+						title: str(entry.title) || "(untitled)",
+						link: str(entry.link) || str(entry.id) || "",
+						content:
+							str(entry.content) ||
+							str(entry.description) ||
+							str(entry["content:encoded"]) ||
+							"",
+						contentSnippet: (
+							str(entry.description) ||
+							str(entry.content) ||
+							str(entry["content:encoded"]) || ""
+						)
+							.replace(/<[^>]*>/g, "")
+							.slice(0, 500),
+						imageUrl:
+							(typeof entry.image === "string"
+								? entry.image
+								: entry.image?.url) ||
+							attrUrl(entry.enclosures?.[0]) ||
+							attrUrl(mediaContent) ||
+							attrUrl(mediaThumb) ||
+							undefined,
+						pubDate: entry.published
+							? new Date(entry.published).toISOString()
+							: new Date().toISOString(),
+						read: false,
+						liked: false,
+						saved: false,
+						lastUpdatedAt: new Date().toISOString(),
+					};
+				})
+					.filter((p: any) => p.link);
+
+				if (parsed.length > 0) {
+					await rssAgent.insertArticles(parsed);
+				}
+
+				const feedTitle = result.title || feed.title;
+				const allArticles = await rssAgent.listArticles(id);
+				const unreadCount = allArticles.filter(
+					(a: any) => !a.read,
+				).length;
+				await rssAgent.updateFeedMeta(id, {
+					title: feedTitle,
+					lastFetched: new Date().toISOString(),
+					unreadCount,
+				});
+			}
+		} catch (e) {
+			// Log error then re-throw so the UI can show feedback
+			console.error("[refreshFeed] error:", e);
+			throw e;
+		}
 		const [feeds, articles] = await Promise.all([
 			get().rssAgent.listFeeds(),
 			get().rssAgent.listArticles(),
