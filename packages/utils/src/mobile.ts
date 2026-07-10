@@ -5,6 +5,9 @@ import type { ParsedArticle } from "@packages/agents";
 
 // Network
 
+const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
 const CORS_PROXIES = [
   "https://corsproxy.io/?",
   "https://api.allorigins.win/raw?url=",
@@ -16,7 +19,7 @@ export async function fetchFeed(url: string): Promise<string> {
     const res = await fetch(url, {
       headers: {
         Accept: "application/rss+xml, application/atom+xml, application/json, application/xml, text/xml;q=0.9, */*;q=0.8",
-        "User-Agent": "BookmarkReader/1.0",
+        "User-Agent": BROWSER_UA,
       },
     });
     if (res.ok) return await res.text();
@@ -76,9 +79,10 @@ export function parseFeedXml(xmlText: string, feedId: string): ParsedArticle[] {
       const encUrl = enc["@_url"] || enc.url;
       if (encUrl && String(encUrl).startsWith("http")) return String(encUrl);
     }
-    // Check media:content / media:thumbnail
-    const mediaContent = item["media:content"];
-    const mediaThumbnail = item["media:thumbnail"];
+    // Check media:content / media:thumbnail (top-level or inside media:group)
+    const mediaGroup = item["media:group"];
+    const mediaContent = item["media:content"] ?? mediaGroup?.["media:content"];
+    const mediaThumbnail = item["media:thumbnail"] ?? mediaGroup?.["media:thumbnail"];
     const mediaUrl =
       mediaContent?.["@_url"] ||
       mediaThumbnail?.["@_url"];
@@ -144,7 +148,13 @@ export function parseFeedXml(xmlText: string, feedId: string): ParsedArticle[] {
       const content =
         normalize(entry.content) ||
         normalize(entry.summary) ||
+        normalize(entry["media:group"]?.["media:description"]) ||
         "";
+
+      // Fallback: yt:videoId → construct watch URL
+      if (!link && entry["yt:videoId"]) {
+        link = `https://www.youtube.com/watch?v=${entry["yt:videoId"]}`;
+      }
 
       const pubDateRaw =
         normalize(entry.published) ||

@@ -12,11 +12,19 @@ export {
 	type IBookmarkAgent,
 	type IRssAgent,
 	type IHighlightAgent,
+	type ISyncAgent,
+	type IAuthAgent,
 	type IAgents,
 	type Bookmark,
 	type Feed,
 	type Article,
 	type ParsedArticle,
+	type SyncData,
+	type SyncResult,
+	type SyncProvider,
+	type AuthProvider,
+	type AuthResult,
+	type AuthUserInfo,
 } from "@packages/agents";
 
 // ─── Network ──────────────────────────────────────────────────────────────────
@@ -39,6 +47,7 @@ export async function fetchWithProxy(
 	}
 
 	let lastError: Error | null = null;
+	let firstResponse: Response | null = null;
 	for (const proxy of CORS_PROXIES) {
 		try {
 			const res = await fetch(proxy + encodeURIComponent(url), {
@@ -46,11 +55,17 @@ export async function fetchWithProxy(
 				mode: "cors",
 			});
 			if (res.ok) return res;
+			// Keep the first response (even non-ok) so we can show meaningful error messages
+			if (!firstResponse) firstResponse = res;
 		} catch (e) {
 			lastError = e as Error;
 			await new Promise((r) => setTimeout(r, 300));
 		}
 	}
+
+	// Return the first proxy's response if we got one, so fetchAndParseFeed
+	// can report the actual HTTP status (e.g. 404 from YouTube)
+	if (firstResponse) return firstResponse;
 
 	throw lastError ?? new Error(`Failed to fetch: ${url}`);
 }
@@ -72,37 +87,72 @@ export async function fetchAndParseFeed(
 	});
 	const rawText = await res.text();
 
-	let feedData: any;
+	if (!res.ok) {
+		throw new Error(
+			`Feed returned HTTP ${res.status}. Check that the URL is correct.`,
+		);
+	}
 
-	if (rawText.trimStart().startsWith("{")) {
+	const trimmed = rawText.trimStart();
+
+	if (trimmed.startsWith("{")) {
 		// JSON Feed
-		feedData = extractFromJson(rawText, {
+		const feedData = extractFromJson(rawText, {
 			getExtraEntryFields: (entry: any) => ({
 				content: entry.content_html ?? entry.content_text ?? "",
 				enclosures: entry.attachments ?? [],
 			}),
 		});
-	} else {
-		// RSS / Atom
-		const xmlStr = (v: any): string => {
-			if (!v) return "";
-			if (typeof v === "string") return v;
-			if (typeof v.$ === "string") return v.$;
-			return String(v);
+		return {
+			title: feedData?.title,
+			entries: feedData?.entries ?? [],
 		};
-		feedData = extractFromXml(rawText, {
-			getExtraEntryFields: (entry: any) => ({
+	}
+
+	if (
+		!trimmed.startsWith("<?xml") &&
+		!trimmed.startsWith("<rss") &&
+		!trimmed.startsWith("<feed")
+	) {
+		// Not XML — might be an HTML error page from the feed source
+		const snippet = trimmed.slice(0, 200).replace(/\s+/g, " ").trim();
+		throw new Error(
+			`Feed returned non-XML content (starts with "${snippet.slice(0, 60)}". The feed URL may not exist or the source requires a different URL format.`,
+		);
+	}
+
+	const grabMediaThumb = (entry: any): any => {
+		return (
+			entry["media:thumbnail"] ?? entry["media:group"]?.["media:thumbnail"] ?? undefined
+		);
+	};
+	const grabMediaContent = (entry: any): any => {
+		return (
+			entry["media:content"] ?? entry["media:group"]?.["media:content"] ?? undefined
+		);
+	};
+	const xmlStr = (v: any): string => {
+		if (!v) return "";
+		if (typeof v === "string") return v;
+		if (typeof v.$ === "string") return v.$;
+		return String(v);
+	};
+	const feedData = extractFromXml(rawText, {
+		getExtraEntryFields: (entry: any) => {
+			const mediaGroup = entry["media:group"];
+			return {
 				content:
 					xmlStr(entry["content:encoded"]) ||
 					xmlStr(entry.content) ||
 					xmlStr(entry.description) ||
+					xmlStr(mediaGroup?.["media:description"]) ||
 					"",
 				enclosures: entry.enclosure ? [entry.enclosure] : [],
-				"media:content": entry["media:content"],
-				"media:thumbnail": entry["media:thumbnail"],
-			}),
-		});
-	}
+				"media:content": grabMediaContent(entry),
+				"media:thumbnail": grabMediaThumb(entry),
+			};
+		},
+	});
 
 	return {
 		title: feedData?.title,
@@ -181,5 +231,7 @@ export {
 export {
 	discoverYouTubeChannelFeed,
 	parseYouTubeChannelUrl,
+	resolveYouTubeHandle,
+	extractYouTubeHandle,
 	type YouTubeChannelResult,
 } from "./youtube";
