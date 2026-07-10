@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ArticleCard from "@/components/rss/article-card";
 import {
@@ -24,7 +25,6 @@ import {
 	getCategories,
 	getRandomFeeds,
 	discoverYouTubeChannelFeed,
-	fetchWithProxy,
 	parseYouTubeChannelUrl,
 } from "@packages/utils";
 import { useReaderStore } from "@/lib/store";
@@ -215,11 +215,7 @@ function Explore() {
 		: filteredFeeds;
 
 	const handleAddFeed = async (url: string, title: string) => {
-		try {
-			await addFeed({ feedUrl: url, title });
-		} catch (e) {
-			console.error("Failed to add feed:", e);
-		}
+		await addFeed({ feedUrl: url, title });
 	};
 
 	const handleRandomFeeds = () => {
@@ -233,23 +229,36 @@ function Explore() {
 			setYoutubeError("Invalid YouTube channel URL");
 			return;
 		}
+		const feedInfo = await discoverYouTubeChannelFeed(normalizedUrl);
+		if (!feedInfo) {
+			setYoutubeError("Could not find RSS feed for this channel");
+			return;
+		}
 		setYoutubeLoading(true);
 		try {
-			const result = await discoverYouTubeChannelFeed(
-				normalizedUrl,
-				async (url) => {
-					const res = await fetchWithProxy(url);
-					return res.text();
-				},
-			);
-			if (!result) {
-				setYoutubeError("Could not find RSS feed for this channel");
-				return;
+			// Try platform-specific handle resolver if available (e.g. Tauri Rust command)
+			let resolvedUrl = feedInfo.feedUrl;
+			if (feedInfo.requiresChannelId) {
+				const platformResolve = (window as any)
+					.__RESOLVE_YOUTUBE_HANDLE__ as
+					| ((handle: string) => Promise<string | null>)
+					| undefined;
+				if (platformResolve) {
+					const platformUrl = await platformResolve(youtubeUrl);
+					if (platformUrl) resolvedUrl = platformUrl;
+				}
 			}
-			await handleAddFeed(result.feedUrl, result.title);
+			await handleAddFeed(resolvedUrl, feedInfo.title);
 			setYoutubeUrl("");
-		} catch {
-			setYoutubeError("Failed to subscribe. Try the URL directly.");
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : "Failed to subscribe";
+			if (feedInfo.requiresChannelId) {
+				setYoutubeError(
+					`${msg} Try the channel URL in /channel/UC... format instead (some handles don't have matching RSS feeds).`,
+				);
+			} else {
+				setYoutubeError(msg);
+			}
 		} finally {
 			setYoutubeLoading(false);
 		}
@@ -378,15 +387,15 @@ function Explore() {
 							onClick={handleYouTubeSubscribe}
 							disabled={youtubeLoading || !youtubeUrl.trim()}
 						>
-							{youtubeLoading ? "Discovering..." : "Subscribe"}
+							{youtubeLoading ? <Spinner className="size-4" /> : "Subscribe"}
 						</Button>
 					</div>
 					{youtubeError && (
 						<p className="mt-2 text-red-500 text-sm">{youtubeError}</p>
 					)}
 					<p className="mt-2 text-muted-foreground text-xs">
-						Supports youtube.com/channel/UC..., youtube.com/@handle, or bare
-						@handle
+						Supports youtube.com/channel/UC... (best), youtube.com/@handle, or
+						bare @handle. Some handles require the /channel/UC... format.
 					</p>
 				</CardContent>
 			</Card>

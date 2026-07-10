@@ -33,72 +33,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
 					agents,
 				) as unknown as InitializedStore;
 
-				// Override refreshFeed with web-specific implementation
-				const originalRefreshFeed = store.getState().refreshFeed;
-				store.setState({
-					refreshFeed: async (feedId: string) => {
-						const { rssAgent } = store.getState();
-						const feed = agents.rssAgent.listFeeds
-							? (await agents.rssAgent.listFeeds()).find(
-									(f: any) => f.id === feedId,
-								)
-							: null;
-						if (!feed) return;
-
-						try {
-							const { fetchAndParseFeed } = await import("@packages/utils");
-							const result = await fetchAndParseFeed(feed.feedUrl);
-
-							const toStr = (v: any): string => {
-								if (!v) return "";
-								if (typeof v === "string") return v;
-								if (typeof v.$ === "string") return v.$;
-								return String(v);
-							};
-							const parsed = result.entries.map((entry: any) => ({
-								feedId,
-								title: toStr(entry.title) || "(untitled)",
-								link: toStr(entry.link) || toStr(entry.id) || "",
-								content: toStr(entry.content) || toStr(entry.description) || "",
-								contentSnippet: toStr(entry.description)
-									.replace(/<[^>]*>/g, "")
-									.slice(0, 500),
-								imageUrl:
-									(typeof entry.image === "string"
-										? entry.image
-										: entry.image?.url) ||
-									entry.enclosures?.[0]?.url ||
-									entry["media:content"]?.["@_url"] ||
-									entry["media:thumbnail"]?.["@_url"] ||
-									undefined,
-								pubDate: entry.published
-									? new Date(entry.published).toISOString()
-									: new Date().toISOString(),
-								read: false,
-								liked: false,
-								saved: false,
-								lastUpdatedAt: new Date().toISOString(),
-							}));
-
-							await rssAgent.insertArticles(parsed.filter((p: any) => p.link));
-
-							const feedTitle = result.title || feed.title;
-							const allArticles = await rssAgent.listArticles(feedId);
-							const unreadCount = allArticles.filter(
-								(a: any) => !a.read,
-							).length;
-							await rssAgent.updateFeedMeta(feedId, {
-								title: feedTitle,
-								lastFetched: new Date().toISOString(),
-								unreadCount,
-							});
-						} catch (e) {
-							console.error(`[refreshFeed] ${feedId} failed:`, e);
-						}
-
-						await originalRefreshFeed(feedId);
-					},
-				});
+				// refreshFeed now baked into store — no override needed
 
 				await store.getState().loadInitialData();
 				setIsInitialized(true);

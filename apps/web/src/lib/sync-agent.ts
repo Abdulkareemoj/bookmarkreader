@@ -79,7 +79,7 @@ export function createWebSyncAgent(
 					feedsPulled: 0,
 					articlesPushed: 0,
 					articlesPulled: 0,
-					errors: ["Not signed in — connect Google Drive in Settings first"],
+					errors: ["Not signed in, connect Google Drive in Settings first"],
 				};
 			}
 

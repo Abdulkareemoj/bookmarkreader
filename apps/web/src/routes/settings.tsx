@@ -484,7 +484,7 @@ function SettingsComponent() {
               </Row>
               <Row
                 label="Clear cache"
-                description="Remove locally cached data — feeds and bookmarks are preserved"
+                description="Remove locally cached data, feeds and bookmarks are preserved"
                 last
               >
                 <Button
@@ -611,6 +611,27 @@ function SettingsComponent() {
                 </Row>
               </div>
             )}
+          </section>
+
+          <Separator />
+
+          {/* YouTube API key (reserved for future use) */}
+          <section>
+            <SectionHeading
+              title="YouTube"
+              description="Optional YouTube Data API key for handle resolution (future feature — works without one today)"
+            />
+            <div className="rounded-xl border border-border p-4">
+              <input
+                type="password"
+                disabled
+                placeholder="AIzaSy..."
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <p className="mt-2 text-muted-foreground text-xs">
+                Not yet implemented. The app resolves YouTube handles automatically without an API key.
+              </p>
+            </div>
           </section>
 
           <Separator />
