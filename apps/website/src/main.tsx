@@ -6,10 +6,8 @@ import ReactDOM from "react-dom/client";
 import { routeTree } from "./routeTree.gen.ts";
 
 import "./styles.css";
-import { ThemeProvider } from "./components/theme-provider.tsx";
 import reportWebVitals from "./reportWebVitals.ts";
 
-// Create a new router instance
 const router = createRouter({
 	routeTree,
 	context: {},
@@ -19,28 +17,19 @@ const router = createRouter({
 	defaultPreloadStaleTime: 0,
 });
 
-// Register the router instance for type safety
 declare module "@tanstack/react-router" {
 	interface Register {
 		router: typeof router;
 	}
 }
 
-// Render the app
 const rootElement = document.getElementById("app");
 if (rootElement && !rootElement.innerHTML) {
 	const root = ReactDOM.createRoot(rootElement);
 	root.render(
-		<ThemeProvider
-			attribute="class"
-			defaultTheme="system"
-			enableSystem
-			disableTransitionOnChange
-		>
-			<StrictMode>
-				<RouterProvider router={router} />
-			</StrictMode>
-		</ThemeProvider>,
+		<StrictMode>
+			<RouterProvider router={router} />
+		</StrictMode>,
 	);
 }
 

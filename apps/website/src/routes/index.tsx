@@ -13,22 +13,11 @@ export const Route = createFileRoute("/")({
 function App() {
 	return (
 		<main>
-			{/* Hero */}
 			<Hero />
-
-			{/* How it works */}
 			<HowItWorks />
-
-			{/* Features — alternating rows with mockups */}
 			<FeaturesSection />
-
-			{/* Testimonials */}
 			<TestimonialsSection />
-
-			{/* Promo CTA band */}
 			<PromoBand />
-
-			{/* FAQ */}
 			<FAQSection />
 		</main>
 	);
