@@ -221,6 +221,23 @@ export {
 } from "./recommendations";
 
 export {
+	parseOpml,
+	extractFeedsFromOpml,
+	extractBookmarksFromOpml,
+	generateOpml,
+	type OpmlDocument,
+	type OpmlOutline,
+} from "./opml";
+
+export {
+	parseHtmlBookmarks,
+	generateHtmlBookmarks,
+	type HtmlBookmarkEntry,
+} from "./html-bookmarks";
+
+export { detectFormat, type ExportFormat, type DetectedFormat } from "./formats";
+
+export {
 	curatedFeedsByCategory,
 	getAllCuratedFeeds,
 	getRandomFeeds,
