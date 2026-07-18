@@ -1,5 +1,5 @@
 {
-	"name": "BookmarkReader",
+	"name": "ReadrSync",
 	"private": true,
 	"type": "module",
 	"workspaces": [
