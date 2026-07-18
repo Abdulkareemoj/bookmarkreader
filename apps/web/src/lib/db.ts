@@ -1,5 +1,6 @@
 import {
 	getCreateTableStatements,
+	runFtsSetup,
 	runMigrations,
 	SCHEMA_VERSION,
 } from "@packages/db";
@@ -171,6 +172,7 @@ export async function initializeWebAgents() {
 	// 3. Run migrations directly on sql.js client
 	const drizzleDb = drizzle(client, { schema });
 	await runMigrations(drizzleDb as unknown as DB);
+	await runFtsSetup(drizzleDb as unknown as DB);
 	await persistNow();
 	console.log(`[Web DB] Schema initialized to version ${SCHEMA_VERSION}`);
 

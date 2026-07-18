@@ -30,9 +30,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getInitializedAgents } from "@/lib/agents";
 import { useSettingsStore } from "@/lib/store";
-import { exportSyncData, importSyncData } from "@/lib/sync";
+import { exportSyncData, importSyncData, detectFormat } from "@/lib/sync";
+import type { ExportFormat, DetectedFormat } from "@/lib/sync";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/settings")({
@@ -201,6 +203,7 @@ function SettingsComponent() {
   } = useSettingsStore();
 
   const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("json");
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
   const [errorDialog, setErrorDialog] = useState<{ title: string; message: string } | null>(null);
@@ -211,12 +214,12 @@ function SettingsComponent() {
   const handleExport = async () => {
     setSyncStatus("syncing");
     try {
-      const data = await exportSyncData();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const result = await exportSyncData(exportFormat);
+      const blob = new Blob([result.data], { type: result.mime });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `bookmark-reader-sync-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = result.filename;
       a.click();
       URL.revokeObjectURL(url);
       setLastSync(new Date().toISOString());
@@ -230,15 +233,18 @@ function SettingsComponent() {
   const handleImport = async () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".json";
+    input.accept = ".json,.opml,.html,.htm";
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       setSyncStatus("syncing");
       try {
         const text = await file.text();
-        const data = JSON.parse(text);
-        await importSyncData(data, importMode);
+        const format = detectFormat(text);
+        if (format === "unknown") {
+          throw new Error("Unrecognized file format. Use JSON, OPML, or HTML bookmark files.");
+        }
+        await importSyncData(text, format, importMode);
         setLastSync(new Date().toISOString());
         setSyncStatus("connected");
         window.location.reload();
@@ -404,13 +410,25 @@ function SettingsComponent() {
             />
 
             <div>
-              <Row label="Export data" description="Download everything as a JSON file" last={false}>
-                <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5">
-                  <Download className="size-3.5" />
-                  Export
-                </Button>
+              <Row label="Export data" description="Download your data as JSON, OPML, or HTML" last={false}>
+                <div className="flex flex-row items-center gap-2">
+                  <Select value={exportFormat} onValueChange={(v) => setExportFormat(v as ExportFormat)}>
+                    <SelectTrigger className="w-28">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="json">JSON</SelectItem>
+                      <SelectItem value="opml">OPML</SelectItem>
+                      <SelectItem value="html">HTML</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5">
+                    <Download className="size-3.5" />
+                    Export
+                  </Button>
+                </div>
               </Row>
-              <Row label="Import data" description="Load data from a previously exported file">
+              <Row label="Import data" description="Load data from JSON, OPML, or HTML bookmark files">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <RadioGroup
                     value={importMode}
