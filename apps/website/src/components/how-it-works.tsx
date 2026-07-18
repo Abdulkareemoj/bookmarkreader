@@ -25,7 +25,7 @@ const steps = [
     num: "02",
     chip: "Auto-metadata",
     title: "Metadata fetched automatically",
-    desc: "Paste a URL and BookmarkReader fetches the title, description, favicon, and preview image, no manual editing needed.",
+    desc: "Paste a URL and ReadrSync fetches the title, description, favicon, and preview image, no manual editing needed.",
     mockup: (
       <div className="flex w-[88%] items-center gap-3 rounded-t-md border border-border border-b-0 bg-black/40 p-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border bg-white/5 text-lg">

@@ -12,7 +12,7 @@ const platforms = [
     icon: "🌐",
     name: "Web app",
     version: "v0.1",
-    desc: "Use BookmarkReader in any modern browser, no installation needed.",
+    desc: "Use ReadrSync in any modern browser, no installation needed.",
     status: "available" as const,
     href: "/web",
   },
@@ -20,40 +20,40 @@ const platforms = [
     icon: "🪟",
     name: "Windows",
     desc: "Native app for Windows 10 and later, built with Tauri.",
-    status: "soon" as const,
+    status: "dev" as const,
   },
   {
     icon: "🍎",
     name: "macOS",
     desc: "Universal binary for Intel and Apple Silicon.",
-    status: "soon" as const,
+    status: "dev" as const,
   },
   {
     icon: "🐧",
     name: "Linux",
     desc: "AppImage and .deb packages for Ubuntu and derivatives.",
-    status: "soon" as const,
+    status: "dev" as const,
   },
   {
     icon: "📱",
     name: "iOS",
-    desc: "iPhone and iPad app, available on the App Store.",
-    status: "soon" as const,
+    desc: "iPhone and iPad app built with Expo.",
+    status: "dev" as const,
   },
   {
     icon: "🤖",
     name: "Android",
-    desc: "Available on Google Play Store.",
-    status: "soon" as const,
+    desc: "Android app built with Expo.",
+    status: "dev" as const,
   },
 ];
 
 const availablePlatforms = platforms.filter((p) => p.status === "available");
 const desktopPlatforms = platforms.filter(
-  (p) => p.status === "soon" && ["Windows", "macOS", "Linux"].includes(p.name),
+  (p) => p.status === "dev" && ["Windows", "macOS", "Linux"].includes(p.name),
 );
 const mobilePlatforms = platforms.filter(
-  (p) => p.status === "soon" && ["iOS", "Android"].includes(p.name),
+  (p) => p.status === "dev" && ["iOS", "Android"].includes(p.name),
 );
 
 function PlatformCard({
@@ -95,7 +95,7 @@ function PlatformCard({
           </Link>
         ) : (
           <span className="rounded-lg border border-border px-3 py-1.5 font-mono text-[10px] text-ink-tertiary tracking-wider">
-            Soon
+            Dev
           </span>
         )}
       </div>
@@ -126,7 +126,7 @@ function Download() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Get BookmarkReader
+            Get ReadrSync
           </motion.h1>
           <motion.p
             className="text-[14px] text-ink-secondary leading-relaxed"
@@ -134,8 +134,9 @@ function Download() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
           >
-            Currently in early Phase 1. The web app is live and ready to use.
-            Native desktop and mobile apps are in active development.
+            The web app is live and ready to use.
+            Desktop and mobile apps are available in development builds
+            from the source repository.
           </motion.p>
         </div>
       </section>
@@ -155,7 +156,7 @@ function Download() {
 
         <div className="mb-4 flex items-center gap-3">
           <span className="font-mono text-[10px] text-ink-tertiary uppercase tracking-widest">
-            Desktop - coming soon
+            Desktop (dev builds)
           </span>
           <div className="flex-1 border-border border-t" />
         </div>
@@ -167,7 +168,7 @@ function Download() {
 
         <div className="mb-4 flex items-center gap-3">
           <span className="font-mono text-[10px] text-ink-tertiary uppercase tracking-widest">
-            Mobile - coming soon
+            Mobile (dev builds)
           </span>
           <div className="flex-1 border-border border-t" />
         </div>

@@ -80,7 +80,7 @@ export function StickyFooter() {
               <div className="flex flex-col items-end justify-between">
                 <div className="text-right">
                   <p className="font-display text-2xl font-semibold text-foreground tracking-tight">
-                    BookmarkReader
+                    ReadrSync
                   </p>
                   <p className="mt-1 text-xs text-ink-tertiary">
                     &copy; {new Date().getFullYear()} All rights reserved.

@@ -5,7 +5,7 @@ const testimonials = [
   {
     name: "Alex Chen",
     username: "@alexchen",
-    body: "BookmarkReader has completely changed how I organize my research. The auto-fetched metadata saves me so much time.",
+    body: "ReadrSync has completely changed how I organize my research. The auto-fetched metadata saves me so much time.",
     img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
   },
   {
@@ -107,7 +107,7 @@ export function TestimonialsSection() {
             What our users say
           </h2>
           <p className="mt-3 text-sm text-ink-secondary">
-            From bookmark organization to RSS reading, our users love how BookmarkReader simplifies their digital life.
+            From bookmark organization to RSS reading, our users love how ReadrSync simplifies their digital life.
           </p>
         </div>
 

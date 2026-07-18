@@ -19,7 +19,7 @@ export default function Hero() {
       >
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ink-secondary" />
         <span className="font-mono text-[11px] text-ink-secondary uppercase tracking-widest">
-          Early access · Phase 1
+          v1.0 · All platforms
         </span>
       </motion.div>
 

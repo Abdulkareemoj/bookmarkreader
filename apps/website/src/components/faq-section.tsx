@@ -13,39 +13,39 @@ export function FAQSection() {
 
   const faqs = [
     {
-      question: "What is BookmarkReader?",
+      question: "What is ReadrSync?",
       answer:
-        "BookmarkReader is a cross-platform bookmark and RSS manager that helps you organize your digital life. It works on desktop (Windows, macOS, Linux), web, and mobile devices, with local-first storage and optional cloud sync coming soon.",
+        "ReadrSync is a cross-platform bookmark and RSS manager that helps you organize your digital life. It works on desktop, web, and mobile devices, with local-first SQLite storage and optional Google Drive cloud sync.",
     },
     {
       question: "Is my data private and secure?",
       answer:
-        "Yes! BookmarkReader is local-first, meaning your data is stored on your device using SQLite (desktop/web) or AsyncStorage (mobile). We're working on optional cloud sync, but your data will always remain under your control.",
+        "Yes! ReadrSync is local-first, meaning your data is stored on your device using SQLite. Everything works offline with no account required. If you enable optional Google Drive cloud sync, your data is stored in your own Google Drive and never on our servers.",
     },
     {
       question: "What platforms are supported?",
       answer:
-        "Currently, the web version is available for testing. Desktop apps (Windows, macOS, Linux) and mobile apps (iOS, Android) are in development and coming soon. All platforms will have consistent features and sync capabilities.",
+        "All three platforms are available: a web app you can use in any browser, native desktop apps built with Tauri (Windows, macOS, Linux), and mobile apps built with Expo (iOS, Android). All platforms share the same features and sync capabilities.",
     },
     {
       question: "Can I import my existing bookmarks?",
       answer:
-        "Yes! BookmarkReader supports importing bookmarks from browsers like Chrome, Firefox, and Safari. You can also import from other bookmark managers using standard formats like HTML bookmarks or JSON.",
+        "Yes! ReadrSync supports importing bookmarks from any browser's HTML export file, from OPML files (for RSS subscriptions), and from JSON. You can also export your entire library in any of these formats.",
     },
     {
       question: "How does the RSS reader work?",
       answer:
-        "Subscribe to any RSS feed and BookmarkReader will automatically fetch and parse articles. You can read articles offline, track read/unread states, and get notifications for new content.",
+        "Subscribe to any RSS or Atom feed and ReadrSync automatically fetches and parses articles. You can read them offline, track read/unread states, highlight passages, and annotate articles with your own notes.",
     },
     {
-      question: "Is BookmarkReader open source?",
+      question: "Is ReadrSync open source?",
       answer:
-        "Yes! BookmarkReader is built with open-source technologies (React, TypeScript, Tauri, Expo) and the code is available on GitHub. We welcome contributions from the community.",
+        "Yes! ReadrSync is built with open-source technologies (React, TypeScript, Tauri, Expo) and the code is available on GitHub. We welcome contributions from the community.",
     },
     {
       question: "What's the pricing model?",
       answer:
-        "BookmarkReader will be free to use with optional premium features for advanced functionality like cloud sync, team collaboration, and AI-powered features.",
+        "ReadrSync is free and open source. All features including cloud sync and cross-platform access are available at no cost.",
     },
   ];
 

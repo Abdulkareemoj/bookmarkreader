@@ -27,11 +27,13 @@ export function PromoBand() {
           reimagined.
         </h2>
         <p className="mx-auto mt-4 mb-8 max-w-sm text-sm text-ink-secondary leading-relaxed">
-          Available now on the web. Desktop and mobile apps shipping soon.
+          Available on desktop, web, and mobile.
+          <br />
+          Your data, always under your control.
         </p>
         <Link to="/download">
           <Button size="xl">
-            Get BookmarkReader <ArrowRight className="ml-1 h-4 w-4" />
+            Get ReadrSync <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         </Link>
       </motion.div>

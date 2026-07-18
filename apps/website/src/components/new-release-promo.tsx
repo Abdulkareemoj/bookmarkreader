@@ -48,7 +48,7 @@ export function NewReleasePromo() {
 												>
 													<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
 												</svg>
-												Try BookmarkReader
+												Try ReadrSync
 											</p>
 										</div>
 										<div className="flex size-[26px] items-center justify-center rounded-full border-2 border-border transition-all ease-in-out group-hover:ml-2">
@@ -83,13 +83,13 @@ export function NewReleasePromo() {
 							}}
 							aria-hidden="true"
 						>
-							BookmarkReader
+							ReadrSync
 						</h1>
 						<h1
 							className="pointer-events-none absolute inset-x-0 mt-[120px] text-center font-semibold text-[100px] text-primary sm:mt-[30px] sm:text-[190px]"
 							aria-hidden="true"
 						>
-							BookmarkReader
+							ReadrSync
 						</h1>
 					</div>
 				</div>
