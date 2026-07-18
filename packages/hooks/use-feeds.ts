@@ -1,7 +1,6 @@
-
-
 import { useReaderStore } from "@packages/store";
 import { useMemo } from "react";
+import type { ArticleFilterOptions } from "@packages/agents";
 
 /**
  * Hook for accessing feed and article data.
@@ -10,6 +9,7 @@ import { useMemo } from "react";
 export function useFeeds(feedId?: string) {
 	const feeds = useReaderStore((s) => s.feeds);
 	const allArticles = useReaderStore((s) => s.articles);
+	const rssAgent = useReaderStore((s) => s.rssAgent);
 
 	const articles = useMemo(
 		() =>
@@ -31,6 +31,17 @@ export function useFeeds(feedId?: string) {
 		void markArticleRead(id, !current.read);
 	};
 
+	const searchArticles = useMemo(
+		() => (query: string) => rssAgent.searchArticles(query),
+		[rssAgent],
+	);
+
+	const listFiltered = useMemo(
+		() => (options?: ArticleFilterOptions) =>
+			rssAgent.listArticlesFiltered(options),
+		[rssAgent],
+	);
+
 	return {
 		feeds,
 		articles,
@@ -41,5 +52,7 @@ export function useFeeds(feedId?: string) {
 		toggleArticleLike: (id: string) => void toggleArticleLike(id),
 		toggleArticleSave: (id: string) => void toggleArticleSave(id),
 		fetchArticleContent,
+		searchArticles,
+		listFiltered,
 	};
 }
